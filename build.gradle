@@ -1,0 +1,22 @@
+group 'com.kellerkompanie'
+version '1.0'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'de.huxhorn.lilith:de.huxhorn.lilith.3rdparty.junique:1.0.4'
+    compile group: 'com.jtattoo', name: 'JTattoo', version: '1.6.10'
+    compile group: 'jaxen', name: 'jaxen', version: '1.1'
+    compile group: 'dom4j', name: 'dom4j', version: '1.6.1'
+    compile group: 'commons-io', name: 'commons-io', version: '2.0.1'
+    compile group: 'commons-net', name: 'commons-net', version: '3.4'
+    compile files('libs/jshortcut-0.4-oberzalek.jar')
+    compile files('libs/org-netbeans-swing-outline-RELEASE73.jar')
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
