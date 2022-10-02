@@ -2,7 +2,7 @@
 /* MetaFileMaker.java
 
    MetaFileMaker: Metafile making class (jazsyncmake)
-   Copyright (C) 2011 Tomáš Hlavni�?ka <hlavntom@fel.cvut.cz>
+   Copyright (C) 2011 Tomas Hlavnika <hlavntom@fel.cvut.cz>
 
    This file is a part of Jazsync.
 
@@ -47,7 +47,7 @@ import fr.soe.a3s.jazsync.Rsum;
 /**
  * Metafile making class
  * 
- * @author Tomáš Hlavni�?ka
+ * @author Tomas Hlavnika
  */
 public class MetaFileMaker {
 

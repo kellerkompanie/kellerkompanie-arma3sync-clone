@@ -1,7 +1,7 @@
 /* HeaderMaker.java
 
    HeaderMaker: Simple header-maker for metafiles
-   Copyright (C) 2011 Tomáš Hlavni�?ka <hlavntom@fel.cvut.cz>
+   Copyright (C) 2011 Tomas Hlavnika <hlavntom@fel.cvut.cz>
 
    This file is a part of Jazsync.
 
@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.Locale;
 /**
  * Simple class for creating headers for metafile
- * @author Tomáš Hlavni�?ka
+ * @author Tomas Hlavnika
  */
 public class HeaderMaker {
 /*
