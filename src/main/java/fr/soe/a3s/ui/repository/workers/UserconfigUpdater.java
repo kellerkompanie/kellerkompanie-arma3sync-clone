@@ -15,6 +15,7 @@ public class UserconfigUpdater {
 
 	private final Facade facade;
 	private final String repositoryName;
+	private final String eventName;
 	private final boolean silent;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -22,9 +23,11 @@ public class UserconfigUpdater {
 	private final FilesSynchronizationManager filesManager;
 
 	public UserconfigUpdater(Facade facade, String repositoryName,
-			boolean silent, FilesSynchronizationManager filesManager) {
+			String eventName, boolean silent,
+			FilesSynchronizationManager filesManager) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
+		this.eventName = eventName;
 		this.silent = silent;
 		this.filesManager = filesManager;
 	}
@@ -34,7 +37,7 @@ public class UserconfigUpdater {
 		boolean proceed = false;
 
 		String defaultDownloadLocation = repositoryService
-				.getDefaultDownloadLocation(repositoryName);
+				.getDefaultDownloadLocation(repositoryName, eventName);
 
 		File arma3Directory = null;
 		String arma3ExePath = profileService.getArma3ExePath();
@@ -48,14 +51,11 @@ public class UserconfigUpdater {
 			if (!arma3Directory.getAbsolutePath().equals(
 					defaultDownloadLocation)) {
 				if (!silent) {
-					String message = "Repository name: "
-							+ repositoryName
-							+ "\n"
-							+ "Userconfig folder have changed."
+					String message = "Userconfig folder have changed."
 							+ "\n"
 							+ "Copy userconfig folder into ArmA 3 installation directory?";
 					int response = JOptionPane.showConfirmDialog(
-							facade.getMainPanel(), message, "Userconfig",
+							facade.getMainPanel(), message, repositoryName,
 							JOptionPane.OK_CANCEL_OPTION);
 					if (response == 0) {
 						proceed = true;
@@ -77,10 +77,17 @@ public class UserconfigUpdater {
 					+ filesManager.getUserconfigNode().getName();
 			File userconfigTargetDirectory = new File(userconfigTargetPath);
 
+			String tabName = "";
+			if (eventName != null) {
+				tabName = eventName;
+			} else {
+				tabName = repositoryName;
+			}
+
 			if (!userconfigSourceDirectory.exists() && !silent) {
 				String message = "File not found:" + userconfigSourcePath;
 				JOptionPane.showMessageDialog(facade.getMainPanel(), message,
-						"Error", JOptionPane.ERROR_MESSAGE);
+						tabName, JOptionPane.ERROR_MESSAGE);
 			} else {
 				userconfigTargetDirectory.mkdir();
 				if (!userconfigTargetDirectory.exists() && !silent) {
@@ -88,7 +95,7 @@ public class UserconfigUpdater {
 							+ userconfigTargetPath + "\n"
 							+ "Please checkout file access permissions.";
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							message, "Error", JOptionPane.ERROR_MESSAGE);
+							message, tabName, JOptionPane.ERROR_MESSAGE);
 				} else {
 					try {
 						FileAccessMethods.copyDirectory(
@@ -98,8 +105,7 @@ public class UserconfigUpdater {
 						if (!silent) {
 							String message = "Userconfig folder have been updated into ArmA 3 installation directory.";
 							JOptionPane.showMessageDialog(
-									facade.getMainPanel(), message,
-									"Userconfig",
+									facade.getMainPanel(), message, tabName,
 									JOptionPane.INFORMATION_MESSAGE);
 						}
 					} catch (IOException e) {
@@ -107,7 +113,7 @@ public class UserconfigUpdater {
 						if (!silent) {
 							JOptionPane.showMessageDialog(
 									facade.getMainPanel(), e.getMessage(),
-									"Error", JOptionPane.ERROR_MESSAGE);
+									tabName, JOptionPane.ERROR_MESSAGE);
 						}
 					}
 				}

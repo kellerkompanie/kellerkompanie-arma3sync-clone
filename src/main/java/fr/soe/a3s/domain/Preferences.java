@@ -16,9 +16,8 @@ public class Preferences implements Serializable {
 	private static final long serialVersionUID = 7034433806261372240L;
 	private MinimizationType launchPanelGameLaunch = MinimizationType.TASK_BAR;
 	private MinimizationType launchPanelMinimized = MinimizationType.TASK_BAR;
-	private final MinimizationType syncPanelMinimized = MinimizationType.TRAY;
 	private LookAndFeel lookAndFeel = LookAndFeel.LAF_DEFAULT;
-	private IconResize iconResizeSize = IconResize.AUTO;
+	private IconResize iconResizeSize = IconResize.NONE;
 	private StartWithOS startWithOS = StartWithOS.DISABLED;
 	private CheckRepositoriesFrequency checkRepositoriesFrequency = CheckRepositoriesFrequency.FREQ3;
 
@@ -78,8 +77,7 @@ public class Preferences implements Serializable {
 		return checkRepositoriesFrequency;
 	}
 
-	public void setCheckRepositoriesFrequency(
-			CheckRepositoriesFrequency checkRepositoriesFrequency) {
+	public void setCheckRepositoriesFrequency(CheckRepositoriesFrequency checkRepositoriesFrequency) {
 		this.checkRepositoriesFrequency = checkRepositoriesFrequency;
 	}
 }

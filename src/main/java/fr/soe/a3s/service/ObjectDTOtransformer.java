@@ -41,34 +41,27 @@ public class ObjectDTOtransformer {
 
 	/* Configuration */
 
-	protected ExternalApplicationDTO transformExternalApplication2DTO(
-			ExternalApplication externalApplication) {
+	protected ExternalApplicationDTO transformExternalApplication2DTO(ExternalApplication externalApplication) {
 
 		final ExternalApplicationDTO externalApplicationDTO = new ExternalApplicationDTO();
 		externalApplicationDTO.setName(externalApplication.getName());
-		externalApplicationDTO.setExecutablePath(externalApplication
-				.getExecutablePath());
+		externalApplicationDTO.setExecutablePath(externalApplication.getExecutablePath());
 		externalApplicationDTO.setEnable(externalApplication.isEnable());
-		externalApplicationDTO.setParameters(externalApplication
-				.getParameters());
+		externalApplicationDTO.setParameters(externalApplication.getParameters());
 		return externalApplicationDTO;
 	}
 
-	protected ExternalApplication transformDTO2ExternalApplication(
-			ExternalApplicationDTO externalApplicationDTO) {
+	protected ExternalApplication transformDTO2ExternalApplication(ExternalApplicationDTO externalApplicationDTO) {
 
 		final ExternalApplication externalApplication = new ExternalApplication();
 		externalApplication.setName(externalApplicationDTO.getName());
-		externalApplication.setExecutablePath(externalApplicationDTO
-				.getExecutablePath());
+		externalApplication.setExecutablePath(externalApplicationDTO.getExecutablePath());
 		externalApplication.setEnable(externalApplicationDTO.isEnable());
-		externalApplication.setParameters(externalApplicationDTO
-				.getParameters());
+		externalApplication.setParameters(externalApplicationDTO.getParameters());
 		return externalApplication;
 	}
 
-	protected LauncherOptionsDTO transformLauncherOptions2DTO(
-			LauncherOptions launcherOptions) {
+	protected LauncherOptionsDTO transformLauncherOptions2DTO(LauncherOptions launcherOptions) {
 
 		final LauncherOptionsDTO launcherOptionsDTO = new LauncherOptionsDTO();
 
@@ -77,35 +70,29 @@ public class ObjectDTOtransformer {
 		launcherOptionsDTO.setDefaultWorld(launcherOptions.isDefaultWorld());
 		launcherOptionsDTO.setNoLogs(launcherOptions.isNologs());
 		launcherOptionsDTO.setGameProfile(launcherOptions.getGameProfile());
-		launcherOptionsDTO.setMaxMemorySelection(launcherOptions
-				.getMaxMemorySelection());
-		launcherOptionsDTO.setCpuCountSelection(launcherOptions
-				.getCpuCountSelection());
-		launcherOptionsDTO.setExThreadsSelection(launcherOptions
-				.getExThreadsSelection());
-		launcherOptionsDTO.setMallocSelection(launcherOptions
-				.getMallocSelection());
+		launcherOptionsDTO.setMaxMemorySelection(launcherOptions.getMaxMemorySelection());
+		launcherOptionsDTO.setCpuCountSelection(launcherOptions.getCpuCountSelection());
+		launcherOptionsDTO.setExThreadsSelection(launcherOptions.getExThreadsSelection());
+		launcherOptionsDTO.setMallocSelection(launcherOptions.getMallocSelection());
 		launcherOptionsDTO.setEnableHT(launcherOptions.isEnableHT());
 		launcherOptionsDTO.setHugePages(launcherOptions.isHugePages());
 		launcherOptionsDTO.setNoPause(launcherOptions.isNoPause());
 		launcherOptionsDTO.setFilePatching(launcherOptions.isFilePatching());
-		launcherOptionsDTO
-				.setNoSplashScreen(launcherOptions.isNoSplashScreen());
-		launcherOptionsDTO.setShowScriptError(launcherOptions
-				.isShowScriptErrors());
+		launcherOptionsDTO.setNoSplashScreen(launcherOptions.isNoSplashScreen());
+		launcherOptionsDTO.setShowScriptError(launcherOptions.isShowScriptErrors());
 		launcherOptionsDTO.setWindowMode(launcherOptions.isWindowMode());
-		launcherOptionsDTO.setCheckSignatures(launcherOptions
-				.isCheckSignatures());
+		launcherOptionsDTO.setCheckSignatures(launcherOptions.isCheckSignatures());
 		launcherOptionsDTO.setAutoRestart(launcherOptions.isAutoRestart());
+		launcherOptionsDTO.setMissionFile(launcherOptions.isMissionFile());
+		launcherOptionsDTO.setMissionFilePath(launcherOptions.getMissionFilePath());
 
 		return launcherOptionsDTO;
 	}
 
-	protected FavoriteServerDTO transformFavoriteServers2DTO(
-			FavoriteServer favoriteServer) {
+	protected FavoriteServerDTO transformFavoriteServers2DTO(FavoriteServer favoriteServer) {
 
 		final FavoriteServerDTO favoriteServerDTO = new FavoriteServerDTO();
-		favoriteServerDTO.setName(favoriteServer.getName());
+		favoriteServerDTO.setDescription(favoriteServer.getDescription());
 		favoriteServerDTO.setIpAddress(favoriteServer.getIpAddress());
 		favoriteServerDTO.setPort(favoriteServer.getPort());
 		favoriteServerDTO.setPassword(favoriteServer.getPassword());
@@ -114,11 +101,10 @@ public class ObjectDTOtransformer {
 		return favoriteServerDTO;
 	}
 
-	protected FavoriteServer transformDTO2FavoriteServer(
-			FavoriteServerDTO favoriteServerDTO) {
+	protected FavoriteServer transformDTO2FavoriteServer(FavoriteServerDTO favoriteServerDTO) {
 
 		final FavoriteServer favoriteServer = new FavoriteServer();
-		favoriteServer.setName(favoriteServerDTO.getName());
+		favoriteServer.setDescription(favoriteServerDTO.getDescription());
 		favoriteServer.setIpAddress(favoriteServerDTO.getIpAddress());
 		favoriteServer.setPort(favoriteServerDTO.getPort());
 		favoriteServer.setPassword(favoriteServerDTO.getPassword());
@@ -151,6 +137,7 @@ public class ObjectDTOtransformer {
 			protocolDTO.setProtocolType(protocol.getProtocolType());
 			protocolDTO.setReadTimeOut(protocol.getReadTimeOut());
 			protocolDTO.setConnectionTimeOut(protocol.getConnectionTimeOut());
+			protocolDTO.setValidateSSLCertificate(protocol.isValidateSSLCertificate());
 			proxyDTO.setProtocolDTO(protocolDTO);
 		}
 		proxyDTO.setEnableProxy(proxy.isEnableProxy());
@@ -159,30 +146,33 @@ public class ObjectDTOtransformer {
 
 	/* Profile */
 
-	protected void transformTreeDirectory2DTO(TreeDirectory treeDirectory,
-			TreeDirectoryDTO treeDirectoryDTO) {
+	protected void transformTreeDirectory2DTO(TreeDirectory treeDirectory, TreeDirectoryDTO treeDirectoryDTO) {
 
 		List<TreeNode> list = treeDirectory.getList();
 
 		for (TreeNode treeNode : list) {
-			if (treeNode.isLeaf()) {
-				TreeLeaf treeLeaf = (TreeLeaf) treeNode;
-				TreeLeafDTO treeLeafDTO = transformTreeLeaf2DTO(treeLeaf);
-				treeLeafDTO.setParent(treeDirectoryDTO);
-				treeDirectoryDTO.addTreeNode(treeLeafDTO);
-			} else {
-				TreeDirectory treeDirectory2 = (TreeDirectory) treeNode;
-				TreeDirectoryDTO treedDirectoryDTO2 = new TreeDirectoryDTO();
-				treedDirectoryDTO2.setName(treeDirectory2.getName());
-				treedDirectoryDTO2
-						.setModsetType(treeDirectory2.getModsetType());
-				treedDirectoryDTO2.setModsetRepositoryName(treeDirectory2
-						.getModsetRepositoryName());
-				treedDirectoryDTO2.setSelected(treeDirectory2.isSelected());
-				treedDirectoryDTO2.setUpdated(treeDirectory2.isUpdated());
-				treedDirectoryDTO2.setParent(treeDirectoryDTO);
-				treeDirectoryDTO.addTreeNode(treedDirectoryDTO2);
-				transformTreeDirectory2DTO(treeDirectory2, treedDirectoryDTO2);
+			if (treeNode != null) {
+				if (treeNode.isLeaf()) {
+					TreeLeaf treeLeaf = (TreeLeaf) treeNode;
+					TreeLeafDTO treeLeafDTO = transformTreeLeaf2DTO(treeLeaf);
+					treeLeafDTO.setParent(treeDirectoryDTO);
+					if (!treeDirectoryDTO.contains((TreeNodeDTO) treeLeafDTO)) {
+						treeDirectoryDTO.addTreeNode(treeLeafDTO);
+					}
+				} else {
+					TreeDirectory treeDirectory2 = (TreeDirectory) treeNode;
+					TreeDirectoryDTO treedDirectoryDTO2 = new TreeDirectoryDTO();
+					treedDirectoryDTO2.setName(treeDirectory2.getName());
+					treedDirectoryDTO2.setModsetType(treeDirectory2.getModsetType());
+					treedDirectoryDTO2.setModsetRepositoryName(treeDirectory2.getModsetRepositoryName());
+					treedDirectoryDTO2.setSelected(treeDirectory2.isSelected());
+					treedDirectoryDTO2.setUpdated(treeDirectory2.isUpdated());
+					treedDirectoryDTO2.setParent(treeDirectoryDTO);
+					if (!treeDirectoryDTO.contains((TreeNodeDTO) treedDirectoryDTO2)) {
+						treeDirectoryDTO.addTreeNode(treedDirectoryDTO2);
+						transformTreeDirectory2DTO(treeDirectory2, treedDirectoryDTO2);
+					}
+				}
 			}
 		}
 	}
@@ -193,32 +183,31 @@ public class ObjectDTOtransformer {
 		treeLeafDTO.setName(treeLeaf.getName());
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		treeLeafDTO.setOptional(treeLeaf.isOptional());
+		treeLeafDTO.setMissing(treeLeaf.isMissing());
 		return treeLeafDTO;
 	}
 
-	protected void transformDTO2TreeDirectory(
-			TreeDirectoryDTO treeDirectoryDTO, TreeDirectory treeDirectory) {
+	protected void transformDTO2TreeDirectory(TreeDirectoryDTO treeDirectoryDTO, TreeDirectory treeDirectory) {
 
 		List<TreeNodeDTO> list = treeDirectoryDTO.getList();
 
 		for (TreeNodeDTO treeNodeDTO : list) {
-			if (treeNodeDTO.isLeaf()) {
-				TreeLeafDTO treeLeafDTO = (TreeLeafDTO) treeNodeDTO;
-				TreeLeaf treeLeaf = transformDTO2TreeLeaf(treeLeafDTO);
-				treeLeaf.setParent(treeDirectory);
-				treeDirectory.addTreeNode(treeLeaf);
-			} else {
-				TreeDirectoryDTO treeDirectoryDTO2 = (TreeDirectoryDTO) treeNodeDTO;
-				TreeDirectory treedDirectory2 = new TreeDirectory(
-						treeDirectoryDTO2.getName(), treeDirectory);
-				treedDirectory2
-						.setModsetType(treeDirectoryDTO2.getModsetType());
-				treedDirectory2.setModsetRepositoryName(treeDirectoryDTO2
-						.getModsetRepositoryName());
-				treedDirectory2.setSelected(treeDirectoryDTO2.isSelected());
-				treedDirectory2.setUpdated(treeDirectoryDTO2.isUpdated());
-				treeDirectory.addTreeNode(treedDirectory2);
-				transformDTO2TreeDirectory(treeDirectoryDTO2, treedDirectory2);
+			if (treeNodeDTO != null) {
+				if (treeNodeDTO.isLeaf()) {
+					TreeLeafDTO treeLeafDTO = (TreeLeafDTO) treeNodeDTO;
+					TreeLeaf treeLeaf = transformDTO2TreeLeaf(treeLeafDTO);
+					treeLeaf.setParent(treeDirectory);
+					treeDirectory.addTreeNode(treeLeaf);
+				} else {
+					TreeDirectoryDTO treeDirectoryDTO2 = (TreeDirectoryDTO) treeNodeDTO;
+					TreeDirectory treedDirectory2 = new TreeDirectory(treeDirectoryDTO2.getName(), treeDirectory);
+					treedDirectory2.setModsetType(treeDirectoryDTO2.getModsetType());
+					treedDirectory2.setModsetRepositoryName(treeDirectoryDTO2.getModsetRepositoryName());
+					treedDirectory2.setSelected(treeDirectoryDTO2.isSelected());
+					treedDirectory2.setUpdated(treeDirectoryDTO2.isUpdated());
+					treeDirectory.addTreeNode(treedDirectory2);
+					transformDTO2TreeDirectory(treeDirectoryDTO2, treedDirectory2);
+				}
 			}
 		}
 	}
@@ -229,6 +218,7 @@ public class ObjectDTOtransformer {
 		treeLeaf.setName(treeLeafDTO.getName());
 		treeLeaf.setSelected(treeLeafDTO.isSelected());
 		treeLeaf.setOptional(treeLeafDTO.isOptional());
+		treeLeaf.setMissing(treeLeafDTO.isMissing());
 		return treeLeaf;
 	}
 
@@ -246,29 +236,21 @@ public class ObjectDTOtransformer {
 		protocoleDTO.setLogin(repository.getProtocol().getLogin());
 		protocoleDTO.setPassword(repository.getProtocol().getPassword());
 		protocoleDTO.setPort(repository.getProtocol().getPort());
-		protocoleDTO
-				.setProtocolType(repository.getProtocol().getProtocolType());
-		protocoleDTO.setConnectionTimeOut(repository.getProtocol()
-				.getConnectionTimeOut());
+		protocoleDTO.setProtocolType(repository.getProtocol().getProtocolType());
+		protocoleDTO.setConnectionTimeOut(repository.getProtocol().getConnectionTimeOut());
 		protocoleDTO.setReadTimeOut(repository.getProtocol().getReadTimeOut());
-		repositoryDTO.setProtocolDTO(protocoleDTO);
+		protocoleDTO.setValidateSSLCertificate(repository.getProtocol().isValidateSSLCertificate());
+		repositoryDTO.setProtocoleDTO(protocoleDTO);
 		// Repository upload protocole
 		ProtocolDTO repositoryUploadProtocoleDTO = new ProtocolDTO();
 		if (repository.getUploadProtocole() != null) {
-			repositoryUploadProtocoleDTO.setUrl(repository.getUploadProtocole()
-					.getUrl());
-			repositoryUploadProtocoleDTO.setLogin(repository
-					.getUploadProtocole().getLogin());
-			repositoryUploadProtocoleDTO.setPassword(repository
-					.getUploadProtocole().getPassword());
-			repositoryUploadProtocoleDTO.setPort(repository
-					.getUploadProtocole().getPort());
-			repositoryUploadProtocoleDTO.setProtocolType(repository
-					.getUploadProtocole().getProtocolType());
-			repositoryUploadProtocoleDTO.setConnectionTimeOut(repository
-					.getUploadProtocole().getConnectionTimeOut());
-			repositoryUploadProtocoleDTO.setReadTimeOut(repository
-					.getUploadProtocole().getReadTimeOut());
+			repositoryUploadProtocoleDTO.setUrl(repository.getUploadProtocole().getUrl());
+			repositoryUploadProtocoleDTO.setLogin(repository.getUploadProtocole().getLogin());
+			repositoryUploadProtocoleDTO.setPassword(repository.getUploadProtocole().getPassword());
+			repositoryUploadProtocoleDTO.setPort(repository.getUploadProtocole().getPort());
+			repositoryUploadProtocoleDTO.setProtocolType(repository.getUploadProtocole().getProtocolType());
+			repositoryUploadProtocoleDTO.setConnectionTimeOut(repository.getUploadProtocole().getConnectionTimeOut());
+			repositoryUploadProtocoleDTO.setReadTimeOut(repository.getUploadProtocole().getReadTimeOut());
 			repositoryDTO.setUploadProtocoleDTO(repositoryUploadProtocoleDTO);
 		}
 
@@ -288,11 +270,10 @@ public class ObjectDTOtransformer {
 		protocoleDTO.setPort(autoConfig.getProtocole().getPort());
 		protocoleDTO.setPassword(autoConfig.getProtocole().getPassword());
 		protocoleDTO.setLogin(autoConfig.getProtocole().getLogin());
-		protocoleDTO.setProtocolType(autoConfig.getProtocole()
-				.getProtocolType());
-		protocoleDTO.setConnectionTimeOut(autoConfig.getProtocole()
-				.getConnectionTimeOut());
+		protocoleDTO.setProtocolType(autoConfig.getProtocole().getProtocolType());
+		protocoleDTO.setConnectionTimeOut(autoConfig.getProtocole().getConnectionTimeOut());
 		protocoleDTO.setReadTimeOut(autoConfig.getProtocole().getReadTimeOut());
+		protocoleDTO.setValidateSSLCertificate(autoConfig.getProtocole().isValidateSSLCertificate());
 		return autoConfigDTO;
 	}
 
@@ -316,8 +297,7 @@ public class ObjectDTOtransformer {
 		return serverInfo;
 	}
 
-	protected void transformSyncTreeDirectory2DTO(
-			SyncTreeDirectory syncTreeDirectory,
+	protected void transformSyncTreeDirectory2DTO(SyncTreeDirectory syncTreeDirectory,
 			SyncTreeDirectoryDTO syncTreeDirectoryDTO) {
 
 		List<SyncTreeNode> list = syncTreeDirectory.getList();
@@ -340,25 +320,20 @@ public class ObjectDTOtransformer {
 				SyncTreeDirectoryDTO syncTreedDirectoryDTO2 = new SyncTreeDirectoryDTO();
 				syncTreedDirectoryDTO2.setName(syncTreeDirectory2.getName());
 				syncTreedDirectoryDTO2.setParent(syncTreeDirectoryDTO);
-				syncTreedDirectoryDTO2.setMarkAsAddon(syncTreeDirectory2
-						.isMarkAsAddon());
-				syncTreedDirectoryDTO2.setDestinationPath(syncTreeDirectory2
-						.getDestinationPath());
+				syncTreedDirectoryDTO2.setMarkAsAddon(syncTreeDirectory2.isMarkAsAddon());
+				syncTreedDirectoryDTO2.setDestinationPath(syncTreeDirectory2.getDestinationPath());
 				syncTreedDirectoryDTO2.setSelected(false);
-				syncTreedDirectoryDTO2.setUpdated(syncTreeDirectory2
-						.isUpdated());
-				syncTreedDirectoryDTO2.setDeleted(syncTreeDirectory2
-						.isDeleted());
+				syncTreedDirectoryDTO2.setUpdated(syncTreeDirectory2.isUpdated());
+				syncTreedDirectoryDTO2.setDeleted(syncTreeDirectory2.isDeleted());
 				syncTreedDirectoryDTO2.setHidden(syncTreeDirectory2.isHidden());
+				syncTreedDirectoryDTO2.setOptional(syncTreeDirectory2.isOptional());
 				syncTreeDirectoryDTO.addTreeNode(syncTreedDirectoryDTO2);
-				transformSyncTreeDirectory2DTO(syncTreeDirectory2,
-						syncTreedDirectoryDTO2);
+				transformSyncTreeDirectory2DTO(syncTreeDirectory2, syncTreedDirectoryDTO2);
 			}
 		}
 	}
 
-	protected SyncTreeLeafDTO transformSyncTreeLeaf2DTO(
-			SyncTreeLeaf syncTreeLeaf) {
+	protected SyncTreeLeafDTO transformSyncTreeLeaf2DTO(SyncTreeLeaf syncTreeLeaf) {
 
 		SyncTreeLeafDTO syncTreeLeafDTO = new SyncTreeLeafDTO();
 		syncTreeLeafDTO.setName(syncTreeLeaf.getName());
@@ -368,10 +343,8 @@ public class ObjectDTOtransformer {
 		syncTreeLeafDTO.setUpdated(syncTreeLeaf.isUpdated());
 		syncTreeLeafDTO.setDeleted(syncTreeLeaf.isDeleted());
 		syncTreeLeafDTO.setCompressed(syncTreeLeaf.isCompressed());
-		String remoteSHA1 = syncTreeLeaf.getSha1();
-		String localSHA1 = syncTreeLeaf.getLocalSHA1();
-		syncTreeLeafDTO.setLocalSHA1(localSHA1);
 		syncTreeLeafDTO.setSha1(syncTreeLeaf.getSha1());
+		syncTreeLeafDTO.setLocalSHA1(syncTreeLeaf.getLocalSHA1());
 		syncTreeLeafDTO.setDestinationPath(syncTreeLeaf.getDestinationPath());
 		return syncTreeLeafDTO;
 	}
@@ -397,8 +370,7 @@ public class ObjectDTOtransformer {
 
 		final Event event = new Event(eventDTO.getName());
 		event.setDescription(eventDTO.getDescription());
-		for (Iterator<String> iter = eventDTO.getAddonNames().keySet()
-				.iterator(); iter.hasNext();) {
+		for (Iterator<String> iter = eventDTO.getAddonNames().keySet().iterator(); iter.hasNext();) {
 			String key = iter.next();
 			boolean value = eventDTO.getAddonNames().get(key);
 			event.getAddonNames().put(key, value);
@@ -411,14 +383,12 @@ public class ObjectDTOtransformer {
 		final EventDTO eventDTO = new EventDTO();
 		eventDTO.setName(event.getName());
 		eventDTO.setDescription(event.getDescription());
-		for (Iterator<String> iter = event.getAddonNames().keySet().iterator(); iter
-				.hasNext();) {
+		for (Iterator<String> iter = event.getAddonNames().keySet().iterator(); iter.hasNext();) {
 			String key = iter.next();
 			boolean value = event.getAddonNames().get(key);
 			eventDTO.getAddonNames().put(key, value);
 		}
-		for (Iterator<String> iter = event.getUserconfigFolderNames().keySet()
-				.iterator(); iter.hasNext();) {
+		for (Iterator<String> iter = event.getUserconfigFolderNames().keySet().iterator(); iter.hasNext();) {
 			String key = iter.next();
 			boolean value = event.getUserconfigFolderNames().get(key);
 			eventDTO.getUserconfigFolderNames().put(key, value);

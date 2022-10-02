@@ -62,18 +62,18 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 		this.repositoryName = repositoryName;
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(
-				new String[] { ProtocolType.FTP.getDescription() });
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] { ProtocolType.FTP.getDescription(),
+				ProtocolType.HTTP_WEBDAV.getDescription(), ProtocolType.HTTPS_WEBDAV.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
 		try {
-			RepositoryDTO repositoryDTO = repositoryService
-					.getRepository(repositoryName);
-			ProtocolDTO protocolDTO = repositoryDTO.getProtocolDTO();
-			ProtocolDTO uploadProtocolDTO = repositoryDTO
-					.getUploadProtocoleDTO();
+			RepositoryDTO repositoryDTO = repositoryService.getRepository(repositoryName);
+			ProtocolDTO protocolDTO = repositoryDTO.getProtocoleDTO();
+			ProtocolDTO uploadProtocolDTO = repositoryDTO.getUploadProtocoleDTO();
 			if (uploadProtocolDTO != null) {
+				ProtocolType protocoleType = uploadProtocolDTO.getProtocolType();
+				comboBoxProtocolModel.setSelectedItem(protocoleType.getDescription());
 				connectionPanel.init(uploadProtocolDTO);
 			} else if (protocolDTO.getProtocolType().equals(ProtocolType.FTP)) {
 				connectionPanel.init(protocolDTO);
@@ -82,15 +82,14 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 			}
 		} catch (RepositoryException e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), repositoryName,
+					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
 		/* Init options Section */
 		boolean isCompressed = repositoryService.isCompressed(repositoryName);
-		boolean isUploadCompressedPboFilesOnly = repositoryService
-				.isUploadCompressedPboFilesOnly(repositoryName);
+		boolean isUploadCompressedPboFilesOnly = repositoryService.isUploadCompressedPboFilesOnly(repositoryName);
 		if (isCompressed) {
 			if (isUploadCompressedPboFilesOnly) {
 				optionsPanel.init(true, true);
@@ -105,24 +104,22 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 	@Override
 	protected void buttonOKPerformed() {
 
-		ProtocolType protocolType = ProtocolType
-				.getEnum((String) comboBoxProtocolModel.getSelectedItem());
+		ProtocolType protocolType = ProtocolType.getEnum((String) comboBoxProtocolModel.getSelectedItem());
 		String url = connectionPanel.getUrl();
 		String port = connectionPanel.getPort();
 		String login = connectionPanel.getLogin();
 		String password = connectionPanel.getPassword();
+		boolean validateSSLCertificate = protocolPanel.getCheckBoxValidateSSLCertificate().isSelected();
 
 		try {
-			repositoryService.setRepositoryUploadProtocole(repositoryName, url,
-					port, login, password, protocolType, null,null);
-			repositoryService.setUploadCompressedPboFilesOnly(repositoryName,
-					optionsPanel.isSelected());
+			repositoryService.setRepositoryUploadProtocole(repositoryName, url, port, login, password, protocolType,
+					null, null, validateSSLCertificate);
+			repositoryService.setUploadCompressedPboFilesOnly(repositoryName, optionsPanel.isSelected());
 			repositoryService.write(repositoryName);
 			connectionPanel.clearPassword();
 			this.dispose();
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, e.getMessage(), repositoryName, JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

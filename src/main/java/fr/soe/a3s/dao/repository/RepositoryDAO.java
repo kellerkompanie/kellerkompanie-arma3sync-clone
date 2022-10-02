@@ -54,8 +54,7 @@ public class RepositoryDAO implements DataAccessConstants {
 			}
 		}
 		if (ok) {
-			Repository removedRepository = mapRepositories
-					.remove(repositoryName);
+			Repository removedRepository = mapRepositories.remove(repositoryName);
 			if (removedRepository != null) {
 				return true;
 			} else {
@@ -77,16 +76,13 @@ public class RepositoryDAO implements DataAccessConstants {
 			mapRepositories.clear();
 			if (subfiles != null) {
 				for (File file : subfiles) {
-					if (file.isFile()
-							&& file.getName().contains(REPOSITORY_EXTENSION)) {
+					if (file.isFile() && file.getName().contains(REPOSITORY_EXTENSION)) {
 						try {
-							Repository repository = (Repository) A3SFilesAccessor
-									.read(cipher, file);
+							Repository repository = (Repository) A3SFilesAccessor.read(cipher, file);
 							if (repository != null) {
-								mapRepositories.put(repository.getName(),
-										repository);
+								mapRepositories.put(repository.getName(), repository);
 							}
-						} catch (IOException e) {
+						} catch (Exception e) {
 							repositoriesFailedToLoad.put(file.getName(), e);
 						}
 					}
@@ -94,18 +90,25 @@ public class RepositoryDAO implements DataAccessConstants {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			String message = "Failded to read repository files:";
-			throw new LoadingException(message + "\n" + e.getMessage());
+			String message = "Failed to read repository files";
+			System.out.println(message);
+			if (e.getMessage() != null) {
+				throw new LoadingException(message + "\n" + e.getMessage());
+			} else {
+				throw new LoadingException(message);
+			}
 		}
 
 		if (!repositoriesFailedToLoad.isEmpty()) {
-			String message = "Failded to read repository files:";
-			for (Iterator<String> iter = repositoriesFailedToLoad.keySet()
-					.iterator(); iter.hasNext();) {
+			String message = "Failed to read repository files:";
+			for (Iterator<String> iter = repositoriesFailedToLoad.keySet().iterator(); iter.hasNext();) {
 				String repositoryName = iter.next();
 				Exception e = repositoriesFailedToLoad.get(repositoryName);
-				message = message + "\n" + " - " + repositoryName + ": "
-						+ e.getMessage();
+				if (e.getMessage() != null) {
+					message = message + "\n" + " - " + repositoryName + ": " + e.getMessage();
+				} else {
+					message = message + "\n" + " - " + repositoryName;
+				}
 			}
 			throw new LoadingException(message);
 		}
@@ -118,8 +121,7 @@ public class RepositoryDAO implements DataAccessConstants {
 		assert (repository != null);
 
 		File folder = new File(REPOSITORY_FOLDER_PATH);
-		String repositoryFilename = repository.getName().replaceAll(" ", "")
-				+ REPOSITORY_EXTENSION;
+		String repositoryFilename = repository.getName().replaceAll(" ", "") + REPOSITORY_EXTENSION;
 		File repositoryFile = new File(folder, repositoryFilename);
 		File backupFile = new File(folder, repositoryFilename + ".backup");
 
@@ -139,9 +141,8 @@ public class RepositoryDAO implements DataAccessConstants {
 			if (backupFile.exists()) {
 				backupFile.renameTo(repositoryFile);
 			}
-			String message = "Failed to write file: "
-					+ FileAccessMethods.getCanonicalPath(repositoryFile);
-			throw new WritingException(e.getMessage());
+			String message = "Failed to write file: " + FileAccessMethods.getCanonicalPath(repositoryFile);
+			throw new WritingException(message);
 		} finally {
 			if (backupFile.exists()) {
 				FileAccessMethods.deleteFile(backupFile);
@@ -154,10 +155,9 @@ public class RepositoryDAO implements DataAccessConstants {
 		assert (repository != null);
 
 		String path = repository.getPath();
-		String syncPath = path + "/" + SYNC_FILE_PATH;
+		String syncPath = path + "/" + A3S_FOlDER_NAME + "/" + SYNC_FILE_NAME;
 		File file = new File(syncPath);
-		SyncTreeDirectory sync = (SyncTreeDirectory) A3SFilesAccessor
-				.read(file);
+		SyncTreeDirectory sync = (SyncTreeDirectory) A3SFilesAccessor.read(file);
 		return sync;
 	}
 
@@ -166,7 +166,7 @@ public class RepositoryDAO implements DataAccessConstants {
 		assert (repository != null);
 
 		String path = repository.getPath();
-		String serverInfoPath = path + "/" + SERVERINFO_FILE_PATH;
+		String serverInfoPath = path + "/" + A3S_FOlDER_NAME + "/" + SERVERINFO_FILE_NAME;
 		File file = new File(serverInfoPath);
 		ServerInfo serverInfo = (ServerInfo) A3SFilesAccessor.read(file);
 		return serverInfo;
@@ -177,7 +177,7 @@ public class RepositoryDAO implements DataAccessConstants {
 		assert (repository != null);
 
 		String path = repository.getPath();
-		String changelogsPath = path + "/" + CHANGELOGS_FILE_PATH;
+		String changelogsPath = path + "/" + A3S_FOlDER_NAME + "/" + CHANGELOGS_FILE_NAME;
 		File file = new File(changelogsPath);
 		Changelogs changelogs = (Changelogs) A3SFilesAccessor.read(file);
 		return changelogs;
@@ -188,7 +188,7 @@ public class RepositoryDAO implements DataAccessConstants {
 		assert (repository != null);
 
 		String path = repository.getPath();
-		String autocOnfigPath = path + "/" + AUTOCONFIG_FILE_PATH;
+		String autocOnfigPath = path + "/" + A3S_FOlDER_NAME + "/" + AUTOCONFIG_FILE_NAME;
 		File file = new File(autocOnfigPath);
 		AutoConfig autoconfig = (AutoConfig) A3SFilesAccessor.read(file);
 		return autoconfig;
@@ -197,7 +197,7 @@ public class RepositoryDAO implements DataAccessConstants {
 	public Events readEvents(Repository repository) throws IOException {
 
 		String path = repository.getPath();
-		String eventsPath = path + "/" + EVENTS_FILE_PATH;
+		String eventsPath = path + "/" + A3S_FOlDER_NAME + "/" + EVENTS_FILE_NAME;
 		File file = new File(eventsPath);
 		Events events = (Events) A3SFilesAccessor.read(file);
 		return events;
@@ -210,8 +210,8 @@ public class RepositoryDAO implements DataAccessConstants {
 		Events events = repository.getEvents();
 		if (events != null) {
 			String path = repository.getPath();
-			File a3sFolder = new File(path + A3S_FOlDER_PATH);
-			File file = new File(a3sFolder, EVENTS);
+			File a3sFolder = new File(path + "/" + A3S_FOlDER_NAME);
+			File file = new File(a3sFolder, EVENTS_FILE_NAME);
 			try {
 				a3sFolder.mkdir();
 				if (!a3sFolder.exists()) {
@@ -220,9 +220,8 @@ public class RepositoryDAO implements DataAccessConstants {
 				A3SFilesAccessor.write(events, file);
 			} catch (IOException e) {
 				e.printStackTrace();
-				String message = "Failed to write file: "
-						+ FileAccessMethods.getCanonicalPath(file);
-				throw new WritingException(e.getMessage());
+				String message = "Failed to write file: " + FileAccessMethods.getCanonicalPath(file);
+				throw new WritingException(message);
 			}
 		}
 	}

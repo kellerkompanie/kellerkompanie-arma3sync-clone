@@ -2,6 +2,7 @@ package fr.soe.a3s.domain.configration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -19,8 +20,8 @@ public class Configuration implements Serializable {
 	private String serverName;
 	private String defaultModset;
 	private boolean viewModeTree = true;
-	private final List<FavoriteServer> favoriteServers = new ArrayList<FavoriteServer>();
-	private final List<ExternalApplication> externalApplications = new ArrayList<ExternalApplication>();
+	private List<FavoriteServer> favoriteServers = new ArrayList<FavoriteServer>();
+	private List<ExternalApplication> externalApplications = new ArrayList<ExternalApplication>();
 	private AcreOptions acreOptions = new AcreOptions();
 	private Acre2Options acre2Options = new Acre2Options();
 	private TfarOptions tfarOptions = new TfarOptions();
@@ -57,16 +58,18 @@ public class Configuration implements Serializable {
 		this.serverName = serverName;
 	}
 
-	public synchronized List<FavoriteServer> getFavoriteServers() {
-		return favoriteServers;
-	}
-
-	public synchronized void updateFavoriteServers(List<FavoriteServer> newList) {
-		this.favoriteServers.clear();
-		this.favoriteServers.addAll(newList);
+	public List<FavoriteServer> getFavoriteServers() {
+		if (favoriteServers == null) {
+			favoriteServers = new ArrayList<FavoriteServer>();
+		}
+		Collections.sort(this.favoriteServers);
+		return this.favoriteServers;
 	}
 
 	public List<ExternalApplication> getExternalApplications() {
+		if (externalApplications == null) {
+			externalApplications = new ArrayList<ExternalApplication>();
+		}
 		return externalApplications;
 	}
 

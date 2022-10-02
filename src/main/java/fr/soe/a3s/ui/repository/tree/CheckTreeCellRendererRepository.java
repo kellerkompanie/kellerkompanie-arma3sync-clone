@@ -3,7 +3,6 @@ package fr.soe.a3s.ui.repository.tree;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;

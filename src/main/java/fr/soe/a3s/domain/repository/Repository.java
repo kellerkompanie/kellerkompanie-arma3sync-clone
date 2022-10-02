@@ -26,7 +26,7 @@ public class Repository implements Serializable {
 
 	/** Repository synchronization */
 	private int revision;
-	private transient RepositoryStatus repositorySyncStatus;// synchronization
+	private transient RepositoryStatus repositorySyncStatus;
 	private boolean notify = false;
 	private boolean auto = false;
 	@Deprecated
@@ -36,7 +36,6 @@ public class Repository implements Serializable {
 	private Set<String> hidddenFolderPaths = new HashSet<String>();
 
 	/** Check for Addons */
-	private transient boolean checkingForAddons = false;
 	private transient ServerInfo serverInfo;// Gets from remote location
 	private transient SyncTreeDirectory sync;// Gets from remote location
 	private transient Changelogs changelogs;// Gets from remote location
@@ -48,10 +47,10 @@ public class Repository implements Serializable {
 
 	/** Repository download */
 	private String defaultDownloadLocation;
+	private Map<String, String> mapEventsDownloadLocation = new HashMap<String, String>();
 	private int numberOfClientConnections;// Settings
 	private double maximumClientDownloadSpeed;// Settings
 	private transient String downloadReport = null;
-	private transient boolean downloading = false;
 
 	/** Repository upload */
 	private AbstractProtocole uploadProtocole;
@@ -62,7 +61,6 @@ public class Repository implements Serializable {
 	private transient AutoConfig localAutoConfig;
 	private transient Events localEvents;
 	private transient int lastIndexFileTransfered;
-	private transient boolean uploading = false;
 
 	/** Repository build */
 	private String path;
@@ -74,13 +72,6 @@ public class Repository implements Serializable {
 	private Set<String> excludedFilesFromBuild = new HashSet<String>();
 	private Set<String> excludedFoldersFromSync = new HashSet<String>();
 	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
-	private transient boolean building = false;
-
-	/** Repository content check */
-	private transient boolean checking = false;
-	
-	/** Repository updating */
-	private transient boolean updating = false;
 
 	public Repository(String name, AbstractProtocole protocole) {
 		this.name = name;
@@ -167,12 +158,11 @@ public class Repository implements Serializable {
 		this.defaultDownloadLocation = defaultDownloadLocation;
 	}
 
-	public boolean isDownloading() {
-		return downloading;
-	}
-
-	public void setDownloading(boolean downloading) {
-		this.downloading = downloading;
+	public Map<String, String> getMapEventsDownloadLocation() {
+		if (mapEventsDownloadLocation == null) {
+			mapEventsDownloadLocation = new HashMap<String, String>();
+		}
+		return mapEventsDownloadLocation;
 	}
 
 	public int getLastIndexFileTransfered() {
@@ -257,14 +247,6 @@ public class Repository implements Serializable {
 		return excludedFoldersFromSync;
 	}
 
-	public boolean isUploading() {
-		return this.uploading;
-	}
-
-	public void setUploading(boolean value) {
-		this.uploading = value;
-	}
-
 	public AbstractProtocole getUploadProtocole() {
 		return uploadProtocole;
 	}
@@ -337,14 +319,6 @@ public class Repository implements Serializable {
 		this.compressed = compressed;
 	}
 
-	public boolean isBuilding() {
-		return this.building;
-	}
-
-	public void setBuilding(boolean value) {
-		this.building = value;
-	}
-
 	public boolean isUsePartialFileTransfer() {
 		if (this.noPartialFileTransfer) {
 			return false;
@@ -359,22 +333,6 @@ public class Repository implements Serializable {
 		} else {
 			this.noPartialFileTransfer = true;
 		}
-	}
-
-	public boolean isChecking() {
-		return this.checking;
-	}
-
-	public void setChecking(boolean value) {
-		this.checking = value;
-	}
-
-	public boolean isCheckingForAddons() {
-		return checkingForAddons;
-	}
-
-	public void setCheckingForAddons(boolean value) {
-		this.checkingForAddons = value;
 	}
 
 	public boolean isUploadCompressedPboFilesOnly() {
@@ -426,13 +384,5 @@ public class Repository implements Serializable {
 
 	public void setRepositorySyncStatus(RepositoryStatus repositorySyncStatus) {
 		this.repositorySyncStatus = repositorySyncStatus;
-	}
-	
-	public void setUpdating(boolean value){
-		this.updating = value;
-	}
-
-	public boolean isUpdating() {
-		return this.updating;
 	}
 }

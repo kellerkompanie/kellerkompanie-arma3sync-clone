@@ -1,5 +1,6 @@
 package fr.soe.a3s.dao;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -15,16 +16,9 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SealedObject;
 
-import fr.soe.a3s.domain.repository.AutoConfig;
-import fr.soe.a3s.domain.repository.Changelogs;
-import fr.soe.a3s.domain.repository.Events;
-import fr.soe.a3s.domain.repository.Repository;
-import fr.soe.a3s.domain.repository.ServerInfo;
-import fr.soe.a3s.domain.repository.SyncTreeDirectory;
-
 public class A3SFilesAccessor implements DataAccessConstants {
 
-	protected static final String FILE_CORRUPTED = "The file may be corrupted.";
+	protected static final String FILE_CORRUPTED = "The file seems to be corrupted.";
 
 	public static Object read(File file) throws IOException {
 
@@ -33,13 +27,11 @@ public class A3SFilesAccessor implements DataAccessConstants {
 		Object object = null;
 		ObjectInputStream fRo = null;
 		try {
-			fRo = new ObjectInputStream(new GZIPInputStream(
-					new FileInputStream(file)));
+			fRo = new ObjectInputStream(new GZIPInputStream(new FileInputStream(file)));
 			object = fRo.readObject();
 		} catch (IOException e) {
-			e.printStackTrace();
-			String message = e.getMessage();
-			if (e instanceof ZipException) {
+			String message = "Failed to read file: " + file.getName() + "\n" + e.getMessage();
+			if (e instanceof ZipException || e instanceof EOFException) {
 				message = message + "\n" + FILE_CORRUPTED;
 			}
 			throw new IOException(message);
@@ -61,14 +53,12 @@ public class A3SFilesAccessor implements DataAccessConstants {
 		Object object = null;
 		ObjectInputStream fRo = null;
 		try {
-			fRo = new ObjectInputStream(new GZIPInputStream(
-					new FileInputStream(file)));
+			fRo = new ObjectInputStream(new GZIPInputStream(new FileInputStream(file)));
 			SealedObject sealedObject = (SealedObject) fRo.readObject();
 			object = sealedObject.getObject(cipher);
 		} catch (IOException e) {
-			e.printStackTrace();
-			String message = e.getMessage();
-			if (e instanceof ZipException) {
+			String message = "Failed to read file: " + file.getName() + "\n" + e.getMessage();
+			if (e instanceof ZipException || e instanceof EOFException) {
 				message = message + "\n" + FILE_CORRUPTED;
 			}
 			throw new IOException(message);
@@ -89,8 +79,7 @@ public class A3SFilesAccessor implements DataAccessConstants {
 
 		ObjectOutputStream fWo = null;
 		try {
-			fWo = new ObjectOutputStream(new GZIPOutputStream(
-					new FileOutputStream(file)));
+			fWo = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file)));
 			fWo.writeObject(object);
 		} finally {
 			if (fWo != null) {
@@ -107,8 +96,7 @@ public class A3SFilesAccessor implements DataAccessConstants {
 		ObjectOutputStream fWo = null;
 		try {
 			SealedObject sealedObject = new SealedObject(object, cipher);
-			fWo = new ObjectOutputStream(new GZIPOutputStream(
-					new FileOutputStream(file)));
+			fWo = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file)));
 			if (sealedObject != null) {
 				fWo.writeObject(sealedObject);
 			}

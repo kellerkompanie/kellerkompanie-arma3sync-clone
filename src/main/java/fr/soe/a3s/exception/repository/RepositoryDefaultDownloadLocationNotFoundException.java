@@ -1,11 +1,10 @@
 package fr.soe.a3s.exception.repository;
 
-public class RepositoryDefaultDownloadLocationNotFoundException extends
-		RepositoryException {
+public class RepositoryDefaultDownloadLocationNotFoundException extends RepositoryException {
 
-	public RepositoryDefaultDownloadLocationNotFoundException(
-			String repositoryName) {
-		super("Repository " + repositoryName
-				+ " default download location is empty!");
+	private static String message = "Default destination folder is empty!";
+
+	public RepositoryDefaultDownloadLocationNotFoundException(String repositoryName) {
+		super(message);
 	}
 }

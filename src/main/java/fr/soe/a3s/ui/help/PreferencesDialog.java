@@ -56,6 +56,7 @@ public class PreferencesDialog extends AbstractDialog {
 	private final PreferencesService preferencesServices = new PreferencesService();
 
 	public PreferencesDialog(Facade facade) {
+
 		super(facade, "Preferences", true);
 		this.setResizable(false);
 
@@ -65,8 +66,7 @@ public class PreferencesDialog extends AbstractDialog {
 		}
 		{
 			JPanel panel = new JPanel();
-			panel.setBorder(BorderFactory.createTitledBorder(
-					BorderFactory.createEtchedBorder(), ""));
+			panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), ""));
 			panel.setLayout(new GridBagLayout());
 			this.add(panel, BorderLayout.CENTER);
 			{
@@ -78,19 +78,15 @@ public class PreferencesDialog extends AbstractDialog {
 			{
 				String[] tab = null;
 				if (SystemTray.isSupported()) {
-					tab = new String[] {
-							MinimizationType.NOTHING.getDescription(),
-							MinimizationType.TASK_BAR.getDescription(),
-							MinimizationType.TRAY.getDescription(),
+					tab = new String[] { MinimizationType.NOTHING.getDescription(),
+							MinimizationType.TASK_BAR.getDescription(), MinimizationType.TRAY.getDescription(),
 							MinimizationType.CLOSE.getDescription() };
 				} else {
-					tab = new String[] {
-							MinimizationType.NOTHING.getDescription(),
+					tab = new String[] { MinimizationType.NOTHING.getDescription(),
 							MinimizationType.TASK_BAR.getDescription() };
 				}
 
-				ComboBoxModel comboBoxGameLaunchModel = new DefaultComboBoxModel(
-						tab);
+				ComboBoxModel comboBoxGameLaunchModel = new DefaultComboBoxModel(tab);
 				comboBoxGameLaunch = new JComboBox();
 				comboBoxGameLaunch.setModel(comboBoxGameLaunchModel);
 				comboBoxGameLaunch.setFocusable(false);
@@ -104,18 +100,14 @@ public class PreferencesDialog extends AbstractDialog {
 			{
 				String[] tab = null;
 				if (SystemTray.isSupported()) {
-					tab = new String[] {
-							MinimizationType.TASK_BAR.getDescription(),
+					tab = new String[] { MinimizationType.TASK_BAR.getDescription(),
 							MinimizationType.TRAY.getDescription() };
 				} else {
-					tab = new String[] { MinimizationType.TASK_BAR
-							.getDescription() };
+					tab = new String[] { MinimizationType.TASK_BAR.getDescription() };
 				}
-				ComboBoxModel comboBoxLauncherMinimizedModel = new DefaultComboBoxModel(
-						tab);
+				ComboBoxModel comboBoxLauncherMinimizedModel = new DefaultComboBoxModel(tab);
 				comboBoxLauncherMinimized = new JComboBox();
-				comboBoxLauncherMinimized
-						.setModel(comboBoxLauncherMinimizedModel);
+				comboBoxLauncherMinimized.setModel(comboBoxLauncherMinimizedModel);
 				comboBoxLauncherMinimized.setFocusable(false);
 			}
 			{
@@ -140,61 +132,46 @@ public class PreferencesDialog extends AbstractDialog {
 				checkBoxCheckRepositories = new JCheckBox();
 				checkBoxCheckRepositories.setSelected(true);
 				checkBoxCheckRepositories.setFocusable(false);
-				checkBoxCheckRepositories
-						.setText("Periodical repositories check:");
+				checkBoxCheckRepositories.setText("Periodical repositories check:");
 			}
 			{
-				String[] tab = new String[] {
-						LookAndFeel.LAF_DEFAULT.getName(),
-						LookAndFeel.LAF_ALUMINIUM.getName(),
-						LookAndFeel.LAF_GRAPHITE.getName(),
-						LookAndFeel.LAF_HIFI.getName(),
-						LookAndFeel.LAF_NOIRE.getName() };
+				String[] tab = new String[] { LookAndFeel.LAF_DEFAULT.getName(), LookAndFeel.LAF_ALUMINIUM.getName(),
+						LookAndFeel.LAF_GRAPHITE.getName(), LookAndFeel.LAF_HIFI.getName(),
+						LookAndFeel.LAF_METAL.getName(), LookAndFeel.LAF_NOIRE.getName() };
 
-				ComboBoxModel comboBoxLookAndFeelModel = new DefaultComboBoxModel(
-						tab);
+				ComboBoxModel comboBoxLookAndFeelModel = new DefaultComboBoxModel(tab);
 				comboBoxLookAndFeel = new JComboBox();
 				comboBoxLookAndFeel.setModel(comboBoxLookAndFeelModel);
 				comboBoxLookAndFeel.setFocusable(false);
 			}
 			{
-				String[] tab = new String[] { IconResize.AUTO.getDescription(),
-						IconResize.SIZE1.getDescription(),
-						IconResize.SIZE2.getDescription(),
-						IconResize.SIZE3.getDescription(),
-						IconResize.SIZE4.getDescription(),
-						IconResize.NONE.getDescription() };
+				String[] tab = new String[] { IconResize.AUTO.getDescription(), IconResize.SIZE1.getDescription(),
+						IconResize.SIZE2.getDescription(), IconResize.SIZE3.getDescription(),
+						IconResize.SIZE4.getDescription(), IconResize.NONE.getDescription() };
 
-				ComboBoxModel comboBoxIconResizeModel = new DefaultComboBoxModel(
-						tab);
+				ComboBoxModel comboBoxIconResizeModel = new DefaultComboBoxModel(tab);
 				comboBoxIconResize = new JComboBox();
 				comboBoxIconResize.setModel(comboBoxIconResizeModel);
 				comboBoxIconResize.setFocusable(false);
 			}
 			{
-				String[] tab = new String[] {
-						StartWithOS.DISABLED.getDescription(),
+				String[] tab = new String[] { StartWithOS.DISABLED.getDescription(),
 						StartWithOS.ENABLED.getDescription() };
 
-				ComboBoxModel comboBoxStartWithWindowsModel = new DefaultComboBoxModel(
-						tab);
+				ComboBoxModel comboBoxStartWithWindowsModel = new DefaultComboBoxModel(tab);
 				comboBoxStartWithWindows = new JComboBox();
-				comboBoxStartWithWindows
-						.setModel(comboBoxStartWithWindowsModel);
+				comboBoxStartWithWindows.setModel(comboBoxStartWithWindowsModel);
 				comboBoxStartWithWindows.setFocusable(false);
 			}
 			{
-				String[] tab = new String[] {
-						CheckRepositoriesFrequency.FREQ1.getDescription(),
+				String[] tab = new String[] { CheckRepositoriesFrequency.FREQ1.getDescription(),
 						CheckRepositoriesFrequency.FREQ2.getDescription(),
 						CheckRepositoriesFrequency.FREQ3.getDescription(),
 						CheckRepositoriesFrequency.DISABLED.getDescription() };
 
-				ComboBoxModel comboBoxCheckRepositoryFrequencyModel = new DefaultComboBoxModel(
-						tab);
+				ComboBoxModel comboBoxCheckRepositoryFrequencyModel = new DefaultComboBoxModel(tab);
 				comboBoxCheckRepositories = new JComboBox();
-				comboBoxCheckRepositories
-						.setModel(comboBoxCheckRepositoryFrequencyModel);
+				comboBoxCheckRepositories.setModel(comboBoxCheckRepositoryFrequencyModel);
 				comboBoxCheckRepositories.setFocusable(false);
 			}
 			{
@@ -277,16 +254,28 @@ public class PreferencesDialog extends AbstractDialog {
 				c.insets = new Insets(5, 10, 5, 10);
 				panel.add(comboBoxIconResize, c);
 			}
-			/*
-			 * { GridBagConstraints c = new GridBagConstraints(); c.fill =
-			 * GridBagConstraints.HORIZONTAL; c.weightx = 0.5; c.weighty = 0;
-			 * c.gridx = 0; c.gridy = 4; c.insets = new Insets(5, 10, 5, 10);
-			 * panel.add(checkBoxStartWithWindows, c); } { GridBagConstraints c
-			 * = new GridBagConstraints(); c.fill = GridBagConstraints.BOTH;
-			 * c.weightx = 0.5; c.weighty = 0; c.gridx = 1; c.gridy = 4;
-			 * c.insets = new Insets(5, 10, 5, 10);
-			 * panel.add(comboBoxStartWithWindows, c); }
-			 */
+
+			{
+				GridBagConstraints c = new GridBagConstraints();
+				c.fill = GridBagConstraints.HORIZONTAL;
+				c.weightx = 0.5;
+				c.weighty = 0;
+				c.gridx = 0;
+				c.gridy = 4;
+				c.insets = new Insets(5, 10, 5, 10);
+				panel.add(checkBoxStartWithWindows, c);
+			}
+			{
+				GridBagConstraints c = new GridBagConstraints();
+				c.fill = GridBagConstraints.BOTH;
+				c.weightx = 0.5;
+				c.weighty = 0;
+				c.gridx = 1;
+				c.gridy = 4;
+				c.insets = new Insets(5, 10, 5, 10);
+				panel.add(comboBoxStartWithWindows, c);
+			}
+
 			{
 				GridBagConstraints c = new GridBagConstraints();
 				c.fill = GridBagConstraints.HORIZONTAL;
@@ -311,13 +300,10 @@ public class PreferencesDialog extends AbstractDialog {
 
 		this.pack();
 		int width = this.getBounds().width;
-		if (comboBoxGameLaunch.getBounds().height < 25
-				&& comboBoxLauncherMinimized.getBounds().height < 25
-				&& comboBoxLookAndFeel.getBounds().height < 25
-				&& comboBoxIconResize.getBounds().height < 25) {
+		if (comboBoxGameLaunch.getBounds().height < 25 && comboBoxLauncherMinimized.getBounds().height < 25
+				&& comboBoxLookAndFeel.getBounds().height < 25 && comboBoxIconResize.getBounds().height < 25) {
 			comboBoxGameLaunch.setPreferredSize(new Dimension(width, 25));
-			comboBoxLauncherMinimized
-					.setPreferredSize(new Dimension(width, 25));
+			comboBoxLauncherMinimized.setPreferredSize(new Dimension(width, 25));
 			comboBoxLookAndFeel.setPreferredSize(new Dimension(width, 25));
 			comboBoxIconResize.setPreferredSize(new Dimension(width, 25));
 		}
@@ -330,14 +316,12 @@ public class PreferencesDialog extends AbstractDialog {
 	public void init() {
 
 		PreferencesDTO preferencesDTO = preferencesServices.getPreferences();
-		String gameLaunch = preferencesDTO.getLaunchPanelGameLaunch()
-				.getDescription();
+		String gameLaunch = preferencesDTO.getLaunchPanelGameLaunch().getDescription();
 		if (gameLaunch != null) {
 			comboBoxGameLaunch.setSelectedItem(gameLaunch);
 		}
 
-		String launcherMinimized = preferencesDTO.getLaunchPanelMinimized()
-				.getDescription();
+		String launcherMinimized = preferencesDTO.getLaunchPanelMinimized().getDescription();
 		if (launcherMinimized != null) {
 			comboBoxLauncherMinimized.setSelectedItem(launcherMinimized);
 		}
@@ -352,23 +336,23 @@ public class PreferencesDialog extends AbstractDialog {
 			comboBoxIconResize.setSelectedItem(iconResize);
 		}
 
-		/*
-		 * if (System.getProperty("os.name").toLowerCase().contains("Windows"))
-		 * { comboBoxStartWithWindows.setEnabled(false);
-		 * checkBoxStartWithWindows.setSelected(false);
-		 * checkBoxStartWithWindows.setEnabled(false);
-		 * comboBoxStartWithWindows.setSelectedItem(StartWithOS.DISABLED
-		 * .getDescription()); } else {
-		 * comboBoxStartWithWindows.setEnabled(true);
-		 * checkBoxStartWithWindows.setSelected(true);
-		 * checkBoxStartWithWindows.setEnabled(true); String startWithWindows =
-		 * preferencesDTO.getStartWithOS() .getDescription(); if
-		 * (startWithWindows != null) {
-		 * comboBoxStartWithWindows.setSelectedItem(startWithWindows); } }
-		 */
+		String osName = System.getProperty("os.name");
+		if (!osName.toLowerCase().contains("windows")) {
+			comboBoxStartWithWindows.setEnabled(false);
+			checkBoxStartWithWindows.setSelected(false);
+			checkBoxStartWithWindows.setEnabled(false);
+			comboBoxStartWithWindows.setSelectedItem(StartWithOS.DISABLED.getDescription());
+		} else {
+			comboBoxStartWithWindows.setEnabled(true);
+			checkBoxStartWithWindows.setSelected(true);
+			checkBoxStartWithWindows.setEnabled(true);
+			String startWithWindows = preferencesDTO.getStartWithOS().getDescription();
+			if (startWithWindows != null) {
+				comboBoxStartWithWindows.setSelectedItem(startWithWindows);
+			}
+		}
 
-		String checkRepositoryFrequency = preferencesDTO
-				.getCheckRepositoriesFrequency().getDescription();
+		String checkRepositoryFrequency = preferencesDTO.getCheckRepositoriesFrequency().getDescription();
 		if (checkRepositoryFrequency != null) {
 			comboBoxCheckRepositories.setSelectedItem(checkRepositoryFrequency);
 		}
@@ -379,44 +363,42 @@ public class PreferencesDialog extends AbstractDialog {
 
 		PreferencesDTO preferencesDTO = new PreferencesDTO();
 		String gameLaunch = (String) comboBoxGameLaunch.getSelectedItem();
-		preferencesDTO.setLaunchPanelGameLaunch(MinimizationType
-				.getEnum(gameLaunch));
-		String launcherMinimized = (String) comboBoxLauncherMinimized
-				.getSelectedItem();
-		preferencesDTO.setLaunchPanelMinimized(MinimizationType
-				.getEnum(launcherMinimized));
+		preferencesDTO.setLaunchPanelGameLaunch(MinimizationType.getEnum(gameLaunch));
+		String launcherMinimized = (String) comboBoxLauncherMinimized.getSelectedItem();
+		preferencesDTO.setLaunchPanelMinimized(MinimizationType.getEnum(launcherMinimized));
 		String lookAndFeel = (String) comboBoxLookAndFeel.getSelectedItem();
 		LookAndFeel newLookAndFeel = LookAndFeel.getEnum(lookAndFeel);
 		preferencesDTO.setLookAndFeel(newLookAndFeel);
 		String iconResize = (String) comboBoxIconResize.getSelectedItem();
 		IconResize newIconResize = IconResize.getEnum(iconResize);
 		preferencesDTO.setIconResizeSize(newIconResize);
-		String startWithOS = (String) comboBoxStartWithWindows
-				.getSelectedItem();
+		String startWithOS = (String) comboBoxStartWithWindows.getSelectedItem();
 		StartWithOS newStartWithOS = StartWithOS.getEnum(startWithOS);
 		preferencesDTO.setStartWithOS(newStartWithOS);
-		String checkRepositoriesFrequency = (String) comboBoxCheckRepositories
-				.getSelectedItem();
+		String checkRepositoriesFrequency = (String) comboBoxCheckRepositories.getSelectedItem();
 		CheckRepositoriesFrequency newCheckRepositoriesFrequency = CheckRepositoriesFrequency
 				.getEnum(checkRepositoriesFrequency);
-		preferencesDTO
-				.setCheckRepositoriesFrequency(newCheckRepositoriesFrequency);
+		preferencesDTO.setCheckRepositoriesFrequency(newCheckRepositoriesFrequency);
 
 		/* Update Windows Registry */
-		/*
-		 * if (System.getProperty("os.name").toLowerCase().contains("windows"))
-		 * { if (newStartWithOS.equals(StartWithOS.ENABLED)) { boolean ok =
-		 * preferencesServices.addToRunWindowsRegistry(facade .isDevMode()); if
-		 * (ok) { facade.setRunMode(true); } else { facade.setRunMode(false); }
-		 * } else { preferencesServices.deleteFromRunWindowsRegistry();
-		 * facade.setRunMode(false); } }
-		 */
+		if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+			if (newStartWithOS.equals(StartWithOS.ENABLED)) {
+				boolean ok = preferencesServices.addToRunWindowsRegistry(facade.isDevMode());
+				if (ok) {
+					facade.setRunMode(true);
+				} else {
+					facade.setRunMode(false);
+				}
+			} else {
+				preferencesServices.deleteFromRunWindowsRegistry();
+				facade.setRunMode(false);
+			}
+		}
 
 		/* Update task manager */
 		TasksManager tasksManager = TasksManager.getInstance();
 		tasksManager.reset();// cancel all tasks
-		if (!newCheckRepositoriesFrequency
-				.equals(CheckRepositoriesFrequency.DISABLED)) {
+		if (!newCheckRepositoriesFrequency.equals(CheckRepositoriesFrequency.DISABLED)) {
 			int frequency = newCheckRepositoriesFrequency.getFrequency();// min
 			long delay = (long) (frequency * 60 * Math.pow(10, 3));// ms
 			long period = delay;
@@ -425,25 +407,21 @@ public class PreferencesDialog extends AbstractDialog {
 		}
 
 		/* Warn user to restart app if L&F has changed */
-		LookAndFeel currentLookAndFeel = preferencesServices.getPreferences()
-				.getLookAndFeel();
+		LookAndFeel currentLookAndFeel = preferencesServices.getPreferences().getLookAndFeel();
 
 		if (!newLookAndFeel.equals(currentLookAndFeel)) {
-			JOptionPane
-					.showMessageDialog(
-							facade.getMainPanel(),
-							"ArmA3Sync must be restarted to apply the new look & feel.",
-							"Information", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"ArmA3Sync must be restarted to apply the new look & feel.", "Information",
+					JOptionPane.INFORMATION_MESSAGE);
 		}
 
 		/* Warn user to restart app if icons size has changed */
-		IconResize currentIconResieze = preferencesServices.getPreferences()
-				.getIconResizeSize();
+		IconResize currentIconResieze = preferencesServices.getPreferences().getIconResizeSize();
 
 		if (!newIconResize.equals(currentIconResieze)) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"ArmA3Sync must be restarted to apply the new icon size.",
-					"Information", JOptionPane.INFORMATION_MESSAGE);
+					"ArmA3Sync must be restarted to apply the new icon size.", "Information",
+					JOptionPane.INFORMATION_MESSAGE);
 		}
 
 		preferencesServices.setPreferences(preferencesDTO);
@@ -451,8 +429,7 @@ public class PreferencesDialog extends AbstractDialog {
 			preferencesServices.write();
 			this.dispose();
 		} catch (WritingException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

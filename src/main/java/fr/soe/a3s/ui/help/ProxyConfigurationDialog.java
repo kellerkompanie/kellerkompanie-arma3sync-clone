@@ -22,8 +22,7 @@ import fr.soe.a3s.ui.repository.dialogs.connection.ConnectionPanel;
 import fr.soe.a3s.ui.repository.dialogs.connection.ProtocolPanel;
 import fr.soe.a3s.ui.repository.dialogs.connection.ProxyPanel;
 
-public class ProxyConfigurationDialog extends AbstractDialog implements
-		DataAccessConstants {
+public class ProxyConfigurationDialog extends AbstractDialog implements DataAccessConstants {
 
 	private ProxyPanel proxyPanel;
 	private ProtocolPanel protocolPanel;
@@ -80,24 +79,20 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 	public void init() {
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
-				ProtocolType.FTP.getDescription(),
-				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription() });
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] { ProtocolType.FTP.getDescription(),
+				ProtocolType.HTTP.getDescription(), ProtocolType.HTTPS.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
 		ProxyDTO proxyDTO = configurationService.getProxy();
 		if (proxyDTO.getProtocolDTO() == null) {
-			comboBoxProtocolModel.setSelectedItem(ProtocolType.FTP
-					.getDescription());
+			comboBoxProtocolModel.setSelectedItem(ProtocolType.FTP.getDescription());
 			connectionPanel.init(ProtocolType.FTP);
 			connectionPanel.activate(false);
 			protocolPanel.activate(false);
 			proxyPanel.getCheckBoxProxy().setSelected(false);
 		} else {
-			comboBoxProtocolModel.setSelectedItem(proxyDTO.getProtocolDTO()
-					.getProtocolType().getDescription());
+			comboBoxProtocolModel.setSelectedItem(proxyDTO.getProtocolDTO().getProtocolType().getDescription());
 			connectionPanel.init(proxyDTO.getProtocolDTO());
 			connectionPanel.activate(proxyDTO.isEnableProxy());
 			protocolPanel.activate(proxyDTO.isEnableProxy());
@@ -124,28 +119,25 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 			if (connectionPanel.getUrl().isEmpty()) {
 				configurationService.setProxy(null, false);
 			} else {
-				ProtocolType protocolType = ProtocolType
-						.getEnum((String) comboBoxProtocolModel
-								.getSelectedItem());
+				ProtocolType protocolType = ProtocolType.getEnum((String) comboBoxProtocolModel.getSelectedItem());
 				proxyProtocolDTO.setUrl(connectionPanel.getUrl());
 				proxyProtocolDTO.setPort(connectionPanel.getPort());
 				proxyProtocolDTO.setLogin(connectionPanel.getLogin());
 				proxyProtocolDTO.setPassword(connectionPanel.getPassword());
 				proxyProtocolDTO.setProtocolType(protocolType);
-				configurationService
-						.setProxy(proxyProtocolDTO, isEnableProxy());
+				proxyProtocolDTO.setValidateSSLCertificate(false);
+				configurationService.setProxy(proxyProtocolDTO, isEnableProxy());
 			}
 			configurationService.loadProxy();
 			configurationService.write();
 			this.dispose();
 		} catch (CheckException e) {
 			if (isEnableProxy()) {
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						e.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), "Warning",
+						JOptionPane.WARNING_MESSAGE);
 			}
 		} catch (WritingException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

@@ -68,8 +68,7 @@ public class AutoConfigExportDialog extends AbstractDialog {
 			JPanel destinationLabelPanel = new JPanel();
 			destinationLabelPanel.setLayout((new FlowLayout(FlowLayout.LEFT)));
 			{
-				JLabel labelDestinationDirectory = new JLabel(
-						"Destination directory");
+				JLabel labelDestinationDirectory = new JLabel("Destination directory");
 				destinationLabelPanel.add(labelDestinationDirectory);
 			}
 			JPanel destinationPanel = new JPanel();
@@ -79,42 +78,37 @@ public class AutoConfigExportDialog extends AbstractDialog {
 				buttonSelect = new JButton("Select");
 				textFieldDestinationDirectory.setEditable(false);
 				textFieldDestinationDirectory.setBackground(Color.WHITE);
-				destinationPanel.add(textFieldDestinationDirectory,
-						BorderLayout.CENTER);
+				destinationPanel.add(textFieldDestinationDirectory, BorderLayout.CENTER);
 				destinationPanel.add(buttonSelect, BorderLayout.EAST);
 			}
 			JPanel profilesPanel = new JPanel();
 			profilesPanel.setLayout(new BorderLayout());
 			{
-				profilesPanel.setBorder(BorderFactory.createTitledBorder(
-						BorderFactory.createEtchedBorder(), "Profiles"));
+				profilesPanel
+						.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Profiles"));
 				checkBoxListProfiles = new CheckBoxList();
 				scrollPane1 = new JScrollPane(checkBoxListProfiles);
-				scrollPane1.setBorder(BorderFactory
-						.createEtchedBorder(BevelBorder.LOWERED));
+				scrollPane1.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 				profilesPanel.add(scrollPane1, BorderLayout.CENTER);
 			}
 			JPanel favoriteServersPanel = new JPanel();
 			favoriteServersPanel.setLayout(new BorderLayout());
 			{
-				favoriteServersPanel.setBorder(BorderFactory
-						.createTitledBorder(BorderFactory.createEtchedBorder(),
-								"Favorite servers"));
+				favoriteServersPanel.setBorder(
+						BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Favorite servers"));
 				checkBoxListFavoriteServers = new CheckBoxList();
 				scrollPane2 = new JScrollPane(checkBoxListFavoriteServers);
-				scrollPane2.setBorder(BorderFactory
-						.createEtchedBorder(BevelBorder.LOWERED));
+				scrollPane2.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 				favoriteServersPanel.add(scrollPane2, BorderLayout.CENTER);
 			}
 			JPanel repositoriesPanel = new JPanel();
 			repositoriesPanel.setLayout(new BorderLayout());
 			{
-				repositoriesPanel.setBorder(BorderFactory.createTitledBorder(
-						BorderFactory.createEtchedBorder(), "Repositories"));
+				repositoriesPanel.setBorder(
+						BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Repositories"));
 				checkBoxListRepositories = new CheckBoxList();
 				scrollPane3 = new JScrollPane(checkBoxListRepositories);
-				scrollPane3.setBorder(BorderFactory
-						.createEtchedBorder(BevelBorder.LOWERED));
+				scrollPane3.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 				repositoriesPanel.add(scrollPane3, BorderLayout.CENTER);
 			}
 
@@ -134,8 +128,7 @@ public class AutoConfigExportDialog extends AbstractDialog {
 
 		this.pack();
 		if (textFieldDestinationDirectory.getBounds().height < 25) {
-			textFieldDestinationDirectory.setPreferredSize(new Dimension(this
-					.getBounds().width, 25));
+			textFieldDestinationDirectory.setPreferredSize(new Dimension(this.getBounds().width, 25));
 		}
 		this.setMinimumSize(new Dimension(450, this.getBounds().height));
 		this.setPreferredSize(new Dimension(450, this.getBounds().height));
@@ -160,24 +153,22 @@ public class AutoConfigExportDialog extends AbstractDialog {
 		for (int i = 0; i < profileNames.size(); i++) {
 			String profileName = profileNames.get(i);
 			JCheckBox checkBox = new JCheckBox();
-			checkBox.setText(profileNames.get(i));
+			checkBox.setText(profileName);
 			tab1[i] = checkBox;
 		}
 		checkBoxListProfiles.setListData(tab1);
 
-		List<FavoriteServerDTO> favoriteServerDTOs = configurationService
-				.getFavoriteServers();
+		List<FavoriteServerDTO> favoriteServerDTOs = configurationService.getFavoriteServers();
 
 		JCheckBox[] tab2 = new JCheckBox[favoriteServerDTOs.size()];
 		for (int i = 0; i < favoriteServerDTOs.size(); i++) {
 			JCheckBox checkBox = new JCheckBox();
-			checkBox.setText(favoriteServerDTOs.get(i).getName());
+			checkBox.setText(favoriteServerDTOs.get(i).getDescription());
 			tab2[i] = checkBox;
 		}
 		checkBoxListFavoriteServers.setListData(tab2);
 
-		List<RepositoryDTO> repositoryDTOs = repositoryService
-				.getRepositories();
+		List<RepositoryDTO> repositoryDTOs = repositoryService.getRepositories();
 
 		JCheckBox[] tab3 = new JCheckBox[repositoryDTOs.size()];
 		for (int i = 0; i < repositoryDTOs.size(); i++) {
@@ -208,32 +199,31 @@ public class AutoConfigExportDialog extends AbstractDialog {
 		String path = textFieldDestinationDirectory.getText();
 
 		if (path.isEmpty()) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Destination directory is empty.", "Export auto-config",
-					JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(), "Destination directory is empty.",
+					"Export auto-config", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 
 		File destinationFolder = new File(path);
 		if (!destinationFolder.exists()) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Destination directory does not exists.",
+			JOptionPane.showMessageDialog(facade.getMainPanel(), "Destination directory does not exist.",
 					"Export auto-config", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		
-		File file = new File(destinationFolder,DataAccessConstants.AUTOCONFIG_EXPORT_FILE_NAME);
-		if (file.exists()){
+
+		File file = new File(destinationFolder, DataAccessConstants.AUTOCONFIG_EXPORT_FILE_NAME);
+		if (file.exists()) {
 			int val = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-					"The file " + DataAccessConstants.AUTOCONFIG_EXPORT_FILE_NAME + " already exists into destination directory.\nDo you want to overwrite it?",
+					"The file " + DataAccessConstants.AUTOCONFIG_EXPORT_FILE_NAME
+							+ " already exists into destination directory.\nDo you want to overwrite it?",
 					"Export auto-config", JOptionPane.ERROR_MESSAGE);
-			if (val==1){
+			if (val == 1) {
 				return;
 			}
 		}
-			
+
 		List<String> listSelectedProfileNames = new ArrayList<String>();
-		List<String> listSelectedFavoriteServerNames = new ArrayList<String>();
+		List<Integer> listSelectedFavoriteServerIndexes = new ArrayList<Integer>();
 		List<String> listSelectedRepositoryNames = new ArrayList<String>();
 
 		List<String> list1 = checkBoxListProfiles.getSelectedItems();
@@ -243,7 +233,7 @@ public class AutoConfigExportDialog extends AbstractDialog {
 
 		List<String> list2 = checkBoxListFavoriteServers.getSelectedItems();
 		for (int i = 0; i < list2.size(); i++) {
-			listSelectedFavoriteServerNames.add(list2.get(i));
+			listSelectedFavoriteServerIndexes.add(i);
 		}
 
 		List<String> list3 = checkBoxListRepositories.getSelectedItems();
@@ -251,27 +241,22 @@ public class AutoConfigExportDialog extends AbstractDialog {
 			listSelectedRepositoryNames.add(list3.get(i));
 		}
 
-		if (listSelectedProfileNames.isEmpty()
-				&& listSelectedFavoriteServerNames.isEmpty()
+		if (listSelectedProfileNames.isEmpty() && listSelectedFavoriteServerIndexes.isEmpty()
 				&& listSelectedRepositoryNames.isEmpty()) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"There is nothing to export.", "Export auto-config",
+			JOptionPane.showMessageDialog(facade.getMainPanel(), "There is nothing to export.", "Export auto-config",
 					JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 
 		try {
 			CommonService commonService = new CommonService();
-			commonService.exportAutoConfig(listSelectedProfileNames,
-					listSelectedFavoriteServerNames,
+			commonService.exportAutoConfig(listSelectedProfileNames, listSelectedFavoriteServerIndexes,
 					listSelectedRepositoryNames, destinationFolder);
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Auto-config file has been exported.",
+			JOptionPane.showMessageDialog(facade.getMainPanel(), "Auto-config file has been exported.",
 					"Export auto-config", JOptionPane.INFORMATION_MESSAGE);
 			this.dispose();
 		} catch (WritingException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Export auto-config",
+			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), "Export auto-config",
 					JOptionPane.ERROR_MESSAGE);
 		}
 	}

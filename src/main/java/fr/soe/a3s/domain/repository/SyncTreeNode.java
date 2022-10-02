@@ -23,4 +23,8 @@ public interface SyncTreeNode extends java.lang.Comparable {
 	public boolean isUpdated();
 
 	public String getRelativePath();
+
+	public void setOptional(boolean value);
+
+	public boolean isOptional();
 }

@@ -6,13 +6,14 @@ public class Http extends AbstractProtocole {
 
 	private static final long serialVersionUID = -20L;
 
-	public Http(String url, String port, String login, String password,
-			ProtocolType protocolType) {
+	public Http(String url, String port, String login, String password, ProtocolType protocolType,
+			boolean validateSSLCertificate) {
 		this.login = login;
 		this.password = password;
 		this.url = url;
 		this.port = port;
 		this.protocolType = protocolType;
+		this.validateSSLCertificate = validateSSLCertificate;
 	}
 
 	@Override

@@ -6,13 +6,13 @@ public class Socks extends AbstractProtocole {
 
 	private static final long serialVersionUID = -40L;
 
-	public Socks(String url, String port, String login, String password,
-			ProtocolType protocolType) {
+	public Socks(String url, String port, String login, String password, ProtocolType protocolType) {
 		this.login = login;
 		this.password = password;
 		this.url = url;
 		this.port = port;
 		this.protocolType = protocolType;
+		this.validateSSLCertificate = false;
 	}
 
 	@Override

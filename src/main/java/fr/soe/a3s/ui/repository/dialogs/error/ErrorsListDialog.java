@@ -1,5 +1,6 @@
 package fr.soe.a3s.ui.repository.dialogs.error;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -11,6 +12,7 @@ import javax.swing.JOptionPane;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.ui.Facade;
+import net.jimmc.jshortcut.JShellLink;
 
 public class ErrorsListDialog implements DataAccessConstants {
 
@@ -21,8 +23,8 @@ public class ErrorsListDialog implements DataAccessConstants {
 	private final String repositoryName;
 	private String reportMessage;
 
-	public ErrorsListDialog(Facade facade, String dialogTitle,
-			String mainMessage, List<Exception> errors, String repositoryName) {
+	public ErrorsListDialog(Facade facade, String dialogTitle, String mainMessage, List<Exception> errors,
+			String repositoryName) {
 		this.facade = facade;
 		this.dialogTitle = dialogTitle;
 		this.errors = errors;
@@ -34,7 +36,6 @@ public class ErrorsListDialog implements DataAccessConstants {
 	public void show() {
 
 		List<String> messages = new ArrayList<String>();
-		List<String> causes = new ArrayList<String>();
 
 		for (Exception e : errors) {
 			if (e instanceof IOException) {
@@ -45,8 +46,7 @@ public class ErrorsListDialog implements DataAccessConstants {
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
 				String stacktrace = sw.toString(); // stack trace as a string
-				coreMessage = coreMessage + "\n" + "StackTrace:" + "\n"
-						+ stacktrace;
+				coreMessage = coreMessage + "\n" + "StackTrace:" + "\n" + stacktrace;
 				messages.add(coreMessage);
 			}
 		}
@@ -57,24 +57,21 @@ public class ErrorsListDialog implements DataAccessConstants {
 				String m = messages.get(i);
 				message = message + "\n" + " - " + m;
 			}
-			message = message + "\n" + "["
-					+ Integer.toString(messages.size() - 5) + "] more...";
+			message = message + "\n" + "[" + Integer.toString(messages.size() - 5) + "] more...";
 		} else {
 			for (String m : messages) {
 				message = message + "\n" + " - " + m;
 			}
 		}
 
-		message = message + "\n\n"
-				+ "Do you want export the errors log file to desktop ("
-				+ LOG_FILE_NAME + ")?" + "\n\n";
+		message = message + "\n\n" + "Do you want export the errors log file to desktop (" + LOG_FILE_NAME + ")?"
+				+ "\n\n";
 
-		int value = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-				message, dialogTitle, 0, JOptionPane.ERROR_MESSAGE);
+		int value = JOptionPane.showConfirmDialog(facade.getMainPanel(), message, dialogTitle, 0,
+				JOptionPane.ERROR_MESSAGE);
 
 		// Report
-		String title = dialogTitle + " "
-				+ "finished with errors for repository name: " + repositoryName;
+		String title = dialogTitle + " " + "finished with errors for repository name: " + repositoryName;
 
 		String coreMessage = "";
 		for (String m : messages) {
@@ -85,19 +82,23 @@ public class ErrorsListDialog implements DataAccessConstants {
 
 		if (value == 0) {
 			try {
+				String osName = System.getProperty("os.name");
 				CommonService commonService = new CommonService();
-				commonService
-						.exportToDesktop(this.reportMessage, LOG_FILE_NAME);
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"Log file has been exported to desktop", dialogTitle,
-						JOptionPane.INFORMATION_MESSAGE);
+				if (osName.toLowerCase().contains("windows")) {
+					String path = JShellLink.getDirectory("desktop") + File.separator + LOG_FILE_NAME;
+					commonService.exportLogFile(this.reportMessage, path);
+					JOptionPane.showMessageDialog(facade.getMainPanel(), "Log file has been exported to desktop",
+							"ArmA3Sync", JOptionPane.INFORMATION_MESSAGE);
+				} else {
+					String path = System.getProperty("user.home") + File.separator + LOG_FILE_NAME;
+					commonService.exportLogFile(this.reportMessage, path);
+					JOptionPane.showMessageDialog(facade.getMainPanel(), "Log file has been exported to home directory",
+							"ArmA3Sync", JOptionPane.INFORMATION_MESSAGE);
+				}
 			} catch (IOException e1) {
 				e1.printStackTrace();
-				JOptionPane.showMessageDialog(
-						facade.getMainPanel(),
-						"Failed to export log file to desktop" + "\n"
-								+ e1.getMessage(), dialogTitle,
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Failed to export log file" + "\n" + e1.getMessage(), dialogTitle, JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}

@@ -44,9 +44,9 @@ import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.CheckBoxList;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImageResizer;
+import fr.soe.a3s.ui.repository.dialogs.progress.ProgressTestPartiaFileTransfer;
 
-public class BuildRepositoryOptionsDialog extends AbstractDialog implements
-		DataAccessConstants {
+public class BuildRepositoryOptionsDialog extends AbstractDialog implements DataAccessConstants {
 
 	private JList excludedFilesFromBuildList;
 	private JScrollPane scrollPane1;
@@ -55,7 +55,6 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 	private CheckBoxList checkBoxListFavoriteServers;
 	private JScrollPane scrollPane3;
 	private JButton buttonAdd1;
-	private JButton buttonRemove1;
 	private JButton buttonAdd2;
 	private JButton buttonRemove2;
 	private JButton buttonAdd3;
@@ -64,6 +63,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 	private JComboBox<Integer> comboBoxConnections;
 	private JComboBox<String> comboBoxCompression;
 	private JComboBox<String> comboBoxPartialFileTransfer;
+	private JButton buttonTestPartialFileTransfer;
 	private JLabel labelWholeFileDownload;
 	/* Services */
 	private final ConfigurationService configurationService = new ConfigurationService();
@@ -92,13 +92,12 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				{
 					JPanel optionsPanel = new JPanel();
 					optionsPanel.setLayout(new GridBagLayout());
-					optionsPanel.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createEtchedBorder(), "Options"));
+					optionsPanel
+							.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Options"));
 					pan.add(optionsPanel, BorderLayout.CENTER);
 					{
 						labelConnections = new JLabel();
-						labelConnections
-								.setText("Set maximum number of connections per client:");
+						labelConnections.setText("Set maximum number of connections per client:");
 						comboBoxConnections = new JComboBox<Integer>();
 						ComboBoxModel comboBoxModel = new DefaultComboBoxModel(
 								new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
@@ -109,22 +108,22 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 					{
 
 						labelCompression = new JLabel();
-						labelCompression.setText("Add compressed pbo files ("
-								+ DataAccessConstants.ZIP_EXTENSION + "):");
+						labelCompression
+								.setText("Add compressed pbo files (" + DataAccessConstants.ZIP_EXTENSION + "):");
 						comboBoxCompression = new JComboBox<String>();
-						ComboBoxModel comboBoxModel = new DefaultComboBoxModel(
-								new String[] { "Yes", "No" });
+						ComboBoxModel comboBoxModel = new DefaultComboBoxModel(new String[] { "Yes", "No" });
 						comboBoxCompression.setModel(comboBoxModel);
 						comboBoxCompression.setFocusable(false);
 						comboBoxCompression.setMaximumRowCount(2);
 					}
 					{
 						labelWholeFileDownload = new JLabel();
-						labelWholeFileDownload
-								.setText("Use HTTP partial file transfer (recommended):");
+						labelWholeFileDownload.setText("Use HTTP partial file transfer (recommended):");
+						buttonTestPartialFileTransfer = new JButton();
+						buttonTestPartialFileTransfer.setFocusable(false);
+						buttonTestPartialFileTransfer.setText("Test");
 						comboBoxPartialFileTransfer = new JComboBox<String>();
-						ComboBoxModel comboBoxModel = new DefaultComboBoxModel(
-								new String[] { "Yes", "No" });
+						ComboBoxModel comboBoxModel = new DefaultComboBoxModel(new String[] { "Yes", "No" });
 						comboBoxPartialFileTransfer.setModel(comboBoxModel);
 						comboBoxPartialFileTransfer.setFocusable(false);
 						comboBoxPartialFileTransfer.setMaximumRowCount(2);
@@ -144,7 +143,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 						c.fill = GridBagConstraints.BOTH;
 						c.weightx = 0.5;
 						c.weighty = 0;
-						c.gridx = 1;
+						c.gridx = 2;
 						c.gridy = 0;
 						c.insets = new Insets(5, 10, 5, 10);
 						optionsPanel.add(comboBoxConnections, c);
@@ -164,7 +163,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 						c.fill = GridBagConstraints.BOTH;
 						c.weightx = 0.5;
 						c.weighty = 0;
-						c.gridx = 1;
+						c.gridx = 2;
 						c.gridy = 1;
 						c.insets = new Insets(5, 10, 5, 10);
 						optionsPanel.add(comboBoxCompression, c);
@@ -181,10 +180,20 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 					}
 					{
 						GridBagConstraints c = new GridBagConstraints();
-						c.fill = GridBagConstraints.BOTH;
+						c.fill = GridBagConstraints.HORIZONTAL;
 						c.weightx = 0.5;
 						c.weighty = 0;
 						c.gridx = 1;
+						c.gridy = 2;
+						c.insets = new Insets(5, 10, 5, 10);
+						optionsPanel.add(buttonTestPartialFileTransfer, c);
+					}
+					{
+						GridBagConstraints c = new GridBagConstraints();
+						c.fill = GridBagConstraints.HORIZONTAL;
+						c.weightx = 0.5;
+						c.weighty = 0;
+						c.gridx = 2;
 						c.gridy = 2;
 						c.insets = new Insets(5, 10, 5, 10);
 						optionsPanel.add(comboBoxPartialFileTransfer, c);
@@ -192,11 +201,9 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 
 					JPanel panel = new JPanel();
 					buttonAdd1 = new JButton("");
-					ImageIcon addIcon = new ImageIcon(
-							ImageResizer.resizeToScreenResolution(ADD));
+					ImageIcon addIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(ADD));
 					buttonAdd1.setIcon(addIcon);
-					panel.setPreferredSize(new Dimension(buttonAdd1
-							.getPreferredSize()));
+					panel.setPreferredSize(new Dimension(buttonAdd1.getPreferredSize()));
 					pan.add(panel, BorderLayout.EAST);
 
 				}
@@ -206,13 +213,11 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				{
 					JPanel panel = new JPanel();
 					panel.setLayout(new BorderLayout());
-					panel.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createEtchedBorder(),
+					panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
 							"Favorite servers infos set to autoconfig"));
 					checkBoxListFavoriteServers = new CheckBoxList();
 					scrollPane1 = new JScrollPane(checkBoxListFavoriteServers);
-					scrollPane1.setBorder(BorderFactory
-							.createEtchedBorder(BevelBorder.LOWERED));
+					scrollPane1.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 					panel.add(scrollPane1, BorderLayout.CENTER);
 					favoriteServersPanel.add(panel, BorderLayout.CENTER);
 				}
@@ -221,8 +226,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 					buttonAdd1 = new JButton("");
 					ImageIcon addIcon = new ImageIcon(ADD);
 					buttonAdd1.setIcon(addIcon);
-					panel.setPreferredSize(new Dimension(buttonAdd1
-							.getPreferredSize()));
+					panel.setPreferredSize(new Dimension(buttonAdd1.getPreferredSize()));
 					favoriteServersPanel.add(panel, BorderLayout.EAST);
 				}
 
@@ -231,13 +235,11 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				{
 					JPanel panel = new JPanel();
 					panel.setLayout(new BorderLayout());
-					panel.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createEtchedBorder(),
+					panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
 							"Repository files excluded from build"));
 					excludedFilesFromBuildList = new JList();
 					scrollPane2 = new JScrollPane(excludedFilesFromBuildList);
-					scrollPane2.setBorder(BorderFactory
-							.createEtchedBorder(BevelBorder.LOWERED));
+					scrollPane2.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 					panel.add(scrollPane2, BorderLayout.CENTER);
 					excludedFilesPanel.add(panel, BorderLayout.CENTER);
 				}
@@ -249,8 +251,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 					buttonAdd2.setIcon(addIcon);
 					vertBox.add(buttonAdd2);
 					buttonRemove2 = new JButton("");
-					ImageIcon deleteIcon = new ImageIcon(
-							ImageResizer.resizeToScreenResolution(DELETE));
+					ImageIcon deleteIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(DELETE));
 					buttonRemove2.setIcon(deleteIcon);
 					vertBox.add(buttonRemove2);
 					vertBox.add(Box.createVerticalStrut(60));
@@ -258,21 +259,17 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				}
 
 				JPanel excludedFoldersWithExtraLocalContentPanel = new JPanel();
-				excludedFoldersWithExtraLocalContentPanel
-						.setLayout(new BorderLayout());
+				excludedFoldersWithExtraLocalContentPanel.setLayout(new BorderLayout());
 				{
 					JPanel panel = new JPanel();
 					panel.setLayout(new BorderLayout());
-					panel.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createEtchedBorder(),
+					panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
 							"Repository folders with excluded extra local content when sync"));
 					excludedFoldersFromSyncList = new JList();
 					scrollPane3 = new JScrollPane(excludedFoldersFromSyncList);
-					scrollPane3.setBorder(BorderFactory
-							.createEtchedBorder(BevelBorder.LOWERED));
+					scrollPane3.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 					panel.add(scrollPane3, BorderLayout.CENTER);
-					excludedFoldersWithExtraLocalContentPanel.add(panel,
-							BorderLayout.CENTER);
+					excludedFoldersWithExtraLocalContentPanel.add(panel, BorderLayout.CENTER);
 				}
 				{
 					Box vertBox = Box.createVerticalBox();
@@ -286,8 +283,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 					buttonRemove3.setIcon(deleteIcon);
 					vertBox.add(buttonRemove3);
 					vertBox.add(Box.createVerticalStrut(60));
-					excludedFoldersWithExtraLocalContentPanel.add(vertBox,
-							BorderLayout.EAST);
+					excludedFoldersWithExtraLocalContentPanel.add(vertBox, BorderLayout.EAST);
 				}
 
 				Box vertBox = Box.createVerticalBox();
@@ -340,6 +336,12 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				buttonRemove3Performed();
 			}
 		});
+		buttonTestPartialFileTransfer.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonTestPartialFileTransferPerformed();
+			}
+		});
 		buttonOK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -357,6 +359,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				buttonCancelPerformed();
 			}
 		});
+
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -364,13 +367,14 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				menuExitPerformed();
 			}
 		});
+
+		getRootPane().setDefaultButton(buttonOK);
 	}
 
 	public void init() {
 
 		// Client connections
-		int numberOfConnections = repositoryService
-				.getNumberOfConnections(repositoryName);
+		int numberOfConnections = repositoryService.getNumberOfConnections(repositoryName);
 		if (numberOfConnections == 0) {
 			comboBoxConnections.setSelectedIndex(0);
 		} else {
@@ -387,14 +391,11 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 
 		// Partial files transfer
 		try {
-			ProtocolType protocolType = repositoryService
-					.getRepository(repositoryName).getProtocolDTO()
+			ProtocolType protocolType = repositoryService.getRepository(repositoryName).getProtocoleDTO()
 					.getProtocolType();
 			if (protocolType != null) {
-				if (protocolType.equals(ProtocolType.HTTP)
-						|| protocolType.equals(ProtocolType.HTTPS)) {
-					boolean usePartialFileTransfer = repositoryService
-							.isUsePartialFileTransfer(repositoryName);
+				if (protocolType.equals(ProtocolType.HTTP) || protocolType.equals(ProtocolType.HTTPS)) {
+					boolean usePartialFileTransfer = repositoryService.isUsePartialFileTransfer(repositoryName);
 					if (usePartialFileTransfer) {
 						comboBoxPartialFileTransfer.setSelectedIndex(0);// Yes
 					} else {
@@ -404,43 +405,42 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 					labelWholeFileDownload.setEnabled(false);
 					comboBoxPartialFileTransfer.setSelectedIndex(0);// Yes
 					comboBoxPartialFileTransfer.setEnabled(false);
+					buttonTestPartialFileTransfer.setEnabled(false);
 				}
 			}
 		} catch (RepositoryException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), repositoryName,
+					JOptionPane.ERROR_MESSAGE);
 		}
 
 		// Favorite servers
-		List<FavoriteServerDTO> favoriteServerDTOs = configurationService
-				.getFavoriteServers();
-
-		List<FavoriteServerDTO> list = repositoryService
-				.getFavoriteServerSetToAutoconfig(repositoryName);
-
+		List<FavoriteServerDTO> favoriteServerDTOs = configurationService.getFavoriteServers();
+		List<FavoriteServerDTO> list = repositoryService.getFavoriteServerSetToAutoconfig(repositoryName);
 		JCheckBox[] tab2 = new JCheckBox[favoriteServerDTOs.size()];
 		for (int i = 0; i < favoriteServerDTOs.size(); i++) {
-			String name = favoriteServerDTOs.get(i).getName();
+			String description = favoriteServerDTOs.get(i).getDescription();
+			String ipAddress = favoriteServerDTOs.get(i).getIpAddress();
+			int port = favoriteServerDTOs.get(i).getPort();
 			JCheckBox checkBox = new JCheckBox();
-			checkBox.setText(name);
+			checkBox.setText(description);
 			for (FavoriteServerDTO f : list) {
-				if (f.getName().equals(name)) {
+				if (f.getDescription().equals(description) && f.getIpAddress().equals(ipAddress)
+						&& f.getPort() == port) {
 					checkBox.setSelected(true);
 					break;
 				}
+
 			}
 			tab2[i] = checkBox;
 		}
 		checkBoxListFavoriteServers.setListData(tab2);
 
 		// Excluded files from build
-		Collection<String> excludedFilesFromBuildList = repositoryService
-				.getExcludedFilesPathFromBuild(repositoryName);
+		Collection<String> excludedFilesFromBuildList = repositoryService.getExcludedFilesPathFromBuild(repositoryName);
 		updateExcludedFilesFromBuild(excludedFilesFromBuildList);
 
 		// Excluded extra local folder content from sync
-		Collection<String> excludedFoldersFromSyncList = repositoryService
-				.getExcludedFoldersFromSync(repositoryName);
+		Collection<String> excludedFoldersFromSyncList = repositoryService.getExcludedFoldersFromSync(repositoryName);
 		updateExcludedFoldersFromSync(excludedFoldersFromSyncList);
 	}
 
@@ -458,9 +458,8 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		excludedFilesFromBuildList.setListData(paths);
 		int numberLigneShown = list.size();
 		excludedFilesFromBuildList.setVisibleRowCount(numberLigneShown);
-		excludedFilesFromBuildList.setPreferredSize(excludedFilesFromBuildList
-				.getPreferredScrollableViewportSize());
-		scrollPane2.updateUI();
+		excludedFilesFromBuildList.setPreferredSize(excludedFilesFromBuildList.getPreferredScrollableViewportSize());
+		scrollPane2.repaint();
 	}
 
 	private void updateExcludedFoldersFromSync(Collection<String> list) {
@@ -477,16 +476,13 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		excludedFoldersFromSyncList.setListData(paths);
 		int numberLigneShown = list.size();
 		excludedFoldersFromSyncList.setVisibleRowCount(numberLigneShown);
-		excludedFoldersFromSyncList
-				.setPreferredSize(excludedFoldersFromSyncList
-						.getPreferredScrollableViewportSize());
-		scrollPane3.updateUI();
+		excludedFoldersFromSyncList.setPreferredSize(excludedFoldersFromSyncList.getPreferredScrollableViewportSize());
+		scrollPane3.repaint();
 	}
 
 	private void buttonAdd2Performed() {
 
-		JFileChooser fc = new JFileChooser(
-				repositoryService.getRepositoryPath(repositoryName));
+		JFileChooser fc = new JFileChooser(repositoryService.getRepositoryPath(repositoryName));
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -496,8 +492,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				int size = excludedFilesFromBuildList.getModel().getSize();
 				List<String> list = new ArrayList<String>();
 				for (int i = 0; i < size; i++) {
-					list.add((String) excludedFilesFromBuildList.getModel()
-							.getElementAt(i));
+					list.add((String) excludedFilesFromBuildList.getModel().getElementAt(i));
 				}
 				boolean contains = false;
 				for (int i = 0; i < list.size(); i++) {
@@ -529,8 +524,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 			int size = excludedFilesFromBuildList.getModel().getSize();
 			Collection<String> list = new ArrayList<String>();
 			for (int i = 0; i < size; i++) {
-				list.add((String) excludedFilesFromBuildList.getModel()
-						.getElementAt(i));
+				list.add((String) excludedFilesFromBuildList.getModel().getElementAt(i));
 			}
 			for (String path : paths) {
 				list.remove(path);
@@ -541,8 +535,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 
 	private void buttonAdd3Performed() {
 
-		JFileChooser fc = new JFileChooser(
-				repositoryService.getRepositoryPath(repositoryName));
+		JFileChooser fc = new JFileChooser(repositoryService.getRepositoryPath(repositoryName));
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -552,8 +545,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				int size = excludedFoldersFromSyncList.getModel().getSize();
 				List<String> list = new ArrayList<String>();
 				for (int i = 0; i < size; i++) {
-					list.add((String) excludedFoldersFromSyncList.getModel()
-							.getElementAt(i));
+					list.add((String) excludedFoldersFromSyncList.getModel().getElementAt(i));
 				}
 				boolean contains = false;
 				for (int i = 0; i < list.size(); i++) {
@@ -580,15 +572,13 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 
 	private void buttonRemove3Performed() {
 
-		List<String> paths = excludedFoldersFromSyncList
-				.getSelectedValuesList();
+		List<String> paths = excludedFoldersFromSyncList.getSelectedValuesList();
 
 		if (paths != null) {
 			int size = excludedFoldersFromSyncList.getModel().getSize();
 			Collection<String> list = new ArrayList<String>();
 			for (int i = 0; i < size; i++) {
-				list.add((String) excludedFoldersFromSyncList.getModel()
-						.getElementAt(i));
+				list.add((String) excludedFoldersFromSyncList.getModel().getElementAt(i));
 			}
 			for (String path : paths) {
 				list.remove(path);
@@ -597,12 +587,18 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		}
 	}
 
+	private void buttonTestPartialFileTransferPerformed() {
+
+		ProgressTestPartiaFileTransfer dialog = new ProgressTestPartiaFileTransfer(facade, repositoryName);
+		dialog.setVisible(true);
+		dialog.init();
+	}
+
 	@Override
 	protected void buttonOKPerformed() {
 
 		// Set number of connections
-		repositoryService.setNumberOfConnections(repositoryName,
-				(int) comboBoxConnections.getSelectedItem());
+		repositoryService.setNumberOfConnections(repositoryName, (int) comboBoxConnections.getSelectedItem());
 
 		// Set files compression
 		int compression = comboBoxCompression.getSelectedIndex();
@@ -613,58 +609,43 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		}
 
 		// Set partial file transfer
-		int usePartialFileTransfer = comboBoxPartialFileTransfer
-				.getSelectedIndex();
+		int usePartialFileTransfer = comboBoxPartialFileTransfer.getSelectedIndex();
 		if (usePartialFileTransfer == 0) {// Yes
+
 			repositoryService.setUsePartialFileTransfer(repositoryName, true);
 		} else {
 			repositoryService.setUsePartialFileTransfer(repositoryName, false);
 		}
 
 		// Set favorite servers
-		List<FavoriteServerDTO> favoriteServerDTOs = configurationService
-				.getFavoriteServers();
-
-		List<FavoriteServerDTO> selectedServerDTOs = new ArrayList<FavoriteServerDTO>();
-
-		List<String> list = checkBoxListFavoriteServers.getSelectedItems();
-		for (int i = 0; i < list.size(); i++) {
-			String name = list.get(i);
-			for (FavoriteServerDTO f : favoriteServerDTOs) {
-				if (f.getName().equals(name)) {
-					selectedServerDTOs.add(f);
-					break;
-				}
-			}
-		}
-
-		repositoryService.setFavoriteServerToAutoconfig(repositoryName,
-				selectedServerDTOs);
+		List<Integer> selectedServerIndexes = checkBoxListFavoriteServers.getSelectedIndexes();
+		repositoryService.setFavoriteServerToAutoconfig(repositoryName, selectedServerIndexes);
 
 		// Set excluded files from build
-		int size = excludedFilesFromBuildList.getModel().getSize();
-		list = new ArrayList<String>();
-		for (int i = 0; i < size; i++) {
-			list.add((String) excludedFilesFromBuildList.getModel()
-					.getElementAt(i));
+		{
+			int size = excludedFilesFromBuildList.getModel().getSize();
+			List<String> list = new ArrayList<String>();
+			for (int i = 0; i < size; i++) {
+				list.add((String) excludedFilesFromBuildList.getModel().getElementAt(i));
+			}
+			repositoryService.setExcludedFilesPathFromBuild(repositoryName, list);
 		}
-		repositoryService.setExcludedFilesPathFromBuild(repositoryName, list);
 
 		// Set excluded folders from sync
-		size = excludedFoldersFromSyncList.getModel().getSize();
-		list = new ArrayList<String>();
-		for (int i = 0; i < size; i++) {
-			list.add((String) excludedFoldersFromSyncList.getModel()
-					.getElementAt(i));
+		{
+			int size = excludedFoldersFromSyncList.getModel().getSize();
+			List<String> list = new ArrayList<String>();
+			for (int i = 0; i < size; i++) {
+				list.add((String) excludedFoldersFromSyncList.getModel().getElementAt(i));
+			}
+			repositoryService.setExcludedFoldersFromSync(repositoryName, list);
 		}
-		repositoryService.setExcludedFoldersFromSync(repositoryName, list);
 
 		try {
 			repositoryService.write(repositoryName);
 			this.dispose();
 		} catch (WritingException e) {
-			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, e.getMessage(), repositoryName, JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

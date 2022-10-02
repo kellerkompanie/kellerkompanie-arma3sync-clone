@@ -4,9 +4,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.StringTokenizer;
-import java.util.zip.GZIPInputStream;
 
 import fr.soe.a3s.domain.configration.Configuration;
 import fr.soe.a3s.exception.CreateDirectoryException;
@@ -24,15 +22,13 @@ public class ConfigurationDAO implements DataAccessConstants {
 		File file = new File(CONFIGURATION_FILE_PATH);
 		try {
 			if (file.exists()) {
-				Configuration config = (Configuration) A3SFilesAccessor
-						.read(file);
+				Configuration config = (Configuration) A3SFilesAccessor.read(file);
 				if (config != null) {
 					configuration = config;
 				}
 			}
 		} catch (Exception e) {
-			throw new LoadingException("Failed to read file: "
-					+ FileAccessMethods.getCanonicalPath(file));
+			throw new LoadingException("Failed to read file: " + FileAccessMethods.getCanonicalPath(file));
 		}
 	}
 
@@ -48,9 +44,8 @@ public class ConfigurationDAO implements DataAccessConstants {
 			A3SFilesAccessor.write(configuration, file);
 		} catch (IOException e) {
 			e.printStackTrace();
-			String message = "Failed to write file: "
-					+ FileAccessMethods.getCanonicalPath(file);
-			throw new WritingException(e.getMessage());
+			String message = "Failed to write file: " + FileAccessMethods.getCanonicalPath(file);
+			throw new WritingException(message);
 		}
 	}
 
@@ -68,9 +63,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 		String steamPath = null;
 
 		try {
-			Process process = Runtime.getRuntime().exec(
-					REGQUERY_UTIL
-							+ "\"HKLM\\SOFTWARE\\Wow6432Node\\Valve\\Steam");
+			Process process = Runtime.getRuntime().exec(REGQUERY_UTIL + "\"HKLM\\SOFTWARE\\Wow6432Node\\Valve\\Steam");
 			StreamReader reader = new StreamReader(process);
 
 			reader.start();
@@ -88,8 +81,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 
 			result = result.substring(0, pkeyREG_SZ);
 			int pkeyReg_BINARY = result.indexOf(REGSTR_TOKEN);
-			result = result.substring(pkeyReg_BINARY + REGSTR_TOKEN.length(),
-					result.length());
+			result = result.substring(pkeyReg_BINARY + REGSTR_TOKEN.length(), result.length());
 
 			steamPath = result.trim();
 
@@ -126,8 +118,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 				return null;
 			}
 
-			arma3Path = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length())
-					.trim();
+			arma3Path = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length()).trim();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -162,8 +153,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 				return null;
 			}
 
-			ts3Path = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length())
-					.trim();
+			ts3Path = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length()).trim();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -176,8 +166,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 
 		assert (ts3InstallationDirectoryPath != null);
 		String ts3Version = null;
-		String changelogPath = ts3InstallationDirectoryPath + "\\"
-				+ "changelog.txt";
+		String changelogPath = ts3InstallationDirectoryPath + "\\" + "changelog.txt";
 		File file = new File(changelogPath);
 		if (!file.exists()) {
 			return null;
@@ -235,8 +224,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 				return null;
 			}
 
-			arma2Path = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length())
-					.trim();
+			arma2Path = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length()).trim();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -271,8 +259,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 				return null;
 			}
 
-			arma2OAPath = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length())
-					.trim();
+			arma2OAPath = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length()).trim();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -307,8 +294,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 				return null;
 			}
 
-			armaPath = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length())
-					.trim();
+			armaPath = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length()).trim();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -343,8 +329,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 				return null;
 			}
 
-			tohPath = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length())
-					.trim();
+			tohPath = result.substring(pkeyREG_SZ + REGSTR_TOKEN.length()).trim();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -361,8 +346,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 		if (osName.contains("Windows")) {
 			String appDataFolderPath = System.getenv("APPDATA");// AppDATA\Roaming
 			if (appDataFolderPath != null) {
-				arma3RPTfolderPath = new File(appDataFolderPath)
-						.getParentFile().getAbsolutePath() + "\\Local\\Arma 3";
+				arma3RPTfolderPath = new File(appDataFolderPath).getParentFile().getAbsolutePath() + "\\Local\\Arma 3";
 			}
 		}
 		return arma3RPTfolderPath;

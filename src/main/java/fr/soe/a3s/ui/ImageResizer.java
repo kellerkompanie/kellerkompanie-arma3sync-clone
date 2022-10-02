@@ -19,8 +19,7 @@ public class ImageResizer {
 		int height = imageIcon.getIconHeight();
 		int width = imageIcon.getIconWidth();
 		int newHeight = newWidth * height / width;
-		Image newImage = image.getScaledInstance(newWidth, newHeight,
-				Image.SCALE_SMOOTH);
+		Image newImage = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
 		return newImage;
 	}
 
@@ -30,16 +29,13 @@ public class ImageResizer {
 		int height = imageIcon.getIconHeight();
 		int width = imageIcon.getIconWidth();
 		int newWidth = newHeight * width / height;
-		Image newImage = image.getScaledInstance(newWidth, newHeight,
-				Image.SCALE_SMOOTH);
+		Image newImage = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
 		return newImage;
 	}
 
 	public static Image resize(Image image, int newWidth, int newHeight) {
 
-		ImageIcon imageIcon = new ImageIcon(image);
-		Image newImage = image.getScaledInstance(newWidth, newHeight,
-				Image.SCALE_SMOOTH);
+		Image newImage = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
 		return newImage;
 	}
 
@@ -59,8 +55,7 @@ public class ImageResizer {
 		int newImageHeight = imageHeight;
 		int newImageWidth = imageWidth;
 
-		IconResize iconResize = preferencesService.getPreferences()
-				.getIconResizeSize();
+		IconResize iconResize = preferencesService.getPreferences().getIconResizeSize();
 		if (iconResize.equals(IconResize.AUTO)) {
 			newImageHeight = screenHeight * imageHeight / 1050;
 			newImageWidth = screenWidth * imageWidth / 1680;
@@ -69,8 +64,7 @@ public class ImageResizer {
 			newImageWidth = (int) (imageWidth * iconResize.getValue());
 		}
 
-		Image newImage = image.getScaledInstance(newImageWidth, newImageHeight,
-				Image.SCALE_SMOOTH);
+		Image newImage = image.getScaledInstance(newImageWidth, newImageHeight, Image.SCALE_SMOOTH);
 		return newImage;
 	}
 }

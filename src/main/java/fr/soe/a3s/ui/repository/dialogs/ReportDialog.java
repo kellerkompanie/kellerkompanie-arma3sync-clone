@@ -3,6 +3,7 @@ package fr.soe.a3s.ui.repository.dialogs;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.io.File;
 import java.io.IOException;
 
 import javax.swing.BorderFactory;
@@ -17,20 +18,18 @@ import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.DownloadPanel;
+import net.jimmc.jshortcut.JShellLink;
 
 public class ReportDialog extends AbstractDialog implements DataAccessConstants {
 
 	private final DownloadPanel downloadPanel;
 	private JTextArea textArea;
 	// Data
-	private final String repositoryName;
 	private String downloadReport;
 
-	public ReportDialog(Facade facade, String repositoryName,
-			DownloadPanel downloadPanel) {
+	public ReportDialog(Facade facade, DownloadPanel downloadPanel) {
 		super(facade, "Download", true);
 		this.downloadPanel = downloadPanel;
-		this.repositoryName = repositoryName;
 
 		{
 			buttonOK.setText("Export");
@@ -80,18 +79,27 @@ public class ReportDialog extends AbstractDialog implements DataAccessConstants 
 
 	@Override
 	protected void buttonOKPerformed() {
+		
 		try {
+			String osName = System.getProperty("os.name");
 			CommonService commonService = new CommonService();
-			commonService.exportToDesktop(downloadReport, LOG_FILE_NAME);
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Log file has been exported to desktop", "Download",
-					JOptionPane.INFORMATION_MESSAGE);
+			if (osName.toLowerCase().contains("windows")) {
+				String path = JShellLink.getDirectory("desktop") + File.separator + LOG_FILE_NAME;
+				commonService.exportLogFile(downloadReport, path);
+				JOptionPane.showMessageDialog(facade.getMainPanel(), "Log file has been exported to desktop",
+						"ArmA3Sync", JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				String path = System.getProperty("user.home") + File.separator + LOG_FILE_NAME;
+				commonService.exportLogFile(downloadReport, path);
+				JOptionPane.showMessageDialog(facade.getMainPanel(), "Log file has been exported to home directory",
+						"ArmA3Sync", JOptionPane.INFORMATION_MESSAGE);
+			}
 		} catch (IOException e1) {
 			e1.printStackTrace();
 			JOptionPane.showMessageDialog(
 					facade.getMainPanel(),
-					"Failed to export log file to desktop" + "\n"
-							+ e1.getMessage(), "Download",
+					"Failed to export log file" + "\n"
+							+ e1.getMessage(), "Report",
 					JOptionPane.ERROR_MESSAGE);
 		}
 	}

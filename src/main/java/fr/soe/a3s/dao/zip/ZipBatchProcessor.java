@@ -1,7 +1,6 @@
 package fr.soe.a3s.dao.zip;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -20,7 +19,7 @@ public class ZipBatchProcessor implements ObservableCountInt {
 	private int count, numberOfFiles;
 	private boolean canceled = false;
 	private final List<Callable<Integer>> callables = new ArrayList<Callable<Integer>>();
-	private IOException ex = null;
+	private Exception ex = null;
 
 	public void init(List<SyncTreeLeaf> list) {
 		filesList.clear();
@@ -29,7 +28,7 @@ public class ZipBatchProcessor implements ObservableCountInt {
 		count = 0;
 	}
 
-	public void zipBatch() throws IOException {
+	public void zipBatch() throws Exception {
 
 		for (SyncTreeLeaf syncTreeLeaf : filesList) {
 			zip(syncTreeLeaf);
@@ -75,7 +74,7 @@ public class ZipBatchProcessor implements ObservableCountInt {
 							leaf.setCompressed(true);
 							increment();
 						}
-					} catch (IOException e) {
+					} catch (Exception e) {
 						canceled = true;
 						ex = e;
 					}

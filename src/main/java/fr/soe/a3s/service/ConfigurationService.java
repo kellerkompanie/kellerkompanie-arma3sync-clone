@@ -108,42 +108,57 @@ public class ConfigurationService extends ObjectDTOtransformer {
 	/* online panel */
 	public List<FavoriteServerDTO> getFavoriteServers() {
 
-		List<FavoriteServer> favoriteServers = configurationDAO
-				.getConfiguration().getFavoriteServers();
+		List<FavoriteServer> favoriteServers = configurationDAO.getConfiguration().getFavoriteServers();
 		List<FavoriteServerDTO> favoriteServerDTOs = new ArrayList<FavoriteServerDTO>();
 		for (FavoriteServer favoriteServer : favoriteServers) {
-			if (favoriteServer != null) {
-				FavoriteServerDTO f = transformFavoriteServers2DTO(favoriteServer);
-				favoriteServerDTOs.add(f);
-			}
+			FavoriteServerDTO fs = transformFavoriteServers2DTO(favoriteServer);
+			favoriteServerDTOs.add(fs);
 		}
 		return favoriteServerDTOs;
 	}
 
-	public void setFavoriteServers(List<FavoriteServerDTO> favoriteServerDTOs) {
+	public void addFavoriteServer(FavoriteServerDTO favoriteServerDTO) {
 
-		configurationDAO.getConfiguration().getFavoriteServers().clear();
-		List<FavoriteServer> favoriteServers = new ArrayList<FavoriteServer>();
-		for (FavoriteServerDTO favoriteServerDTO : favoriteServerDTOs) {
-			FavoriteServer favoriteServer = transformDTO2FavoriteServer(favoriteServerDTO);
-			favoriteServers.add(favoriteServer);
-		}
-		Collections.sort(favoriteServers);
-		for (FavoriteServer favoriteServer : favoriteServers) {
-			configurationDAO.getConfiguration().getFavoriteServers()
-					.add(favoriteServer);
-		}
+		FavoriteServer favoriteServer = transformDTO2FavoriteServer(favoriteServerDTO);
+		configurationDAO.getConfiguration().getFavoriteServers().add(favoriteServer);
 		try {
 			configurationDAO.write();
 		} catch (WritingException e) {
 		}
 	}
 
+	public void deleteFavoriteServer(int index) {
+
+		if (index < configurationDAO.getConfiguration().getFavoriteServers().size()) {
+			configurationDAO.getConfiguration().getFavoriteServers().remove(index);
+			try {
+				configurationDAO.write();
+			} catch (WritingException e) {
+			}
+		}
+	}
+
+	public void setFavoriteServer(int index, String description, String ipAddress, int port, String password,
+			String modsetName) {
+
+		if (index < configurationDAO.getConfiguration().getFavoriteServers().size()) {
+			FavoriteServer favoriteServer = configurationDAO.getConfiguration().getFavoriteServers().get(index);
+			favoriteServer.setDescription(description);
+			favoriteServer.setIpAddress(ipAddress);
+			favoriteServer.setPort(port);
+			favoriteServer.setPassword(password);
+			favoriteServer.setModsetName(modsetName);
+			try {
+				configurationDAO.write();
+			} catch (WritingException e) {
+			}
+		}
+	}
+
 	/* Externals Applications panel */
 	public List<ExternalApplicationDTO> getExternalApplications() {
 
-		List<ExternalApplication> externalApplications = configurationDAO
-				.getConfiguration().getExternalApplications();
+		List<ExternalApplication> externalApplications = configurationDAO.getConfiguration().getExternalApplications();
 		List<ExternalApplicationDTO> externalApplicationDTOs = new ArrayList<ExternalApplicationDTO>();
 		for (ExternalApplication externalApplication : externalApplications) {
 			ExternalApplicationDTO ex = transformExternalApplication2DTO(externalApplication);
@@ -152,8 +167,7 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		return externalApplicationDTOs;
 	}
 
-	public void saveExternalApps(
-			List<ExternalApplicationDTO> externalApplicationDTOs) {
+	public void saveExternalApps(List<ExternalApplicationDTO> externalApplicationDTOs) {
 
 		configurationDAO.getConfiguration().getExternalApplications().clear();
 		List<ExternalApplication> externalApplications = new ArrayList<ExternalApplication>();
@@ -163,8 +177,7 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		}
 		Collections.sort(externalApplications);
 		for (ExternalApplication externalApplication : externalApplications) {
-			configurationDAO.getConfiguration().getExternalApplications()
-					.add(externalApplication);
+			configurationDAO.getConfiguration().getExternalApplications().add(externalApplication);
 		}
 		try {
 			configurationDAO.write();
@@ -179,8 +192,7 @@ public class ConfigurationService extends ObjectDTOtransformer {
 	/* ACRE2 */
 	public String getAcre2TS3installationFodler() {
 
-		String ts3Path = configurationDAO.getConfiguration().getAcre2Options()
-				.getTs3Path();
+		String ts3Path = configurationDAO.getConfiguration().getAcre2Options().getTs3Path();
 
 		if (ts3Path != null) {
 			return ts3Path;
@@ -191,26 +203,22 @@ public class ConfigurationService extends ObjectDTOtransformer {
 	}
 
 	public void setAcre2TS3installationFodler(String ts3Path) {
-		configurationDAO.getConfiguration().getAcre2Options()
-				.setTs3Path(ts3Path);
+		configurationDAO.getConfiguration().getAcre2Options().setTs3Path(ts3Path);
 	}
 
 	public String getAcre2PluginPath() {
-		String acre2PluginPath = configurationDAO.getConfiguration()
-				.getAcre2Options().getAcre2PluginPath();
+		String acre2PluginPath = configurationDAO.getConfiguration().getAcre2Options().getAcre2PluginPath();
 		return acre2PluginPath;
 	}
 
 	public void setAcre2PluginPath(String acre2PluginPath) {
-		configurationDAO.getConfiguration().getAcre2Options()
-				.setAcre2PluginPath(acre2PluginPath);
+		configurationDAO.getConfiguration().getAcre2Options().setAcre2PluginPath(acre2PluginPath);
 	}
 
 	/* TFAR */
 	public String getTfarTS3installationFodler() {
 
-		String ts3Path = configurationDAO.getConfiguration().getTfarOptions()
-				.getTs3Path();
+		String ts3Path = configurationDAO.getConfiguration().getTfarOptions().getTs3Path();
 
 		if (ts3Path != null) {
 			return ts3Path;
@@ -221,37 +229,31 @@ public class ConfigurationService extends ObjectDTOtransformer {
 	}
 
 	public void setTfarTS3installationFodler(String ts3Path) {
-		configurationDAO.getConfiguration().getTfarOptions()
-				.setTs3Path(ts3Path);
+		configurationDAO.getConfiguration().getTfarOptions().setTs3Path(ts3Path);
 	}
 
 	public String getTfarPluginPath() {
-		String tfarPluginPath = configurationDAO.getConfiguration()
-				.getTfarOptions().getTfarPluginPath();
+		String tfarPluginPath = configurationDAO.getConfiguration().getTfarOptions().getTfarPluginPath();
 		return tfarPluginPath;
 	}
 
 	public void setTfarPluginPath(String tfarPluginPath) {
-		configurationDAO.getConfiguration().getTfarOptions()
-				.setTfarPluginPath(tfarPluginPath);
+		configurationDAO.getConfiguration().getTfarOptions().setTfarPluginPath(tfarPluginPath);
 	}
 
 	public String getTfarUserconfigPath() {
-		String tfarUserconfigPath = configurationDAO.getConfiguration()
-				.getTfarOptions().getTfarUserconfigPath();
+		String tfarUserconfigPath = configurationDAO.getConfiguration().getTfarOptions().getTfarUserconfigPath();
 		return tfarUserconfigPath;
 	}
 
 	public void setTfarUserconfigPath(String tfarUserconfigPath) {
-		configurationDAO.getConfiguration().getTfarOptions()
-				.setTfarUserconfigPath(tfarUserconfigPath);
+		configurationDAO.getConfiguration().getTfarOptions().setTfarUserconfigPath(tfarUserconfigPath);
 	}
 
 	/* RPT */
 	public String getRptPath() {
 
-		String rptPath = configurationDAO.getConfiguration().getRptOptions()
-				.getRptPath();
+		String rptPath = configurationDAO.getConfiguration().getRptOptions().getRptPath();
 
 		if (rptPath != null) {
 			return rptPath;
@@ -267,16 +269,14 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public String getTS3version(String ts3InstallationDirectoryPath) {
 
-		String version = configurationDAO
-				.determineTS3version(ts3InstallationDirectoryPath);
+		String version = configurationDAO.determineTS3version(ts3InstallationDirectoryPath);
 		return version;
 	}
 
 	public boolean isTS364bit(String ts3InstallationDirectoryPath) {
 
 		assert (ts3InstallationDirectoryPath != null);
-		String ts3ExePath = ts3InstallationDirectoryPath + "\\"
-				+ "ts3client_win64.exe";
+		String ts3ExePath = ts3InstallationDirectoryPath + "\\" + "ts3client_win64.exe";
 		File file = new File(ts3ExePath);
 		if (!file.exists()) {
 			return false;
@@ -288,8 +288,7 @@ public class ConfigurationService extends ObjectDTOtransformer {
 	public boolean isTS332bit(String ts3InstallationDirectoryPath) {
 
 		assert (ts3InstallationDirectoryPath != null);
-		String ts3ExePath = ts3InstallationDirectoryPath + "\\"
-				+ "ts3client_win32.exe";
+		String ts3ExePath = ts3InstallationDirectoryPath + "\\" + "ts3client_win32.exe";
 		File file = new File(ts3ExePath);
 		if (!file.exists()) {
 			return false;
@@ -300,8 +299,7 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public AiAOptionsDTO determineAiAOptions() {
 
-		AiAOptions aiaOptions = configurationDAO.getConfiguration()
-				.getAiaOptions();
+		AiAOptions aiaOptions = configurationDAO.getConfiguration().getAiaOptions();
 
 		if (aiaOptions.getArma2Path() == null) {
 			String arma2Path = configurationDAO.determineArmA2Path();
@@ -347,35 +345,27 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public void setAiAOptions(AiAOptionsDTO aiaOptionsDTO) {
 
-		configurationDAO.getConfiguration().getAiaOptions()
-				.setArma2Path(aiaOptionsDTO.getArma2Path());
-		configurationDAO.getConfiguration().getAiaOptions()
-				.setArma2OAPath(aiaOptionsDTO.getArma2OAPath());
-		configurationDAO.getConfiguration().getAiaOptions()
-				.setArmaPath(aiaOptionsDTO.getArmaPath());
-		configurationDAO.getConfiguration().getAiaOptions()
-				.setTohPath(aiaOptionsDTO.getTohPath());
+		configurationDAO.getConfiguration().getAiaOptions().setArma2Path(aiaOptionsDTO.getArma2Path());
+		configurationDAO.getConfiguration().getAiaOptions().setArma2OAPath(aiaOptionsDTO.getArma2OAPath());
+		configurationDAO.getConfiguration().getAiaOptions().setArmaPath(aiaOptionsDTO.getArmaPath());
+		configurationDAO.getConfiguration().getAiaOptions().setTohPath(aiaOptionsDTO.getTohPath());
 		// Do no set AllinArmA path here!
 	}
 
 	public String getBiketyExtractSourceDirectoryPath() {
-		return configurationDAO.getConfiguration().getBikeyExtractOptions()
-				.getSourceDirectoryPath();
+		return configurationDAO.getConfiguration().getBikeyExtractOptions().getSourceDirectoryPath();
 	}
 
 	public void setBiketyExtractSourceDirectoryPath(String sourceDirectoryPath) {
-		configurationDAO.getConfiguration().getBikeyExtractOptions()
-				.setSourceDirectoryPath(sourceDirectoryPath);
+		configurationDAO.getConfiguration().getBikeyExtractOptions().setSourceDirectoryPath(sourceDirectoryPath);
 	}
 
 	public String getBiketyExtractTargetDirectoryPath() {
-		return configurationDAO.getConfiguration().getBikeyExtractOptions()
-				.getTargetDirectoryPath();
+		return configurationDAO.getConfiguration().getBikeyExtractOptions().getTargetDirectoryPath();
 	}
 
 	public void setBiketyExtractTargetDirectoryPath(String targetDirectoryPath) {
-		configurationDAO.getConfiguration().getBikeyExtractOptions()
-				.setTargetDirectoryPath(targetDirectoryPath);
+		configurationDAO.getConfiguration().getBikeyExtractOptions().setTargetDirectoryPath(targetDirectoryPath);
 	}
 
 	public int getHeight() {
@@ -400,21 +390,15 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		return proxyDTO;
 	}
 
-	public void setProxy(ProtocolDTO proxyProtocolDTO, boolean enableProxy)
-			throws CheckException {
+	public void setProxy(ProtocolDTO proxyProtocolDTO, boolean enableProxy) throws CheckException {
 
 		if (proxyProtocolDTO == null) {
-			configurationDAO.getConfiguration().getProxy()
-					.setProxyProtocol(null);
-			configurationDAO.getConfiguration().getProxy()
-					.setEnableProxy(false);
+			configurationDAO.getConfiguration().getProxy().setProxyProtocol(null);
+			configurationDAO.getConfiguration().getProxy().setEnableProxy(false);
 		} else {
-			final AbstractProtocole protocole = AbstractProtocoleFactory
-					.getProtocol(proxyProtocolDTO.getUrl(),
-							proxyProtocolDTO.getPort(),
-							proxyProtocolDTO.getLogin(),
-							proxyProtocolDTO.getPassword(),
-							proxyProtocolDTO.getProtocolType());
+			final AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(proxyProtocolDTO.getUrl(),
+					proxyProtocolDTO.getPort(), proxyProtocolDTO.getLogin(), proxyProtocolDTO.getPassword(),
+					proxyProtocolDTO.getProtocolType(), proxyProtocolDTO.isValidateSSLCertificate());
 			if (protocole == null) {
 				throw new CheckException("Proxy protocol type error.");
 			}
@@ -424,10 +408,8 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 			protocole.checkData();
 
-			configurationDAO.getConfiguration().getProxy()
-					.setProxyProtocol(protocole);
-			configurationDAO.getConfiguration().getProxy()
-					.setEnableProxy(enableProxy);
+			configurationDAO.getConfiguration().getProxy().setProxyProtocol(protocole);
+			configurationDAO.getConfiguration().getProxy().setEnableProxy(enableProxy);
 		}
 	}
 
@@ -469,9 +451,8 @@ public class ConfigurationService extends ObjectDTOtransformer {
 				Authenticator authenticator = new Authenticator() {
 					@Override
 					public PasswordAuthentication getPasswordAuthentication() {
-						return (new PasswordAuthentication(
-								protocole.getLogin(), protocole.getPassword()
-										.toCharArray()));
+						return (new PasswordAuthentication(protocole.getLogin(),
+								protocole.getPassword().toCharArray()));
 					}
 				};
 				Authenticator.setDefault(authenticator);
@@ -479,9 +460,8 @@ public class ConfigurationService extends ObjectDTOtransformer {
 				Authenticator.setDefault(null);
 			}
 
-			System.out.println("Proxy loaded: "
-					+ protocole.getProtocolType().getPrompt()
-					+ protocole.getUrl() + ":" + protocole.getPort());
+			System.out.println("Proxy loaded: " + protocole.getProtocolType().getPrompt() + protocole.getUrl() + ":"
+					+ protocole.getPort());
 
 		} else {
 			System.out.println("No proxy available.");
@@ -491,8 +471,7 @@ public class ConfigurationService extends ObjectDTOtransformer {
 	/* DEPRECATED */
 
 	public Set<String> getAddonSearchDirectoryPaths() {
-		return configurationDAO.getConfiguration()
-				.getAddonSearchDirectoryPaths();
+		return configurationDAO.getConfiguration().getAddonSearchDirectoryPaths();
 	}
 
 	public void resetAddonSearchDirectoryPaths() {

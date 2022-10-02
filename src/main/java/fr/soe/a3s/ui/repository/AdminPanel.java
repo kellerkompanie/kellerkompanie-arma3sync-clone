@@ -34,6 +34,7 @@ import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.exception.remote.RemoteRepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
@@ -42,11 +43,12 @@ import fr.soe.a3s.ui.repository.dialogs.BuildRepositoryOptionsDialog;
 import fr.soe.a3s.ui.repository.dialogs.ChangelogPanel;
 import fr.soe.a3s.ui.repository.dialogs.ConnectionLostDialog;
 import fr.soe.a3s.ui.repository.dialogs.connection.UploadRepositoryConnectionDialog;
+import fr.soe.a3s.ui.repository.dialogs.error.ErrorsListDialog;
 import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
 import fr.soe.a3s.ui.repository.workers.RepositoryBuilder;
 import fr.soe.a3s.ui.repository.workers.RepositoryChecker;
 import fr.soe.a3s.ui.repository.workers.RepositoryUploader;
-import fr.soe.a3s.utils.ErrorPrinter;
+import fr.soe.a3s.utils.RepositoryConsoleErrorPrinter;
 import fr.soe.a3s.utils.UnitConverter;
 
 public class AdminPanel extends JPanel implements UIConstants {
@@ -60,11 +62,9 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private JLabel labelChangelog;
 	private JButton buttonView;
 	private final RepositoryPanel repositoryPanel;
-	private JButton buttonSelectMainfolderPath, buttonBuild,
-			buttonCopyAutoConfigURL, buttonCheck;
+	private JButton buttonSelectMainfolderPath, buttonBuild, buttonCopyAutoConfigURL, buttonCheck;
 	private String repositoryName;
-	private JTextField textFieldMainSharedFolderLocation,
-			textFieldAutoConfigURL;
+	private JTextField textFieldMainSharedFolderLocation, textFieldAutoConfigURL;
 	private JProgressBar buildProgressBar, checkProgressBar;
 	private JButton buttonBuildOptions;
 	private JProgressBar uploadrogressBar;
@@ -102,8 +102,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 
 		JPanel repositoryInfoPanel = new JPanel();
-		repositoryInfoPanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Infos"));
+		repositoryInfoPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Infos"));
 		centerPanel.add(repositoryInfoPanel, BorderLayout.NORTH);
 
 		repositoryInfoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -172,9 +171,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 
 		JPanel repositoryAdministrationPanel = new JPanel();
-		repositoryAdministrationPanel.setBorder(BorderFactory
-				.createTitledBorder(BorderFactory.createEtchedBorder(),
-						"Administration"));
+		repositoryAdministrationPanel
+				.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Administration"));
 		centerPanel.add(repositoryAdministrationPanel, BorderLayout.CENTER);
 		repositoryAdministrationPanel.setLayout(new BorderLayout());
 		vBox = Box.createVerticalBox();
@@ -182,8 +180,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		{
 			JPanel locationLabelPanel = new JPanel();
 			locationLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-			JLabel labelFtpSharedFolderLocation = new JLabel(
-					"Repository main folder location");
+			JLabel labelFtpSharedFolderLocation = new JLabel("Repository main folder location");
 			locationLabelPanel.add(labelFtpSharedFolderLocation);
 			vBox.add(locationLabelPanel);
 		}
@@ -194,8 +191,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			buttonSelectMainfolderPath = new JButton("Select");
 			textFieldMainSharedFolderLocation.setEditable(false);
 			textFieldMainSharedFolderLocation.setBackground(Color.WHITE);
-			locationPanel.add(textFieldMainSharedFolderLocation,
-					BorderLayout.CENTER);
+			locationPanel.add(textFieldMainSharedFolderLocation, BorderLayout.CENTER);
 			locationPanel.add(buttonSelectMainfolderPath, BorderLayout.EAST);
 			vBox.add(locationPanel);
 		}
@@ -267,8 +263,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		{
 			JPanel autoConfigLabelPanel = new JPanel();
 			autoConfigLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-			JLabel autoConfigLabelLocation = new JLabel(
-					"Public auto-config url (Anonymous access required)");
+			JLabel autoConfigLabelLocation = new JLabel("Public auto-config url (Anonymous access required)");
 			autoConfigLabelPanel.add(autoConfigLabelLocation);
 			vBox.add(autoConfigLabelPanel);
 		}
@@ -292,8 +287,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 				Box hBox = Box.createHorizontalBox();
 				checkLabelPanel.add(hBox);
 				{
-					JLabel buildLabelLocation = new JLabel(
-							"Check repository synchronization");
+					JLabel buildLabelLocation = new JLabel("Check repository synchronization");
 					hBox.add(buildLabelLocation);
 					hBox.add(Box.createHorizontalStrut(10));
 					checkInformationBox = Box.createHorizontalBox();
@@ -319,11 +313,9 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 		vBox.add(Box.createVerticalStrut(3));
 
-		buttonSelectMainfolderPath.setPreferredSize(buttonBuildOptions
-				.getPreferredSize());
+		buttonSelectMainfolderPath.setPreferredSize(buttonBuildOptions.getPreferredSize());
 		buttonBuild.setPreferredSize(buttonBuildOptions.getPreferredSize());
-		buttonCopyAutoConfigURL.setPreferredSize(buttonBuildOptions
-				.getPreferredSize());
+		buttonCopyAutoConfigURL.setPreferredSize(buttonBuildOptions.getPreferredSize());
 		buttonCheck.setPreferredSize(buttonBuildOptions.getPreferredSize());
 
 		buttonSelectMainfolderPath.addActionListener(new ActionListener() {
@@ -395,35 +387,29 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 		this.repositoryName = repositoryName;
 		try {
-			RepositoryDTO repositoryDTO = repositoryService
-					.getRepository(repositoryName);
+			RepositoryDTO repositoryDTO = repositoryService.getRepository(repositoryName);
 
 			textFieldMainSharedFolderLocation.setText(repositoryDTO.getPath());
 
 			if (repositoryDTO.getAutoConfigURL() != null) {
-				textFieldAutoConfigURL.setText(repositoryDTO.getProtocolDTO()
-						.getProtocolType().getPrompt()
+				textFieldAutoConfigURL.setText(repositoryDTO.getProtocoleDTO().getProtocolType().getPrompt()
 						+ repositoryDTO.getAutoConfigURL());
 			}
 
 			updateRepositoryStatus(RepositoryStatus.INDETERMINATED);
 
-			ServerInfoDTO serverInfoDTO = repositoryService
-					.getServerInfo(repositoryName);
+			ServerInfoDTO serverInfoDTO = repositoryService.getServerInfo(repositoryName);
 
 			if (serverInfoDTO != null) {
-				labelRevisionValue.setText(Integer.toString(serverInfoDTO
-						.getRevision()));
-				labelDateValue.setText(serverInfoDTO.getBuildDate()
-						.toLocaleString());
-				labelNbFilesValue.setText(Long.toString(serverInfoDTO
-						.getNumberOfFiles()));
+				labelRevisionValue.setText(Integer.toString(serverInfoDTO.getRevision()));
+				labelDateValue.setText(serverInfoDTO.getBuildDate().toLocaleString());
+				labelNbFilesValue.setText(Long.toString(serverInfoDTO.getNumberOfFiles()));
 				long size = serverInfoDTO.getTotalFilesSize();
 				labelTotalSizeValue.setText(UnitConverter.convertSize(size));
 			}
 		} catch (RepositoryException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), repositoryName,
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -431,17 +417,14 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 		if (repositoryStatus.equals(RepositoryStatus.UPDATED)) {
 			labelStatusValue.setText(RepositoryStatus.UPDATED.getDescription());
-			labelStatusValue.setFont(labelStatusValue.getFont().deriveFont(
-					Font.BOLD));
+			labelStatusValue.setFont(labelStatusValue.getFont().deriveFont(Font.BOLD));
 			labelStatusValue.setForeground(Color.RED);
 		} else if (repositoryStatus.equals(RepositoryStatus.ERROR)) {
 			labelStatusValue.setText(RepositoryStatus.ERROR.getDescription());
-			labelStatusValue.setFont(labelStatusValue.getFont().deriveFont(
-					Font.BOLD));
+			labelStatusValue.setFont(labelStatusValue.getFont().deriveFont(Font.BOLD));
 			labelStatusValue.setForeground(Color.RED);
 		} else {
-			labelStatusValue.setText(RepositoryStatus.INDETERMINATED
-					.getDescription());
+			labelStatusValue.setText(RepositoryStatus.INDETERMINATED.getDescription());
 		}
 	}
 
@@ -451,8 +434,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 		try {
 			repositoryDTO = repositoryService.getRepository(repositoryName);
 		} catch (RepositoryException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), repositoryName,
+					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
@@ -471,12 +454,11 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 		// Save path to repository
 		try {
-			repositoryService.setRepositoryPath(repositoryName,
-					textFieldMainSharedFolderLocation.getText());
+			repositoryService.setRepositoryPath(repositoryName, textFieldMainSharedFolderLocation.getText());
 			repositoryService.write(repositoryName);
 		} catch (RepositoryException | WritingException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), repositoryName,
+					JOptionPane.ERROR_MESSAGE);
 			textFieldAutoConfigURL.setText("");
 		}
 	}
@@ -486,7 +468,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 		/* Check consistency between repository url and main folder path */
 		String mainFolderName = file.getName();
-		String url = repositoryDTO.getProtocolDTO().getUrl();
+		String url = repositoryDTO.getProtocoleDTO().getUrl();
 		if (url.endsWith("/")) {// there is / at the end of url
 			int lastIndex = url.lastIndexOf("/");
 			if (lastIndex != -1) {
@@ -497,19 +479,14 @@ public class AdminPanel extends JPanel implements UIConstants {
 		if (index != -1) {// There is a folder after the root
 			String folderName = url.substring(index + 1);
 			if (!mainFolderName.equalsIgnoreCase(folderName)) {
-				JOptionPane
-						.showMessageDialog(
-								facade.getMainPanel(),
-								"The selected shared folder "
-										+ file.getName()
-										+ "\n does not correspond with the repository url: \n"
-										+ url, "Build repository",
-								JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"The selected shared folder " + file.getName()
+								+ "\n does not correspond with the repository url: \n" + url,
+						repositoryName, JOptionPane.WARNING_MESSAGE);
 				textFieldMainSharedFolderLocation.setText("");
 				textFieldAutoConfigURL.setText("");
 			} else {
-				textFieldMainSharedFolderLocation.setText(file
-						.getAbsolutePath());
+				textFieldMainSharedFolderLocation.setText(file.getAbsolutePath());
 			}
 		} else {
 			textFieldMainSharedFolderLocation.setText(file.getAbsolutePath());
@@ -518,24 +495,19 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	private void buttonBuildPerformed() {
 
-		if (repositoryBuilder == null
-				|| !repositoryService.isBuilding(repositoryName)) {
-			String path = textFieldMainSharedFolderLocation.getText();
+		if (repositoryBuilder == null || !facade.getMainPanel().isBuilding(repositoryName)) {
+
 			// Repository main folder location must be set
+			String path = textFieldMainSharedFolderLocation.getText();
 			if (path.isEmpty()) {
-				JOptionPane
-						.showMessageDialog(
-								facade.getMainPanel(),
-								"Please set the repository main folder location first.",
-								"Build repository",
-								JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Please set the repository main folder location first.", repositoryName,
+						JOptionPane.INFORMATION_MESSAGE);
 				return;
 			} else if (!new File(path).exists()) {
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"Repository main folder location does not exists.",
-						"Build repository", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(facade.getMainPanel(), "Repository main folder location does not exists.",
+						repositoryName, JOptionPane.ERROR_MESSAGE);
 				return;
-				// Repository main folder must have write permissions
 			}
 
 			// Check available disk space
@@ -548,7 +520,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 			// JOptionPane
 			// .showMessageDialog(
 			// facade.getMainPanel(),
-			// "Not enough free space on disk to add compressed pbo files into the repository."
+			// "Not enough free space on disk to add compressed pbo files into the
+			// repository."
 			// + "\n"
 			// + "Required free space: "
 			// + UnitConverter.convertSize(repositorySize) ,
@@ -558,14 +531,62 @@ public class AdminPanel extends JPanel implements UIConstants {
 			// }
 			// }
 
-			repositoryBuilder = new RepositoryBuilder(facade, repositoryName,
-					path, this);
+			facade.getMainPanel().setBuilding(repositoryName, true);
+			repositoryBuilder = new RepositoryBuilder(facade, repositoryName, path, this);
+
+			repositoryBuilder.addObserverEnd(new ObserverEnd() {
+				@Override
+				public void end() {
+					facade.getMainPanel().recoverFromTray();
+					String message = "Build repository finished.";
+					JOptionPane.showMessageDialog(facade.getMainPanel(), message, repositoryName,
+							JOptionPane.INFORMATION_MESSAGE);
+
+					// Init views
+					init(repositoryName);
+					updateRepositoryStatus(RepositoryStatus.UPDATED);
+					getRepositoryPanel().getEventsPanel().init(repositoryName);// update addons list
+
+					facade.getMainPanel().setBuilding(repositoryName, false);
+
+					System.gc();
+				}
+			});
+
+			repositoryBuilder.addObserverError(new ObserverError() {
+
+				@Override
+				public void error(List<Exception> errors) {
+					facade.getMainPanel().recoverFromTray();
+					Exception ex = errors.get(0);
+					if (ex instanceof RepositoryException | ex instanceof IOException
+							| ex instanceof WritingException) {
+						RepositoryConsoleErrorPrinter.printRepositoryManagedError(repositoryName, ex);
+						JOptionPane.showMessageDialog(facade.getMainPanel(), ex.getMessage(), repositoryName,
+								JOptionPane.ERROR_MESSAGE);
+					} else {
+						RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+						UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(facade, repositoryName, ex,
+								repositoryName);
+						dialog.show();
+					}
+
+					updateRepositoryStatus(RepositoryStatus.ERROR);
+
+					facade.getMainPanel().setBuilding(repositoryName, false);
+
+					System.gc();
+				}
+			});
+
 			repositoryBuilder.setDaemon(true);
 			repositoryBuilder.start();
-		} else if (repositoryBuilder != null
-				&& repositoryService.isBuilding(repositoryName)) {
+
+		} else if (repositoryBuilder != null && facade.getMainPanel().isBuilding(repositoryName)) {
 			repositoryBuilder.cancel();
 			repositoryBuilder = null;
+			facade.getMainPanel().setBuilding(repositoryName, false);
+			System.gc();
 		}
 	}
 
@@ -574,13 +595,12 @@ public class AdminPanel extends JPanel implements UIConstants {
 		// Repository main folder location must be set
 		if (textFieldMainSharedFolderLocation.getText().isEmpty()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Please set the repository main folder location first.",
-					"Build repository", JOptionPane.INFORMATION_MESSAGE);
+					"Please set the repository main folder location first.", repositoryName,
+					JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
-		BuildRepositoryOptionsDialog buildOptionsPanel = new BuildRepositoryOptionsDialog(
-				facade, repositoryName);
+		BuildRepositoryOptionsDialog buildOptionsPanel = new BuildRepositoryOptionsDialog(facade, repositoryName);
 		buildOptionsPanel.init();
 		buildOptionsPanel.setVisible(true);
 	}
@@ -588,18 +608,14 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private void buttonCopyAutoConfigPerformed() {
 
 		if (textFieldAutoConfigURL.getText().isEmpty()) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Auto-config url is empty!", "Auto-config url",
+			JOptionPane.showMessageDialog(facade.getMainPanel(), "Auto-config url is empty!", repositoryName,
 					JOptionPane.INFORMATION_MESSAGE);
 		} else {
 			try {
-				StringSelection ss = new StringSelection(
-						textFieldAutoConfigURL.getText());
-				Toolkit.getDefaultToolkit().getSystemClipboard()
-						.setContents(ss, null);
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"Auto-config url copied to clipboard.",
-						"Auto-config url", JOptionPane.INFORMATION_MESSAGE);
+				StringSelection ss = new StringSelection(textFieldAutoConfigURL.getText());
+				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
+				JOptionPane.showMessageDialog(facade.getMainPanel(), "Auto-config url copied to clipboard.",
+						repositoryName, JOptionPane.INFORMATION_MESSAGE);
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
 				// Clipboard may not be available (Windows).
@@ -609,32 +625,28 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	private void buttonUploadPerformed() {
 
-		if (repositoryUploader == null
-				|| !repositoryService.isUploading(repositoryName)) {
+		if (repositoryUploader == null || !facade.getMainPanel().isUploading(repositoryName)) {
 			String path = textFieldMainSharedFolderLocation.getText();
 			// Repository main folder location must be set
 			if (path.isEmpty()) {
-				JOptionPane
-						.showMessageDialog(
-								facade.getMainPanel(),
-								"Please set the repository main folder location first.",
-								"Upload repository",
-								JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Please set the repository main folder location then build the repository.", repositoryName,
+						JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
 
-			repositoryUploader = new RepositoryUploader(facade, repositoryName,
-					path, this);
+			facade.getMainPanel().setUploading(repositoryName, true);
+			repositoryUploader = new RepositoryUploader(facade, repositoryName, this);
 
 			repositoryUploader.addObserverEnd(new ObserverEnd() {
 				@Override
 				public void end() {
 					facade.getMainPanel().recoverFromTray();
-					String message = "Repository: " + repositoryName + "\n"
-							+ "Repository upload finished.";
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							message, "Repository upload",
+					String message = "Repository upload finished.";
+					JOptionPane.showMessageDialog(facade.getMainPanel(), message, repositoryName,
 							JOptionPane.INFORMATION_MESSAGE);
+					facade.getMainPanel().setUploading(repositoryName, false);
+					System.gc();
 				}
 			});
 
@@ -644,55 +656,50 @@ public class AdminPanel extends JPanel implements UIConstants {
 					Exception ex = errors.get(0);
 					facade.getMainPanel().recoverFromTray();
 					if (ex instanceof CheckException) {
-						String message = ErrorPrinter
-								.printRepositoryManagedError(repositoryName, ex);
-						JOptionPane.showMessageDialog(facade.getMainPanel(),
-								message, "Repository upload",
+						RepositoryConsoleErrorPrinter.printRepositoryManagedError(repositoryName, ex);
+						JOptionPane.showMessageDialog(facade.getMainPanel(), ex.getMessage(), repositoryName,
 								JOptionPane.WARNING_MESSAGE);
-					} else if (ex instanceof RepositoryException
-							|| ex instanceof LoadingException
+					} else if (ex instanceof RepositoryException || ex instanceof LoadingException
 							|| ex instanceof IOException) {
-						String message = ErrorPrinter
-								.printRepositoryManagedError(repositoryName, ex);
-						JOptionPane.showMessageDialog(facade.getMainPanel(),
-								message, "Repository upload",
+						RepositoryConsoleErrorPrinter.printRepositoryManagedError(repositoryName, ex);
+						JOptionPane.showMessageDialog(facade.getMainPanel(), ex.getMessage(), repositoryName,
 								JOptionPane.ERROR_MESSAGE);
 					} else {
-						String message = ErrorPrinter
-								.printRepositoryUnexpectedError(repositoryName,
-										ex);
-						UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
-								facade, "Check repository synchronization", ex,
-								repositoryName);
+						RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+						UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(facade,
+								"Check repository synchronization", ex, repositoryName);
 						dialog.show();
+					}
+					facade.getMainPanel().setUploading(repositoryName, false);
+					System.gc();
+				}
+			});
+
+			repositoryUploader.addObserverConnectionLost(new ObserverConnectionLost() {
+				@Override
+				public void lost() {
+					facade.getMainPanel().recoverFromTray();
+					ConnectionLostDialog dialog = new ConnectionLostDialog(facade, repositoryName, repositoryName);
+					dialog.init();
+					dialog.setVisible(true);
+					if (!dialog.reconnect()) {
+						repositoryUploader = null;
+						facade.getMainPanel().setUploading(repositoryName, false);
+						System.gc();
+					} else {
+						repositoryUploader.run();
 					}
 				}
 			});
 
-			repositoryUploader
-					.addObserverConnectionLost(new ObserverConnectionLost() {
-						@Override
-						public void lost() {
-							facade.getMainPanel().recoverFromTray();
-							ConnectionLostDialog dialog = new ConnectionLostDialog(
-									facade, repositoryName, "Repository upload");
-							dialog.init();
-							dialog.setVisible(true);
-							if (!dialog.reconnect()) {
-								repositoryUploader = null;
-							} else {
-								repositoryUploader.run();
-							}
-						}
-					});
-
 			repositoryUploader.setDaemon(true);
 			repositoryUploader.start();
 
-		} else if (repositoryUploader != null
-				&& repositoryService.isUploading(repositoryName)) {
+		} else if (repositoryUploader != null && facade.getMainPanel().isUploading(repositoryName)) {
 			repositoryUploader.cancel();
 			repositoryUploader = null;
+			facade.getMainPanel().setUploading(repositoryName, false);
+			System.gc();
 		}
 	}
 
@@ -701,35 +708,77 @@ public class AdminPanel extends JPanel implements UIConstants {
 		// Repository main folder location must be set
 		if (textFieldMainSharedFolderLocation.getText().isEmpty()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Please set the repository main folder location first.",
-					"Upload repository", JOptionPane.INFORMATION_MESSAGE);
+					"Please set the repository main folder location first.", repositoryName,
+					JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
-		UploadRepositoryConnectionDialog uploadRepositoryOptionsPanel = new UploadRepositoryConnectionDialog(
-				facade);
+		UploadRepositoryConnectionDialog uploadRepositoryOptionsPanel = new UploadRepositoryConnectionDialog(facade);
 		uploadRepositoryOptionsPanel.init(repositoryName);
 		uploadRepositoryOptionsPanel.setVisible(true);
 	}
 
 	private void buttonCheckPerformed() {
 
-		if (repositoryChecker == null
-				|| !repositoryService.isChecking(repositoryName)) {
-			repositoryChecker = new RepositoryChecker(facade, repositoryName,
-					this);
+		if (repositoryChecker == null || !facade.getMainPanel().isChecking(repositoryName)) {
+			facade.getMainPanel().setChecking(repositoryName, true);
+			repositoryChecker = new RepositoryChecker(facade, repositoryName, this);
+
+			repositoryChecker.addObserverEnd(new ObserverError() {
+				@Override
+				public void error(List<Exception> errors) {
+					facade.getMainPanel().recoverFromTray();
+					if (errors.isEmpty()) {
+						String message = "Repository is synchronized.";
+						JOptionPane.showMessageDialog(facade.getMainPanel(), message, repositoryName,
+								JOptionPane.INFORMATION_MESSAGE);
+					} else {
+						ErrorsListDialog dialog = new ErrorsListDialog(facade, repositoryName,
+								"Check repository finished with errors:", errors, repositoryName);
+						dialog.show();
+					}
+					facade.getMainPanel().setChecking(repositoryName, false);
+
+					System.gc();
+				}
+			});
+
+			repositoryChecker.addObserverError(new ObserverError() {
+				@Override
+				public void error(List<Exception> errors) {
+					facade.getMainPanel().recoverFromTray();
+					Exception ex = errors.get(0);
+					if (ex instanceof RepositoryException || ex instanceof RemoteRepositoryException
+							|| ex instanceof IOException) {
+						RepositoryConsoleErrorPrinter.printRepositoryManagedError(repositoryName, ex);
+						JOptionPane.showMessageDialog(facade.getMainPanel(), ex.getMessage(), repositoryName,
+								JOptionPane.ERROR_MESSAGE);
+					} else {
+						RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+						UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(facade, repositoryName, ex,
+								repositoryName);
+						dialog.show();
+					}
+					facade.getMainPanel().setChecking(repositoryName, false);
+
+					System.gc();
+				}
+			});
+
+			repositoryChecker.setDaemon(true);
 			repositoryChecker.start();
-		} else if (repositoryChecker != null
-				&& repositoryService.isChecking(repositoryName)) {
+
+		} else if (repositoryChecker != null && facade.getMainPanel().isChecking(repositoryName)) {
 			repositoryChecker.cancel();
+			facade.getMainPanel().setChecking(repositoryName, false);
 			repositoryChecker = null;
+			System.gc();
 		}
 	}
 
 	private void buttonViewPerformed() {
 
-		ChangelogPanel changelogPanel = new ChangelogPanel(facade,
-				repositoryName, this);
+		ChangelogPanel changelogPanel = new ChangelogPanel(facade, repositoryName, this);
 		changelogPanel.init();
 		changelogPanel.setVisible(true);
 	}

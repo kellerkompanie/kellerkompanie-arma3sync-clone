@@ -52,7 +52,6 @@ public abstract class WizardDialog extends JDialog implements UIConstants {
 	protected JButton buttonFist, buttonSecond;
 	/* Services */
 	protected final ConfigurationService configurationService = new ConfigurationService();
-	protected final AddonService addonService = new AddonService();
 	protected final ProfileService profileService = new ProfileService();
 
 	public WizardDialog(Facade facade, String title, String description,

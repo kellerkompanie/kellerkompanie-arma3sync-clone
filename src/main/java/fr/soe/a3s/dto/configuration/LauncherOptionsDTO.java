@@ -10,6 +10,8 @@ public class LauncherOptionsDTO {
 	private boolean windowMode;
 	private boolean checkSignatures;
 	private boolean autoRestart;
+	private boolean missionFile;
+	private String missionFilePath;
 	private String maxMemorySelection;
 	private int cpuCountSelection;
 	private String exThreadsSelection;
@@ -165,5 +167,21 @@ public class LauncherOptionsDTO {
 
 	public void setMallocSelection(String mallocSelection) {
 		this.mallocSelection = mallocSelection;
+	}
+
+	public boolean isMissionFile() {
+		return missionFile;
+	}
+
+	public void setMissionFile(boolean missionFile) {
+		this.missionFile = missionFile;
+	}
+
+	public String getMissionFilePath() {
+		return missionFilePath;
+	}
+
+	public void setMissionFilePath(String missionFilePath) {
+		this.missionFilePath = missionFilePath;
 	}
 }

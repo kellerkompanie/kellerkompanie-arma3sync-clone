@@ -22,6 +22,7 @@ public abstract class AbstractProtocole implements Serializable {
 	protected EncryptionMode encryptionMode;
 	protected String connectionTimeOut;
 	protected String readTimeOut;
+	protected boolean validateSSLCertificate;
 
 	public String getLogin() {
 		return login;
@@ -43,8 +44,7 @@ public abstract class AbstractProtocole implements Serializable {
 
 	public String getConnectionTimeOut() {
 		if (connectionTimeOut == null) {
-			connectionTimeOut = Integer
-					.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue());
+			connectionTimeOut = Integer.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue());
 		}
 		return connectionTimeOut;
 	}
@@ -55,8 +55,7 @@ public abstract class AbstractProtocole implements Serializable {
 
 	public String getReadTimeOut() {
 		if (readTimeOut == null) {
-			readTimeOut = Integer.toString(TimeOutValues.READ_TIME_OUT
-					.getValue());
+			readTimeOut = Integer.toString(TimeOutValues.READ_TIME_OUT.getValue());
 		}
 		return readTimeOut;
 	}
@@ -85,6 +84,18 @@ public abstract class AbstractProtocole implements Serializable {
 		return remotePath;
 	}
 
+	public String getHostUrl() {
+		return protocolType.getPrompt() + getHostname() + ":" + port + getRemotePath();
+	}
+
+	public boolean isValidateSSLCertificate() {
+		return validateSSLCertificate;
+	}
+
+	public void setValidateSSLCertificate(boolean validateSSLCertificate) {
+		this.validateSSLCertificate = validateSSLCertificate;
+	}
+
 	public void checkData() throws CheckException {
 
 		if ("".equals(getUrl()) || getUrl() == null) {
@@ -103,8 +114,7 @@ public abstract class AbstractProtocole implements Serializable {
 		}
 		// http://stackoverflow.com/questions/15657266/java-lang-illegalargumentexception-port-out-of-range67001
 		if (Integer.parseInt(getPort()) > 65535) {
-			throw new CheckException("Port number is out of range!" + "\n"
-					+ "Maximum port number is 65535.");
+			throw new CheckException("Port number is out of range!" + "\n" + "Maximum port number is 65535.");
 		}
 		if ("".equals(getConnectionTimeOut()) || getConnectionTimeOut() == null) {
 			throw new CheckException("Connection timeout field is empty!");

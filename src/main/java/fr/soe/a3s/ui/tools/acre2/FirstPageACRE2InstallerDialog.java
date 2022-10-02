@@ -201,8 +201,9 @@ public class FirstPageACRE2InstallerDialog extends WizardDialog {
 				textFieldPluginInstallationDirectory.setText(acre2PluginPath);
 			}
 		} else {
-			String acre2InstallationDirectoryPath = addonService
-					.getACRE2installationFolder();
+			String acre2InstallationDirectoryPath  = null;
+			// String acre2InstallationDirectoryPath = addonService
+			// .getACRE2installationFolder();
 			if (acre2InstallationDirectoryPath != null) {
 				String path = acre2InstallationDirectoryPath + "/@ACRE2/plugin";
 				if (new File(path).exists()) {
@@ -297,7 +298,7 @@ public class FirstPageACRE2InstallerDialog extends WizardDialog {
 			message = "TS3 installation directory is missing.";
 		} else if (textFieldPluginInstallationDirectory.getText().isEmpty()) {
 			message = "ACRE 2 plugin directory is missing.";
-		} else if (labelTS3Value.equals("Unknown")) {
+		} else if (labelTS3Value.getText().equals("Unknown")) {
 			message = "Can't determine between TS3 32/64 bit.";
 		}
 

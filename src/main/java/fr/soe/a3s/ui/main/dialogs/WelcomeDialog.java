@@ -19,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.AbstractDialog;
@@ -41,7 +40,6 @@ public class WelcomeDialog extends AbstractDialog {
 	private JButton buttonSelect;
 	// Services
 	private final ConfigurationService configurationService = new ConfigurationService();
-	private final AddonService addonService = new AddonService();
 	private final ProfileService profileService = new ProfileService();
 
 	public WelcomeDialog(Facade facade) {
@@ -58,8 +56,7 @@ public class WelcomeDialog extends AbstractDialog {
 			{
 				JPanel arma3ExeLabelPanel = new JPanel();
 				arma3ExeLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-				JLabel labelarma3ExeLocation = new JLabel(
-						"Please set ArmA 3 executable location");
+				JLabel labelarma3ExeLocation = new JLabel("Please set ArmA 3 executable location");
 				arma3ExeLabelPanel.add(labelarma3ExeLocation);
 				vBox.add(arma3ExeLabelPanel);
 			}
@@ -78,17 +75,14 @@ public class WelcomeDialog extends AbstractDialog {
 
 		this.pack();
 		if (textField.getBounds().height < 25) {
-			textField
-					.setPreferredSize(new Dimension(this.getBounds().width, 25));
+			textField.setPreferredSize(new Dimension(this.getBounds().width, 25));
 		}
 		if (this.getBounds().width < 350) {
 			this.setMinimumSize(new Dimension(350, this.getBounds().height));
 			this.setPreferredSize(new Dimension(350, this.getBounds().height));
 		} else {
-			this.setMinimumSize(new Dimension(this.getBounds().width, this
-					.getBounds().height));
-			this.setPreferredSize(new Dimension(this.getBounds().width, this
-					.getBounds().height));
+			this.setMinimumSize(new Dimension(this.getBounds().width, this.getBounds().height));
+			this.setPreferredSize(new Dimension(this.getBounds().width, this.getBounds().height));
 		}
 
 		this.pack();
@@ -142,8 +136,7 @@ public class WelcomeDialog extends AbstractDialog {
 			File file = new File(path);
 			if (file.getParent() != null) {
 				String parentPath = file.getParentFile().getAbsolutePath();
-				List<String> set = profileService
-						.getAddonSearchDirectoryPaths();
+				List<String> set = profileService.getAddonSearchDirectoryPaths();
 				Iterator iter = set.iterator();
 				List<String> list = new ArrayList<String>();
 				while (iter.hasNext()) {

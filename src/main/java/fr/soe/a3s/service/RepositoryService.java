@@ -49,14 +49,13 @@ import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.exception.repository.RepositoryDefaultDownloadLocationNotFoundException;
+import fr.soe.a3s.exception.repository.EventsFileNotFoundException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryMainFolderLocationNotFoundException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
 
-public class RepositoryService extends ObjectDTOtransformer implements
-		DataAccessConstants {
+public class RepositoryService extends ObjectDTOtransformer implements DataAccessConstants {
 
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
@@ -77,16 +76,15 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void createRepository(String name, String url, String port,
-			String login, String password, ProtocolType protocolType)
-			throws CheckException {
+	public void createRepository(String name, String url, String port, String login, String password,
+			ProtocolType protocolType, boolean validateSSLCertificate) throws CheckException {
 
 		if (name == null || "".equals(name)) {
 			throw new CheckException("Repository name can't be empty.");
 		}
 
-		AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(url,
-				port, login, password, protocolType);
+		AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(url, port, login, password, protocolType,
+				validateSSLCertificate);
 		if (protocole == null) {
 			throw new CheckException("Protocol not supported yet.");
 		}
@@ -97,16 +95,15 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		repositoryDAO.add(repository);
 	}
 
-	public void setRepository(String name, String url, String port,
-			String login, String password, ProtocolType protocolType)
-			throws CheckException {
+	public void setRepository(String name, String url, String port, String login, String password,
+			ProtocolType protocolType, boolean validateSSLCertificate) throws CheckException {
 
 		if (name == null || "".equals(name)) {
 			throw new CheckException("Repository name can't be empty.");
 		}
 
-		AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(url,
-				port, login, password, protocolType);
+		AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(url, port, login, password, protocolType,
+				validateSSLCertificate);
 		if (protocole == null) {
 			throw new CheckException("Protocol is not supported yet.");
 		}
@@ -124,8 +121,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			throw new CheckException("Repository name can't be empty.");
 		}
 
-		Repository repository = repositoryDAO.getMap().get(
-				initialRepositoryName);
+		Repository repository = repositoryDAO.getMap().get(initialRepositoryName);
 		if (repository != null) {
 			removeRepository(initialRepositoryName);
 			repository.setName(newName);
@@ -133,8 +129,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public boolean removeRepository(String repositoryName)
-			throws RepositoryNotFoundException {
+	public boolean removeRepository(String repositoryName) throws RepositoryNotFoundException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -154,8 +149,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	public List<RepositoryDTO> getRepositories() {
 
 		List<RepositoryDTO> repositoryDTOs = new ArrayList<RepositoryDTO>();
-		for (Iterator<String> i = repositoryDAO.getMap().keySet().iterator(); i
-				.hasNext();) {
+		for (Iterator<String> i = repositoryDAO.getMap().keySet().iterator(); i.hasNext();) {
 			Repository repository = repositoryDAO.getMap().get(i.next());
 			RepositoryDTO repositoryDTO = transformRepository2DTO(repository);
 			repositoryDTOs.add(repositoryDTO);
@@ -163,8 +157,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return repositoryDTOs;
 	}
 
-	public RepositoryDTO getRepository(String repositoryName)
-			throws RepositoryException {
+	public RepositoryDTO getRepository(String repositoryName) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -175,8 +168,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void setRepositoryPath(String repositoryName, String repositoryPath)
-			throws RepositoryException {
+	public void setRepositoryPath(String repositoryName, String repositoryPath) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -200,17 +192,14 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			return repository.getProtocol().getProtocolType().getPrompt()
-					+ repository.getProtocol().getHostname() + ":"
-					+ repository.getProtocol().getPort()
-					+ repository.getProtocol().getRemotePath();
+			return repository.getProtocol().getProtocolType().getPrompt() + repository.getProtocol().getHostname() + ":"
+					+ repository.getProtocol().getPort() + repository.getProtocol().getRemotePath();
 		} else {
 			return null;
 		}
 	}
 
-	public ServerInfoDTO getServerInfo(String repositoryName)
-			throws RepositoryException {
+	public ServerInfoDTO getServerInfo(String repositoryName) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -226,8 +215,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public List<ChangelogDTO> getChangelogs(String repositoryName)
-			throws RepositoryException {
+	public List<ChangelogDTO> getChangelogs(String repositoryName) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -248,8 +236,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public AutoConfigDTO getAutoconfig(String repositoryName)
-			throws RepositoryException {
+	public AutoConfigDTO getAutoconfig(String repositoryName) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -265,140 +252,154 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void updateRepository(String repositoryName) {
+	public synchronized void updateRepository(String repositoryName) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
+
 		if (repository != null) {
-			if (!repository.isUpdating()){
-				repository.setUpdating(true);
-				
-				/**/
-				if (repository.getServerInfo() != null) {
-					repository.getHiddenFolderPath().addAll(
-							repository.getServerInfo().getHiddenFolderPaths());
-					if (repository.getNumberOfClientConnections() == 0) {
-						repository.setNumberOfClientConnections(repository
-								.getServerInfo().getNumberOfConnections());
-					}
+			/* Update repository number of connections */
+			if (repository.getServerInfo() != null) {
+				repository.getHiddenFolderPath().addAll(repository.getServerInfo().getHiddenFolderPaths());
+				if (repository.getNumberOfClientConnections() == 0) {
+					repository.setNumberOfClientConnections(repository.getServerInfo().getNumberOfConnections());
 				}
-				
-				/**/
-				if (repository.getAutoConfig() != null) {
+			}
 
-					List<FavoriteServer> list1 = repository.getAutoConfig()
-							.getFavoriteServers();
-					for (FavoriteServer favoriteServerList1 : list1) {
-						favoriteServerList1.setRepositoryName(repositoryName);
+			/* Update repository favorite servers list */
+			if (repository.getAutoConfig() != null) {
+
+				List<FavoriteServer> favoriteServersFromRemoteAutoConfigFile = repository.getAutoConfig()
+						.getFavoriteServers();
+				List<FavoriteServer> favoriteServersFromLocal = new ArrayList<FavoriteServer>();
+				favoriteServersFromLocal.addAll(configurationDAO.getConfiguration().getFavoriteServers());
+
+				if (favoriteServersFromLocal.isEmpty()) {
+					List<FavoriteServer> newFavoriteServers = new ArrayList<FavoriteServer>();
+					for (FavoriteServer remoteServer : favoriteServersFromRemoteAutoConfigFile) {
+						String description = remoteServer.getDescription();
+						if (description == null || "".equals(description)) {
+							description = repositoryName;
+						}
+						String addresse = remoteServer.getIpAddress();
+						int port = remoteServer.getPort();
+						String password = remoteServer.getPassword();
+						String modSetName = remoteServer.getModsetName();
+						FavoriteServer newFavoriteServer = new FavoriteServer();
+						newFavoriteServer.setDescription(description);
+						newFavoriteServer.setIpAddress(addresse);
+						newFavoriteServer.setPort(port);
+						newFavoriteServer.setPassword(password);
+						newFavoriteServer.setModsetName(modSetName);
+						newFavoriteServer.setRepositoryName(repositoryName);
+						newFavoriteServers.add(newFavoriteServer);
 					}
-
-					List<FavoriteServer> list2 = configurationDAO
-							.getConfiguration().getFavoriteServers();
-
-					List<FavoriteServer> newList2 = new ArrayList<FavoriteServer>();
-
-					for (FavoriteServer favoriteServerList1 : list1) {
-						newList2.add(favoriteServerList1);
-					}
-
-					for (FavoriteServer favoriteServerList2 : list2) {
-						boolean found = false;
-						for (FavoriteServer favoriteServerNewList2 : newList2) {
-							if (favoriteServerNewList2.getName().equals(
-									favoriteServerList2.getName())) {
-								found = true;
-								favoriteServerNewList2
-										.setIpAddress(favoriteServerList2
-												.getIpAddress());
-								favoriteServerNewList2.setPort(favoriteServerList2
-										.getPort());
-								favoriteServerNewList2
-										.setPassword(favoriteServerList2
-												.getPassword());
-								if (favoriteServerList2.getModsetName() != null) {
-									if (!favoriteServerList2.getModsetName()
-											.isEmpty()) {
-										favoriteServerNewList2
-												.setModsetName(favoriteServerList2
-														.getModsetName());
-									}
-								}
+					configurationDAO.getConfiguration().getFavoriteServers().addAll(newFavoriteServers);
+				} else {
+					List<FavoriteServer> newFavoriteServers = new ArrayList<FavoriteServer>();
+					for (FavoriteServer remoteServer : favoriteServersFromRemoteAutoConfigFile) {
+						FavoriteServer localServerFound = null;
+						for (FavoriteServer localServer : favoriteServersFromLocal) {
+							if (remoteServer.getIpAddress().equals(localServer.getIpAddress())
+									&& remoteServer.getPort() == localServer.getPort()) {
+								localServerFound = localServer;
 								break;
 							}
 						}
-						if (!found) {
-							newList2.add(favoriteServerList2);
-						} else {
 
+						// Same ip, same port
+						if (localServerFound != null) {
+							// Keep local descritpion, ip, port
+							// Update with remote password and modset
+							localServerFound.setPassword(remoteServer.getPassword());
+							if (remoteServer.getModsetName() != null) {
+								if (!remoteServer.getModsetName().isEmpty()) {
+									localServerFound.setModsetName(remoteServer.getModsetName());
+								}
+							}
+							localServerFound.setRepositoryName(repositoryName);
+							if (localServerFound.getDescription() == null
+									|| "".equals(localServerFound.getDescription())) {
+								localServerFound.setDescription(repositoryName);
+							}
+						} else {// keep remote server
+							String description = remoteServer.getDescription();
+							if (description == null || "".equals(description)) {
+								description = repositoryName;
+							}
+							String address = remoteServer.getIpAddress();
+							int port = remoteServer.getPort();
+							String password = remoteServer.getPassword();
+							String modSetName = remoteServer.getModsetName();
+							FavoriteServer newFavoriteServer = new FavoriteServer();
+							newFavoriteServer.setDescription(description);
+							newFavoriteServer.setIpAddress(address);
+							newFavoriteServer.setPort(port);
+							newFavoriteServer.setPassword(password);
+							newFavoriteServer.setModsetName(modSetName);
+							newFavoriteServer.setRepositoryName(repositoryName);
+							configurationDAO.getConfiguration().getFavoriteServers().add(newFavoriteServer);
 						}
 					}
-
-					configurationDAO.getConfiguration().updateFavoriteServers(newList2);
 				}
+			}
 
-				/**/
-				RepositoryStatus repositoryStatus = RepositoryStatus.INDETERMINATED;
-				ServerInfo serverInfo = repository.getServerInfo();
-				if (serverInfo != null) {
-					if (repository.getRevision() == serverInfo.getRevision()) {
-						repositoryStatus = RepositoryStatus.OK;
-					} else if (repository.getRevision() < serverInfo.getRevision()) {
-						if (serverInfo.isRepositoryContentUpdated()) {
-							repositoryStatus = RepositoryStatus.UPDATED;
-						} else {
-							Changelogs changelogs = repository.getChangelogs();
-							if (changelogs != null) {
-								List<Changelog> list = changelogs.getList();
-								Map<Integer, Boolean> map = new TreeMap<Integer, Boolean>();
-								for (Changelog changelog : list) {
-									map.put(changelog.getRevision(),
-											changelog.isContentUpdated());
-								}
-								boolean change = false;
-								if (map.containsKey(repository.getRevision())) {
-									for (Iterator<Integer> iter = map.keySet()
-											.iterator(); iter.hasNext();) {
-										int revision = iter.next();
-										if (revision > repository.getRevision()) {
-											change = map.get(revision);
-											if (change) {
-												break;
-											}
+			/**/
+			RepositoryStatus repositoryStatus = RepositoryStatus.INDETERMINATED;
+			ServerInfo serverInfo = repository.getServerInfo();
+			if (serverInfo != null) {
+				if (repository.getRevision() == serverInfo.getRevision()) {
+					repositoryStatus = RepositoryStatus.OK;
+				} else if (repository.getRevision() < serverInfo.getRevision()) {
+					if (serverInfo.isRepositoryContentUpdated()) {
+						repositoryStatus = RepositoryStatus.UPDATED;
+					} else {
+						Changelogs changelogs = repository.getChangelogs();
+						if (changelogs != null) {
+							List<Changelog> list = changelogs.getList();
+							Map<Integer, Boolean> map = new TreeMap<Integer, Boolean>();
+							for (Changelog changelog : list) {
+								map.put(changelog.getRevision(), changelog.isContentUpdated());
+							}
+							boolean change = false;
+							if (map.containsKey(repository.getRevision())) {
+								for (Iterator<Integer> iter = map.keySet().iterator(); iter.hasNext();) {
+									int revision = iter.next();
+									if (revision > repository.getRevision()) {
+										change = map.get(revision);
+										if (change) {
+											break;
 										}
 									}
-									if (change) {
-										repositoryStatus = RepositoryStatus.UPDATED;
-									} else {
-										repositoryStatus = RepositoryStatus.OK;
-									}
+								}
+								if (change) {
+									repositoryStatus = RepositoryStatus.UPDATED;
+								} else {
+									repositoryStatus = RepositoryStatus.OK;
 								}
 							}
 						}
 					}
 				}
-				// Set Repository Synchronization Status
-				repository.setRepositorySyncStatus(repositoryStatus);
-				
-				repository.setUpdating(false);
 			}
+			// Set Repository Synchronization Status
+			repository.setRepositorySyncStatus(repositoryStatus);
 		}
 	}
 
-	public void buildRepository(String repositoryName)
-			throws RepositoryException, IOException, RuntimeException {
+	public void buildRepository(String repositoryName) throws RepositoryException, IOException, Exception {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryNotFoundException(repositoryName);
 		}
 		if (repository.getPath() == null || "".equals(repository.getPath())) {
-			throw new RepositoryMainFolderLocationNotFoundException(
-					repositoryName);
+			throw new RepositoryMainFolderLocationNotFoundException(repositoryName);
 		}
 		repositoryBuildProcessor.init(repository);
 		repositoryBuildProcessor.run();
 	}
 
-	public SyncTreeDirectoryDTO checkForAddons(String repositoryName)
+	public SyncTreeDirectoryDTO checkForAddons(String repositoryName, String eventName)
 			throws RepositoryException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
@@ -412,14 +413,25 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			throw new SyncFileNotFoundException(repositoryName);
 		}
 
-		String defaultDownloadLocation = repository
-				.getDefaultDownloadLocation();
+		Events events = repository.getEvents();
 
-		if (defaultDownloadLocation == null
-				|| "".equals(defaultDownloadLocation)) {
-			throw new RepositoryDefaultDownloadLocationNotFoundException(
-					repositoryName);
+		if (eventName != null && events == null) {
+			throw new EventsFileNotFoundException(repositoryName);
 		}
+
+		String defaultDownloadLocation = getDefaultDownloadLocation(repositoryName, eventName);
+
+		if (defaultDownloadLocation == null || "".equals(defaultDownloadLocation)) {
+			throw new IOException("Default destination folder is empty.");
+		}
+
+		if (!new File(defaultDownloadLocation).exists()) {
+			throw new IOException("Default destination folder does not exists: " + defaultDownloadLocation);
+		}
+
+		// 1. Extract event addons if any
+		EventExtractor eventExtractor = new EventExtractor(parent, events, eventName);
+		parent = eventExtractor.run();
 
 		boolean noAutoDiscover = repository.isNoAutoDiscover();
 		boolean exactMatch = repository.isExactMatch();
@@ -428,13 +440,11 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		List<SyncTreeNode> nodesList = parent.getDeepSearchNodesList();
 		List<SyncTreeLeaf> leafsList = parent.getDeepSearchLeafsList();
 
-		// 1. Set destination file path
-		determineDestinationPaths(nodesList, defaultDownloadLocation,
-				noAutoDiscover);
+		// 2. Set destination file path
+		determineDestinationPaths(nodesList, defaultDownloadLocation, noAutoDiscover);
 
-		// 2. Compute SHA1 for local files on disk
-		repositorySHA1Processor.init(leafsList,
-				repository.getMapFilesForSync(), true);
+		// 3. Compute SHA1 for local files on disk
+		repositorySHA1Processor.init(leafsList, repository.getMapFilesForSync(), true);
 		repositorySHA1Processor.run();
 
 		// 4. Determine new or updated files
@@ -444,8 +454,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		determineHiddenFiles(nodesList, hiddenFolderPaths);
 
 		// 6. Determine extra local files to delete
-		determineExtraLocalFilesToDelete(parent, defaultDownloadLocation,
-				exactMatch);
+		determineExtraLocalFilesToDelete(parent, defaultDownloadLocation, exactMatch);
 
 		SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
 		parentDTO.setName(SyncTreeDirectoryDTO.RACINE);
@@ -454,8 +463,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return parentDTO;
 	}
 
-	private void determineDestinationPaths(List<SyncTreeNode> nodesList,
-			String defaultDestinationPath, boolean noAutoDiscover) {
+	private void determineDestinationPaths(List<SyncTreeNode> nodesList, String defaultDestinationPath,
+			boolean noAutoDiscover) {
 
 		for (SyncTreeNode node : nodesList) {
 			if (!node.isLeaf()) {
@@ -466,18 +475,14 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				} else {
 					String path = directory.getParent().getDestinationPath();
 					if (path != null) {
-						directory.setDestinationPath(new File(path + "/"
-								+ directory.getParent().getName())
-								.getAbsolutePath());
+						directory.setDestinationPath(
+								new File(path + "/" + directory.getParent().getName()).getAbsolutePath());
 					} else {
 						directory.setDestinationPath(defaultDestinationPath);
 					}
-					if (!noAutoDiscover
-							&& directory.isMarkAsAddon()
-							&& addonDAO.getMap().containsKey(
-									directory.getName().toLowerCase())) {
-						Addon addon = addonDAO.getMap().get(
-								directory.getName().toLowerCase());
+					if (!noAutoDiscover && directory.isMarkAsAddon()
+							&& addonDAO.getMap().containsKey(directory.getName().toLowerCase())) {
+						Addon addon = addonDAO.getMap().get(directory.getName().toLowerCase());
 						String newPath = addon.getPath();
 						directory.setDestinationPath(newPath);
 					}
@@ -488,8 +493,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				if (path == null) {
 					leaf.setDestinationPath(defaultDestinationPath);
 				} else {
-					leaf.setDestinationPath(new File(path + "/"
-							+ leaf.getParent().getName()).getAbsolutePath());
+					leaf.setDestinationPath(new File(path + "/" + leaf.getParent().getName()).getAbsolutePath());
 				}
 			}
 		}
@@ -500,8 +504,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		for (SyncTreeNode node : nodesList) {
 			if (!node.isLeaf()) {
 				SyncTreeDirectory directory = (SyncTreeDirectory) node;
-				File file = new File(directory.getDestinationPath() + "/"
-						+ directory.getName());
+				File file = new File(directory.getDestinationPath() + "/" + directory.getName());
 				if (!file.exists()) {
 					node.setUpdated(true);
 				} else {
@@ -509,8 +512,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				}
 			} else {
 				SyncTreeLeaf leaf = (SyncTreeLeaf) node;
-				File file = new File(leaf.getDestinationPath() + "/"
-						+ leaf.getName());
+				File file = new File(leaf.getDestinationPath() + "/" + leaf.getName());
 				if (!file.exists() || leaf.getLocalSHA1() == null) {
 					node.setUpdated(true);
 				} else {
@@ -524,8 +526,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	private void determineHiddenFiles(List<SyncTreeNode> nodesList,
-			Set<String> hiddenFolderPaths) {
+	private void determineHiddenFiles(List<SyncTreeNode> nodesList, Set<String> hiddenFolderPaths) {
 
 		for (SyncTreeNode node : nodesList) {
 			if (!node.isLeaf()) {
@@ -563,8 +564,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	private String backlashReplace(String myStr) {
 
 		final StringBuilder result = new StringBuilder();
-		final StringCharacterIterator iterator = new StringCharacterIterator(
-				myStr);
+		final StringCharacterIterator iterator = new StringCharacterIterator(myStr);
 		char character = iterator.current();
 		while (character != CharacterIterator.DONE) {
 			if (character == '\\') {
@@ -580,8 +580,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	private String slashReplace(String myStr) {
 
 		final StringBuilder result = new StringBuilder();
-		final StringCharacterIterator iterator = new StringCharacterIterator(
-				myStr);
+		final StringCharacterIterator iterator = new StringCharacterIterator(myStr);
 		char character = iterator.current();
 		while (character != CharacterIterator.DONE) {
 			if (character == '/') {
@@ -594,8 +593,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return result.toString();
 	}
 
-	private void determineExtraLocalFilesToDelete(SyncTreeNode node,
-			String defaultDestinationPath, boolean exactMatch) {
+	private void determineExtraLocalFilesToDelete(SyncTreeNode node, String defaultDestinationPath,
+			boolean exactMatch) {
 
 		if (!node.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) node;
@@ -603,8 +602,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			if (!directory.isHidden()) {
 				File[] subFiles = null;
 				if (directory.getParent() != null) {
-					File file = new File(directory.getDestinationPath() + "/"
-							+ directory.getName());
+					File file = new File(directory.getDestinationPath() + "/" + directory.getName());
 					subFiles = file.listFiles();
 				} else if (directory.getParent() == null && exactMatch) {
 					File file = new File(defaultDestinationPath);
@@ -620,60 +618,33 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					for (File f : subFiles) {
 						if (!listNames.contains(f.getName().toLowerCase())) {
 							if (f.isDirectory()) {
-								SyncTreeDirectory d = new SyncTreeDirectory(
-										f.getName(), directory);
+								SyncTreeDirectory d = new SyncTreeDirectory(f.getName(), directory);
 								directory.addTreeNode(d);
 								d.setDeleted(true);
 								if (directory.getDestinationPath() == null) {
 									d.setDestinationPath(defaultDestinationPath);
 								} else {
-									d.setDestinationPath(directory
-											.getDestinationPath()
-											+ "/"
-											+ directory.getName());
+									d.setDestinationPath(directory.getDestinationPath() + "/" + directory.getName());
 								}
 							} else if (!f.getName().contains(PART_EXTENSION)
 									&& !f.getName().contains(PBO_ZIP_EXTENSION)) {
-								SyncTreeLeaf l = new SyncTreeLeaf(f.getName(),
-										directory);
+								SyncTreeLeaf l = new SyncTreeLeaf(f.getName(), directory);
 								directory.addTreeNode(l);
 								l.setDeleted(true);
 								if (directory.getDestinationPath() == null) {
 									l.setDestinationPath(defaultDestinationPath);
 								} else {
-									l.setDestinationPath(directory
-											.getDestinationPath()
-											+ "/"
-											+ directory.getName());
+									l.setDestinationPath(directory.getDestinationPath() + "/" + directory.getName());
 								}
 							}
 						}
 					}
 				}
 				for (SyncTreeNode n : directory.getList()) {
-					determineExtraLocalFilesToDelete(n, defaultDestinationPath,
-							exactMatch);
+					determineExtraLocalFilesToDelete(n, defaultDestinationPath, exactMatch);
 				}
 			}
 		}
-	}
-
-	public void setDestinationPaths(String repositoryName,
-			SyncTreeDirectoryDTO syncTreeDirectoryDTO)
-			throws RepositoryException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-
-			SyncTreeDirectory syncTreeDirectory = repository.getSync();
-			setDestinationPaths(repositoryName, syncTreeDirectoryDTO);
-		} else {
-			throw new RepositoryNotFoundException(repositoryName);
-		}
-	}
-
-	private void setDestinationPaths(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
-			SyncTreeDirectory syncTreeDirectory) {
 	}
 
 	public void addFilesToHide(String folderPath, String repositoryName) {
@@ -688,8 +659,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			boolean removed = repository.getHiddenFolderPath().remove(
-					folderPath);
+			boolean removed = repository.getHiddenFolderPath().remove(folderPath);
 			if (!removed) {
 				folderPath = slashReplace(folderPath);
 				repository.getHiddenFolderPath().remove(folderPath);
@@ -697,38 +667,63 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	private void determineDestinationPathsForAddonFiles(
-			SyncTreeNode syncTreeNode) {
-
-		if (!syncTreeNode.isLeaf()) {
-			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
-			String path = directory.getParent().getDestinationPath();
-			directory.setDestinationPath(new File(path + "/"
-					+ directory.getParent().getName()).getAbsolutePath());
-		} else {
-			SyncTreeLeaf leaf = (SyncTreeLeaf) syncTreeNode;
-			String path = leaf.getParent().getDestinationPath();
-			leaf.setDestinationPath(new File(path + "/"
-					+ leaf.getParent().getName()).getAbsolutePath());
-		}
-	}
-
-	public String getDefaultDownloadLocation(String repositoryName) {
+	public String getDefaultDownloadLocation(String repositoryName, String eventName) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			return null;
 		} else {
-			return repository.getDefaultDownloadLocation();
+			Map<String, String> mapEventsDownloadLocation = repository.getMapEventsDownloadLocation();
+			if (!mapEventsDownloadLocation.containsKey(eventName)) {
+				return getDefaultDownloadLocation(repositoryName);
+			} else {
+				String path = mapEventsDownloadLocation.get(eventName);
+				if (path == null) {
+					path = getDefaultDownloadLocation(repositoryName);
+					mapEventsDownloadLocation.put(eventName, path);
+					return path;
+				} else {
+					File file = new File(path);
+					if (!file.exists()) {
+						path = getDefaultDownloadLocation(repositoryName);
+						mapEventsDownloadLocation.put(eventName, path);
+						return path;
+					} else {
+						return mapEventsDownloadLocation.get(eventName);
+					}
+				}
+			}
 		}
 	}
 
-	public void setDefaultDownloadLocation(String repositoryName,
-			String defaultDownloadLocation) {
+	private String getDefaultDownloadLocation(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			return null;
+		} else {
+			String path = repository.getDefaultDownloadLocation();
+			if (path == null) {
+				return null;
+			} else {
+				File file = new File(path);
+				if (!file.exists()) {
+					repository.setDefaultDownloadLocation(null);
+				}
+				return repository.getDefaultDownloadLocation();
+			}
+		}
+	}
+
+	public void setDefaultDownloadLocation(String repositoryName, String eventName, String defaultDownloadLocation) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			repository.setDefaultDownloadLocation(defaultDownloadLocation);
+			if (eventName != null) {
+				repository.getMapEventsDownloadLocation().put(eventName, defaultDownloadLocation);
+			} else {
+				repository.setDefaultDownloadLocation(defaultDownloadLocation);
+			}
 			try {
 				write(repositoryName);
 			} catch (WritingException e) {
@@ -785,37 +780,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void setDownloading(String repositoryName, boolean value) {
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			repository.setDownloading(value);
-		}
-	}
-
-	public boolean isDownloading(String repositoryName) {
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			return repository.isDownloading();
-		} else {
-			return false;
-		}
-	}
-
-	public boolean isDownloading() {
-		boolean response = false;
-		for (Iterator<String> i = repositoryDAO.getMap().keySet().iterator(); i
-				.hasNext();) {
-			Repository repository = repositoryDAO.getMap().get(i.next());
-			if (repository.isDownloading()) {
-				response = true;
-				break;
-			}
-		}
-		return response;
-	}
-
-	public void setLastIndexFileTransfered(String repositoryName,
-			int lastIndexFileDownloaded) {
+	public void setLastIndexFileTransfered(String repositoryName, int lastIndexFileDownloaded) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -929,8 +894,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void renameEvent(String repositoryName, String eventName,
-			String newEventName, String description) throws RepositoryException {
+	public void renameEvent(String repositoryName, String eventName, String newEventName, String newDescription)
+			throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -939,7 +904,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				for (Event event : events.getList()) {
 					if (event.getName().equals(eventName)) {
 						event.setName(newEventName);
-						event.setDescription(description);
+						event.setDescription(newDescription);
 					}
 				}
 			}
@@ -948,8 +913,33 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void removeEvent(String repositoryName, String eventName)
-			throws RepositoryException {
+	public void duplicateEvent(String repositoryName, String eventName) throws RepositoryNotFoundException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			Events events = repository.getEvents();
+			if (events != null) {
+				Event newEvent = null;
+				for (Event event : events.getList()) {
+					if (event.getName().equals(eventName)) {
+						newEvent = new Event(eventName + " - duplicate");
+						newEvent.setDescription(event.getDescription());
+						newEvent.getAddonNames().putAll(event.getAddonNames());
+						newEvent.getUserconfigFolderNames().putAll(event.getUserconfigFolderNames());
+						break;
+					}
+				}
+				if (newEvent != null) {
+					events.getList().add(newEvent);
+				}
+			}
+		} else {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+	}
+
+	public void removeEvent(String repositoryName, String eventName) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -979,8 +969,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public TreeDirectoryDTO getGroupFromRepository(String repositoryName,
-			boolean withUserconfig) {
+	public TreeDirectoryDTO getGroupFromRepository(String repositoryName, boolean withUserconfig) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -988,8 +977,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			if (parent == null) {
 				return null;
 			} else {
-				TreeDirectory racineTree = new TreeDirectory(parent.getName(),
-						null);
+				TreeDirectory racineTree = new TreeDirectory(parent.getName(), null);
 				extractAddons(parent, racineTree);
 
 				// Keep marked directory, change terminal directory to leaf
@@ -1003,13 +991,10 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				// Userconfig
 				if (withUserconfig) {
 					for (SyncTreeNode node : parent.getList()) {
-						if (node.getName().toLowerCase().equals("userconfig")
-								&& !node.isLeaf()) {
-							TreeDirectory d = new TreeDirectory(node.getName(),
-									racineCleaned);
+						if (node.getName().toLowerCase().equals("userconfig") && !node.isLeaf()) {
+							TreeDirectory d = new TreeDirectory(node.getName(), racineCleaned);
 							racineCleaned.addTreeNode(d);
-							for (SyncTreeNode n : ((SyncTreeDirectory) node)
-									.getList()) {
+							for (SyncTreeNode n : ((SyncTreeDirectory) node).getList()) {
 								TreeLeaf l = new TreeLeaf(n.getName(), d);
 								d.addTreeNode(l);
 							}
@@ -1027,34 +1012,29 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return null;
 	}
 
-	private void cleanTree(TreeDirectory directory,
-			TreeDirectory directoryCleaned) {
+	private void cleanTree(TreeDirectory directory, TreeDirectory directoryCleaned) {
 
 		if (directory.isMarked() && directory.getList().size() != 0) {
-			TreeDirectory newDirectory = new TreeDirectory(directory.getName(),
-					directoryCleaned);
+			TreeDirectory newDirectory = new TreeDirectory(directory.getName(), directoryCleaned);
 			directoryCleaned.addTreeNode(newDirectory);
 			for (TreeNode n : directory.getList()) {
 				TreeDirectory d = (TreeDirectory) n;
 				cleanTree(d, newDirectory);
 			}
 		} else if (directory.isMarked() && directory.getList().size() == 0) {
-			TreeLeaf newTreelLeaf = new TreeLeaf(directory.getName(),
-					directoryCleaned);
+			TreeLeaf newTreelLeaf = new TreeLeaf(directory.getName(), directoryCleaned);
 			directoryCleaned.addTreeNode(newTreelLeaf);
 		}
 	}
 
-	private void extractAddons(SyncTreeDirectory syncTreeDirectory,
-			TreeDirectory treeDirectory) {
+	private void extractAddons(SyncTreeDirectory syncTreeDirectory, TreeDirectory treeDirectory) {
 
 		List<SyncTreeNode> list = syncTreeDirectory.getList();
 
 		for (SyncTreeNode node : list) {
 			if (!node.isLeaf()) {
 				SyncTreeDirectory syncTreeDirectory2 = (SyncTreeDirectory) node;
-				TreeDirectory treeDirectory2 = new TreeDirectory(
-						node.getName(), treeDirectory);
+				TreeDirectory treeDirectory2 = new TreeDirectory(node.getName(), treeDirectory);
 				if (syncTreeDirectory2.isMarkAsAddon()) {
 					treeDirectory.addTreeNode(treeDirectory2);
 					markRecursively(treeDirectory2);
@@ -1085,18 +1065,15 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					if (event.getName().equals(eventDTO.getName())) {
 						event.getAddonNames().clear();
 						event.getUserconfigFolderNames().clear();
-						for (Iterator<String> iter = eventDTO.getAddonNames()
-								.keySet().iterator(); iter.hasNext();) {
+						for (Iterator<String> iter = eventDTO.getAddonNames().keySet().iterator(); iter.hasNext();) {
 							String key = iter.next();
 							boolean value = eventDTO.getAddonNames().get(key);
 							event.getAddonNames().put(key, value);
 						}
-						for (Iterator<String> iter = eventDTO
-								.getUserconfigFolderNames().keySet().iterator(); iter
+						for (Iterator<String> iter = eventDTO.getUserconfigFolderNames().keySet().iterator(); iter
 								.hasNext();) {
 							String key = iter.next();
-							boolean value = eventDTO.getUserconfigFolderNames()
-									.get(key);
+							boolean value = eventDTO.getUserconfigFolderNames().get(key);
 							event.getUserconfigFolderNames().put(key, value);
 						}
 					}
@@ -1113,8 +1090,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public Collection<String> getExcludedFilesPathFromBuild(
-			String repositoryName) {
+	public Collection<String> getExcludedFilesPathFromBuild(String repositoryName) {
 
 		Collection<String> list = new HashSet<String>();
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
@@ -1124,8 +1100,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return list;
 	}
 
-	public void setExcludedFilesPathFromBuild(String repositoryName,
-			List<String> paths) {
+	public void setExcludedFilesPathFromBuild(String repositoryName, List<String> paths) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -1168,8 +1143,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return list;
 	}
 
-	public void setExcludedFoldersFromSync(String repositoryName,
-			List<String> paths) {
+	public void setExcludedFoldersFromSync(String repositoryName, List<String> paths) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -1178,14 +1152,12 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public List<FavoriteServerDTO> getFavoriteServerSetToAutoconfig(
-			String repositoryName) {
+	public List<FavoriteServerDTO> getFavoriteServerSetToAutoconfig(String repositoryName) {
 
 		List<FavoriteServerDTO> favoriteServerDTOs = new ArrayList<FavoriteServerDTO>();
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			List<FavoriteServer> list = repository
-					.getFavoriteServersSetToAutoconfig();
+			List<FavoriteServer> list = repository.getFavoriteServersSetToAutoconfig();
 			for (FavoriteServer favoriteServer : list) {
 				FavoriteServerDTO f = transformFavoriteServers2DTO(favoriteServer);
 				favoriteServerDTOs.add(f);
@@ -1194,17 +1166,15 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return favoriteServerDTOs;
 	}
 
-	public void setFavoriteServerToAutoconfig(String repositoryName,
-			List<FavoriteServerDTO> favoriteServerDTOs) {
+	public void setFavoriteServerToAutoconfig(String repositoryName, List<Integer> favoriteServerIndexes) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.getFavoriteServersSetToAutoconfig().clear();
-			for (FavoriteServerDTO favoriteServerDTO : favoriteServerDTOs) {
-				FavoriteServer favoriteServer = transformDTO2FavoriteServer(favoriteServerDTO);
+			for (Integer index : favoriteServerIndexes) {
+				FavoriteServer favoriteServer = configurationDAO.getConfiguration().getFavoriteServers().get(index);
 				favoriteServer.setRepositoryName(repositoryName);
-				repository.getFavoriteServersSetToAutoconfig().add(
-						favoriteServer);
+				repository.getFavoriteServersSetToAutoconfig().add(favoriteServer);
 			}
 		}
 	}
@@ -1219,8 +1189,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void setNumberOfConnections(String repositoryName,
-			int numberOfConnections) {
+	public void setNumberOfConnections(String repositoryName, int numberOfConnections) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -1254,8 +1223,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return false;
 	}
 
-	public void setUploadCompressedPboFilesOnly(String repositoryName,
-			boolean value) {
+	public void setUploadCompressedPboFilesOnly(String repositoryName, boolean value) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -1280,99 +1248,47 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void setUploading(String repositoryName, boolean value) {
+	public AbstractProtocole getProtocol(String repositoryName) throws RepositoryNotFoundException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			repository.setUploading(value);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
 		}
+		return repository.getProtocol();
 	}
 
-	public boolean isUploading(String repositoryName) {
+	public AbstractProtocole getUploadProtocol(String repositoryName) throws RepositoryNotFoundException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			return repository.isUploading();
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
 		}
-		return false;
+		return repository.getUploadProtocole();
 	}
 
-	public void setBuilding(String repositoryName, boolean value) {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			repository.setBuilding(value);
-		}
-	}
-
-	public boolean isBuilding(String repositoryName) {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			return repository.isBuilding();
-		}
-		return false;
-	}
-
-	public boolean isChecking(String repositoryName) {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			return repository.isChecking();
-		}
-		return false;
-	}
-
-	public void setChecking(String repositoryName, boolean value) {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			repository.setChecking(value);
-		}
-	}
-
-	public boolean isCheckingForAddons(String repositoryName) {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			return repository.isCheckingForAddons();
-		}
-		return false;
-	}
-
-	public void setCheckingForAddons(String repositoryName, boolean value) {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			repository.setCheckingForAddons(value);
-		}
-	}
-
-	public void setRepositoryUploadProtocole(String repositoryName, String url,
-			String port, String login, String password,
-			ProtocolType protocolType, String connectionTimeOut,
-			String readTimeOut) throws CheckException, RepositoryException {
+	public void setRepositoryUploadProtocole(String repositoryName, String url, String port, String login,
+			String password, ProtocolType protocolType, String connectionTimeOut, String readTimeOut,
+			boolean validateSSLCertificate) throws CheckException, RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryNotFoundException(repositoryName);
 		}
 
-		AbstractProtocole abstractProtocole = AbstractProtocoleFactory
-				.getProtocol(url, port, login, password, protocolType);
-		abstractProtocole.setConnectionTimeOut(connectionTimeOut);
-		abstractProtocole.setReadTimeOut(readTimeOut);
+		AbstractProtocole abstractProtocole = AbstractProtocoleFactory.getProtocol(url, port, login, password,
+				protocolType, validateSSLCertificate);
 
 		if (abstractProtocole == null) {
 			throw new CheckException("Upload protocol not supported.");
+		} else {
+			abstractProtocole.setConnectionTimeOut(connectionTimeOut);
+			abstractProtocole.setReadTimeOut(readTimeOut);
+			abstractProtocole.checkData();
+			repository.setUploadProtocole(abstractProtocole);
 		}
-
-		abstractProtocole.checkData();
-		repository.setUploadProtocole(abstractProtocole);
 	}
 
-	public void readLocalyBuildedRepository(String repositoryName)
-			throws RepositoryException, IOException {
+	public void readLocalyBuildedRepository(String repositoryName) throws RepositoryException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -1399,8 +1315,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public SyncTreeDirectoryDTO getSync(String repositoryName)
-			throws RepositoryException {
+	public SyncTreeDirectoryDTO getSync(String repositoryName) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -1418,8 +1333,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public SyncTreeDirectoryDTO getLocalSync(String repositoryName)
-			throws RepositoryException {
+	public SyncTreeDirectoryDTO getLocalSync(String repositoryName) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -1447,8 +1361,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void setRepositorySyncStatus(String repositoryName,
-			RepositoryStatus repositoryStatus) {
+	public void setRepositorySyncStatus(String repositoryName, RepositoryStatus repositoryStatus) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -1475,13 +1388,11 @@ public class RepositoryService extends ObjectDTOtransformer implements
 							List<Changelog> list = changelogs.getList();
 							Map<Integer, Boolean> map = new TreeMap<Integer, Boolean>();
 							for (Changelog changelog : list) {
-								map.put(changelog.getRevision(),
-										changelog.isContentUpdated());
+								map.put(changelog.getRevision(), changelog.isContentUpdated());
 							}
 							boolean change = false;
 							if (map.containsKey(repository.getRevision())) {
-								for (Iterator<Integer> iter = map.keySet()
-										.iterator(); iter.hasNext();) {
+								for (Iterator<Integer> iter = map.keySet().iterator(); iter.hasNext();) {
 									int revision = iter.next();
 									if (revision > repository.getRevision()) {
 										change = map.get(revision);
@@ -1562,8 +1473,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return 0;
 	}
 
-	public void setMaximumClientDownloadSpeed(String repositoryName,
-			double value) {
+	public void setMaximumClientDownloadSpeed(String repositoryName, double value) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -1571,8 +1481,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void setConnectionTimeout(String repositoryName,
-			String connectionTimeout) {
+	public void setConnectionTimeout(String repositoryName, String connectionTimeout) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {

@@ -31,8 +31,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setAdditionalParameters(String additionalParameters) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.setAdditionalParameters(additionalParameters);
@@ -45,8 +44,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public String getAdditionalParameters() {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -59,28 +57,24 @@ public class ProfileService extends ObjectDTOtransformer {
 	public List<String> getProfileNames() {
 
 		List<String> list = new ArrayList<String>();
-		for (Iterator<String> i = profileDAO.getMap().keySet().iterator(); i
-				.hasNext();) {
+		for (Iterator<String> i = profileDAO.getMap().keySet().iterator(); i.hasNext();) {
 			list.add(i.next());
 		}
 		Collections.sort(list);
 		return list;
 	}
 
-	public void createProfile(String profileName) throws ProfileException,
-			WritingException {
+	public void createProfile(String profileName) throws ProfileException, WritingException {
 
 		Profile profile = new Profile(profileName);
 		if (profileDAO.getMap().containsKey(profileName)) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " already exists.");
+			throw new ProfileException("Profile with name " + profileName + " already exists.");
 		}
 		profileDAO.getMap().put(profile.getName(), profile);
 		profileDAO.write(profile);
 	}
 
-	public void duplicateProfile(String profileName, String duplicateProfileName)
-			throws WritingException {
+	public void duplicateProfile(String profileName, String duplicateProfileName) throws WritingException {
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -88,25 +82,19 @@ public class ProfileService extends ObjectDTOtransformer {
 			TreeDirectory treeDirectory = profile.getTree();
 			TreeDirectory duplicateTreeDirectory = duplicateProfile.getTree();
 			duplicateTree(treeDirectory, duplicateTreeDirectory);
-			duplicateProfile.setAddonSearchDirectories(profile
-					.getAddonSearchDirectories());
-			duplicateProfile.setAdditionalParameters(profile
-					.getAdditionalParameters());
-			duplicateLauncherOptions(profile.getLauncherOptions(),
-					duplicateProfile.getLauncherOptions());
-			profileDAO.getMap().put(duplicateProfile.getName(),
-					duplicateProfile);
+			duplicateProfile.setAddonSearchDirectories(profile.getAddonSearchDirectories());
+			duplicateProfile.setAdditionalParameters(profile.getAdditionalParameters());
+			duplicateLauncherOptions(profile.getLauncherOptions(), duplicateProfile.getLauncherOptions());
+			profileDAO.getMap().put(duplicateProfile.getName(), duplicateProfile);
 			profileDAO.write(duplicateProfile);
 		}
 	}
 
-	public void renameProfile(String initProfileName, String newProfileName)
-			throws ProfileException, WritingException {
+	public void renameProfile(String initProfileName, String newProfileName) throws ProfileException, WritingException {
 
 		Profile profile = profileDAO.getMap().get(initProfileName);
 		if (profile == null) {
-			throw new ProfileException("Profile with name " + initProfileName
-					+ " does not exists.");
+			throw new ProfileException("Profile with name " + initProfileName + " does not exists.");
 		}
 		profile.setName(newProfileName);
 		profileDAO.getMap().remove(initProfileName);
@@ -119,15 +107,13 @@ public class ProfileService extends ObjectDTOtransformer {
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
+			throw new ProfileException("Profile with name " + profileName + " does not exists.");
 		}
 		profileDAO.getMap().remove(profileName);
 		profileDAO.delete(profile);
 	}
 
-	private void duplicateTree(TreeDirectory treeDirectory,
-			TreeDirectory duplicateTreeDirectory) {
+	private void duplicateTree(TreeDirectory treeDirectory, TreeDirectory duplicateTreeDirectory) {
 
 		List<TreeNode> list = treeDirectory.getList();
 
@@ -139,14 +125,11 @@ public class ProfileService extends ObjectDTOtransformer {
 				duplicateTreeDirectory.addTreeNode(duplicateTreeLeaf);
 			} else {
 				TreeDirectory treeDirectory2 = (TreeDirectory) treeNode;
-				TreeDirectory duplicateTreedDirectory2 = new TreeDirectory(
-						treeDirectory2.getName(), duplicateTreeDirectory);
-				duplicateTreedDirectory2.setSelected(treeDirectory2
-						.isSelected());
-				duplicateTreedDirectory2.setModsetType(treeDirectory2
-						.getModsetType());
-				duplicateTreedDirectory2.setModsetRepositoryName(treeDirectory2
-						.getModsetRepositoryName());
+				TreeDirectory duplicateTreedDirectory2 = new TreeDirectory(treeDirectory2.getName(),
+						duplicateTreeDirectory);
+				duplicateTreedDirectory2.setSelected(treeDirectory2.isSelected());
+				duplicateTreedDirectory2.setModsetType(treeDirectory2.getModsetType());
+				duplicateTreedDirectory2.setModsetRepositoryName(treeDirectory2.getModsetRepositoryName());
 				duplicateTreeDirectory.addTreeNode(duplicateTreedDirectory2);
 				duplicateTree(treeDirectory2, duplicateTreedDirectory2);
 			}
@@ -161,43 +144,30 @@ public class ProfileService extends ObjectDTOtransformer {
 		return duplicateTreeLeaf;
 	}
 
-	private void duplicateLauncherOptions(LauncherOptions launcherOptions,
-			LauncherOptions duplicateLauncherOptions) {
+	private void duplicateLauncherOptions(LauncherOptions launcherOptions, LauncherOptions duplicateLauncherOptions) {
 
-		duplicateLauncherOptions.setCpuCountSelection(launcherOptions
-				.getCpuCountSelection());
-		duplicateLauncherOptions.setExThreadsSelection(launcherOptions
-				.getExThreadsSelection());
-		duplicateLauncherOptions.setMallocSelection(launcherOptions
-				.getMallocSelection());
-		duplicateLauncherOptions.setDefaultWorld(launcherOptions
-				.isDefaultWorld());
-		duplicateLauncherOptions.setGameProfile(launcherOptions
-				.getGameProfile());
-		duplicateLauncherOptions.setMaxMemorySelection(launcherOptions
-				.getMaxMemorySelection());
-		duplicateLauncherOptions.setFilePatching(launcherOptions
-				.isFilePatching());
+		duplicateLauncherOptions.setCpuCountSelection(launcherOptions.getCpuCountSelection());
+		duplicateLauncherOptions.setExThreadsSelection(launcherOptions.getExThreadsSelection());
+		duplicateLauncherOptions.setMallocSelection(launcherOptions.getMallocSelection());
+		duplicateLauncherOptions.setDefaultWorld(launcherOptions.isDefaultWorld());
+		duplicateLauncherOptions.setGameProfile(launcherOptions.getGameProfile());
+		duplicateLauncherOptions.setMaxMemorySelection(launcherOptions.getMaxMemorySelection());
+		duplicateLauncherOptions.setFilePatching(launcherOptions.isFilePatching());
 		duplicateLauncherOptions.setNoLogs(launcherOptions.isNologs());
 		duplicateLauncherOptions.setNoPause(launcherOptions.isNoPause());
 		duplicateLauncherOptions.setEnableHT(launcherOptions.isEnableHT());
 		duplicateLauncherOptions.setHugePages(launcherOptions.isHugePages());
 		duplicateLauncherOptions.setNoSplashScreen(launcherOptions.isNoPause());
-		duplicateLauncherOptions.setShowScriptErrors(launcherOptions
-				.isShowScriptErrors());
+		duplicateLauncherOptions.setShowScriptErrors(launcherOptions.isShowScriptErrors());
 		duplicateLauncherOptions.setWindowMode(launcherOptions.isWindowMode());
-		duplicateLauncherOptions.setCheckSignatures(launcherOptions
-				.isCheckSignatures());
-		duplicateLauncherOptions
-				.setAutoRestart(launcherOptions.isAutoRestart());
-		duplicateLauncherOptions.setArma3ExePath(launcherOptions
-				.getArma3ExePath());
+		duplicateLauncherOptions.setCheckSignatures(launcherOptions.isCheckSignatures());
+		duplicateLauncherOptions.setAutoRestart(launcherOptions.isAutoRestart());
+		duplicateLauncherOptions.setArma3ExePath(launcherOptions.getArma3ExePath());
 	}
 
 	public LauncherOptionsDTO getLauncherOptions() {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -211,8 +181,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public List<String> getAddonSearchDirectoryPaths() {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile == null) {
@@ -224,8 +193,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void addAddonSearchDirectoryPath(String path) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -239,8 +207,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void removeAddonSearchDirectoryPath(String path) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -252,10 +219,9 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public String getLastAddedAddonSearchDirecotry() {
+	public String getLastAddedAddonSearchDirectory() {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -267,8 +233,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setLastAddedAddonSearchDirectory(String path) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -282,8 +247,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public TreeDirectoryDTO getAddonGroups() {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		if (profileName == null) {
 			profileName = DefaultProfileName.DEFAULT.getDescription();
@@ -302,8 +266,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setAddonGroups(TreeDirectoryDTO newTree) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		if (profileName == null) {
 			profileName = DefaultProfileName.DEFAULT.getDescription();
@@ -323,8 +286,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void resetAddonPriority() {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -338,8 +300,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void topAddonPriority(int index) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -358,8 +319,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void upAddonPriority(int index) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -379,8 +339,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void downAddonPriority(int index) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -400,8 +359,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void upDirectoryPriority(int index) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -421,8 +379,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void downDirectoryPriority(int index) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -442,8 +399,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setGameProfile(String gameProfileName) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -457,8 +413,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setCheckBoxShowScriptErrors(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -472,8 +427,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setCheckBoxNoPause(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -487,8 +441,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setCheckBoxFilePatching(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -502,8 +455,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setCheckBoxWindowMode(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -517,8 +469,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setCheckBoxCheckSignatures(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -532,8 +483,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setCheckBoxAutoRestart(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -547,8 +497,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public boolean isAutoRestart() {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -558,10 +507,23 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
+	public void setCheckBoxMissionFile(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration().getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setMissionFile(selected);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
+		}
+	}
+
 	public void setMaxMemory(String maxMemory) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -575,16 +537,14 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setCpuCount(String cpuCount) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			if (cpuCount == null) {
 				profile.getLauncherOptions().setCpuCountSelection(0);
 			} else {
-				profile.getLauncherOptions().setCpuCountSelection(
-						Integer.parseInt(cpuCount));
+				profile.getLauncherOptions().setCpuCountSelection(Integer.parseInt(cpuCount));
 			}
 			try {
 				profileDAO.write(profile);
@@ -595,8 +555,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setEnableHT(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -610,8 +569,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setHugePages(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -625,8 +583,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setExThreads(String exThreads) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -640,8 +597,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setMalloc(String mallocDll) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -655,8 +611,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setNoSplashScreen(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -670,8 +625,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setDefaultWorld(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -685,8 +639,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setNoLogs(boolean selected) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -698,10 +651,21 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
+	public String getArma3ExePath() {
+
+		String profileName = configurationDAO.getConfiguration().getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			return profile.getLauncherOptions().getArma3ExePath();
+		} else {
+			return null;
+		}
+	}
+
 	public void setArmA3ExePath(String arma3ExePath) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -713,16 +677,17 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public String getArma3ExePath() {
+	public void setMissionFilePath(String missionFilePath) {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
-			return profile.getLauncherOptions().getArma3ExePath();
-		} else {
-			return null;
+			profile.getLauncherOptions().setMissionFilePath(missionFilePath);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 }

@@ -11,6 +11,7 @@ public class ProtocolDTO {
 	private ProtocolType protocolType;
 	private String connectionTimeOut;
 	private String readTimeOut;
+	private boolean validateSSLCertificate;
 
 	public String getLogin() {
 		return login;
@@ -66,5 +67,13 @@ public class ProtocolDTO {
 
 	public void setReadTimeOut(String readTimeOut) {
 		this.readTimeOut = readTimeOut;
+	}
+
+	public boolean isValidateSSLCertificate() {
+		return validateSSLCertificate;
+	}
+
+	public void setValidateSSLCertificate(boolean validateSSLCertificate) {
+		this.validateSSLCertificate = validateSSLCertificate;
 	}
 }

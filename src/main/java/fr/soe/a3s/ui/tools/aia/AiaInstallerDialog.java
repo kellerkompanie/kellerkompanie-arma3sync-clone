@@ -25,7 +25,6 @@ import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dto.configuration.AiAOptionsDTO;
 import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImagePanel;
@@ -52,7 +51,6 @@ public class AiaInstallerDialog extends JDialog implements UIConstants {
 	private JButton buttonSelectArmAInstallationDirectory;
 	private JTextField textFieldTOHInstallationDirectory;
 	private JButton buttonSelectTOHInstallationDirectory;
-	private final AddonService addonService = new AddonService();
 	private JTextField textFieldArmA2OAInstallationDirectory;
 	private JButton buttonSelectArmA2OAInstallationDirectory;
 	private JTextField textFieldAllInArmAInstallationDirectory;
@@ -105,13 +103,11 @@ public class AiaInstallerDialog extends JDialog implements UIConstants {
 		{
 			JPanel centerPanel = new JPanel();
 			this.add(centerPanel, BorderLayout.CENTER);
-			centerPanel.setBorder(BorderFactory
-					.createEtchedBorder(BevelBorder.LOWERED));
+			centerPanel.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 			centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 			{
 				JPanel locationsPanel = new JPanel();
-				locationsPanel.setBorder(BorderFactory.createTitledBorder(
-						BorderFactory.createEtchedBorder(),
+				locationsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
 						"Installation directories"));
 				locationsPanel.setLayout(new BorderLayout());
 				centerPanel.add(locationsPanel);
@@ -119,97 +115,66 @@ public class AiaInstallerDialog extends JDialog implements UIConstants {
 				locationsPanel.add(vBox, BorderLayout.NORTH);
 				{
 					JPanel arma2OAInstallationDirectoryLabelPanel = new JPanel();
-					arma2OAInstallationDirectoryLabelPanel
-							.setLayout(new FlowLayout(FlowLayout.LEFT));
-					JLabel labelArmA2OAinstallationDirectory = new JLabel(
-							"ArmA 2 OA");
-					arma2OAInstallationDirectoryLabelPanel
-							.add(labelArmA2OAinstallationDirectory);
+					arma2OAInstallationDirectoryLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+					JLabel labelArmA2OAinstallationDirectory = new JLabel("ArmA 2 OA");
+					arma2OAInstallationDirectoryLabelPanel.add(labelArmA2OAinstallationDirectory);
 					vBox.add(arma2OAInstallationDirectoryLabelPanel);
 				}
 				{
 					JPanel arma2OAInstallationDirectoryPanel = new JPanel();
-					arma2OAInstallationDirectoryPanel
-							.setLayout(new BorderLayout());
+					arma2OAInstallationDirectoryPanel.setLayout(new BorderLayout());
 					textFieldArmA2OAInstallationDirectory = new JTextField();
-					buttonSelectArmA2OAInstallationDirectory = new JButton(
-							"Select");
+					buttonSelectArmA2OAInstallationDirectory = new JButton("Select");
 					textFieldArmA2OAInstallationDirectory.setEditable(false);
-					textFieldArmA2OAInstallationDirectory
-							.setBackground(Color.WHITE);
-					arma2OAInstallationDirectoryPanel.add(
-							textFieldArmA2OAInstallationDirectory,
-							BorderLayout.CENTER);
-					arma2OAInstallationDirectoryPanel.add(
-							buttonSelectArmA2OAInstallationDirectory,
-							BorderLayout.EAST);
+					textFieldArmA2OAInstallationDirectory.setBackground(Color.WHITE);
+					arma2OAInstallationDirectoryPanel.add(textFieldArmA2OAInstallationDirectory, BorderLayout.CENTER);
+					arma2OAInstallationDirectoryPanel.add(buttonSelectArmA2OAInstallationDirectory, BorderLayout.EAST);
 					vBox.add(arma2OAInstallationDirectoryPanel);
 				}
 				vBox.add(Box.createVerticalStrut(5));
 				{
 					JPanel arma2InstallationDirectoryLabelPanel = new JPanel();
-					arma2InstallationDirectoryLabelPanel
-							.setLayout(new FlowLayout(FlowLayout.LEFT));
-					JLabel labelArmA2installationDirectory = new JLabel(
-							"ArmA 2");
-					arma2InstallationDirectoryLabelPanel
-							.add(labelArmA2installationDirectory);
+					arma2InstallationDirectoryLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+					JLabel labelArmA2installationDirectory = new JLabel("ArmA 2");
+					arma2InstallationDirectoryLabelPanel.add(labelArmA2installationDirectory);
 					vBox.add(arma2InstallationDirectoryLabelPanel);
 				}
 				{
 					JPanel arma2InstallationDirectoryPanel = new JPanel();
-					arma2InstallationDirectoryPanel
-							.setLayout(new BorderLayout());
+					arma2InstallationDirectoryPanel.setLayout(new BorderLayout());
 					textFieldArmA2InstallationDirectory = new JTextField();
-					buttonSelectArmA2InstallationDirectory = new JButton(
-							"Select");
+					buttonSelectArmA2InstallationDirectory = new JButton("Select");
 					textFieldArmA2InstallationDirectory.setEditable(false);
-					textFieldArmA2InstallationDirectory
-							.setBackground(Color.WHITE);
-					arma2InstallationDirectoryPanel.add(
-							textFieldArmA2InstallationDirectory,
-							BorderLayout.CENTER);
-					arma2InstallationDirectoryPanel.add(
-							buttonSelectArmA2InstallationDirectory,
-							BorderLayout.EAST);
+					textFieldArmA2InstallationDirectory.setBackground(Color.WHITE);
+					arma2InstallationDirectoryPanel.add(textFieldArmA2InstallationDirectory, BorderLayout.CENTER);
+					arma2InstallationDirectoryPanel.add(buttonSelectArmA2InstallationDirectory, BorderLayout.EAST);
 					vBox.add(arma2InstallationDirectoryPanel);
 				}
 				vBox.add(Box.createVerticalStrut(5));
 				{
 					JPanel armaInstallationDirectoryLabelPanel = new JPanel();
-					armaInstallationDirectoryLabelPanel
-							.setLayout(new FlowLayout(FlowLayout.LEFT));
+					armaInstallationDirectoryLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 					JLabel labelArmAinstallationDirectory = new JLabel("ArmA 1");
-					armaInstallationDirectoryLabelPanel
-							.add(labelArmAinstallationDirectory);
+					armaInstallationDirectoryLabelPanel.add(labelArmAinstallationDirectory);
 					vBox.add(armaInstallationDirectoryLabelPanel);
 				}
 				{
 					JPanel armaInstallationDirectoryPanel = new JPanel();
-					armaInstallationDirectoryPanel
-							.setLayout(new BorderLayout());
+					armaInstallationDirectoryPanel.setLayout(new BorderLayout());
 					textFieldArmAInstallationDirectory = new JTextField();
-					buttonSelectArmAInstallationDirectory = new JButton(
-							"Select");
+					buttonSelectArmAInstallationDirectory = new JButton("Select");
 					textFieldArmAInstallationDirectory.setEditable(false);
-					textFieldArmAInstallationDirectory
-							.setBackground(Color.WHITE);
-					armaInstallationDirectoryPanel.add(
-							textFieldArmAInstallationDirectory,
-							BorderLayout.CENTER);
-					armaInstallationDirectoryPanel.add(
-							buttonSelectArmAInstallationDirectory,
-							BorderLayout.EAST);
+					textFieldArmAInstallationDirectory.setBackground(Color.WHITE);
+					armaInstallationDirectoryPanel.add(textFieldArmAInstallationDirectory, BorderLayout.CENTER);
+					armaInstallationDirectoryPanel.add(buttonSelectArmAInstallationDirectory, BorderLayout.EAST);
 					vBox.add(armaInstallationDirectoryPanel);
 				}
 				vBox.add(Box.createVerticalStrut(5));
 				{
 					JPanel tohInstallationDirectoryLabelPanel = new JPanel();
-					tohInstallationDirectoryLabelPanel
-							.setLayout(new FlowLayout(FlowLayout.LEFT));
+					tohInstallationDirectoryLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 					JLabel labelTOHinstallationDirectory = new JLabel("TOH");
-					tohInstallationDirectoryLabelPanel
-							.add(labelTOHinstallationDirectory);
+					tohInstallationDirectoryLabelPanel.add(labelTOHinstallationDirectory);
 					vBox.add(tohInstallationDirectoryLabelPanel);
 				}
 				{
@@ -218,40 +183,28 @@ public class AiaInstallerDialog extends JDialog implements UIConstants {
 					textFieldTOHInstallationDirectory = new JTextField();
 					buttonSelectTOHInstallationDirectory = new JButton("Select");
 					textFieldTOHInstallationDirectory.setEditable(false);
-					textFieldTOHInstallationDirectory
-							.setBackground(Color.WHITE);
-					tohInstallationDirectoryPanel.add(
-							textFieldTOHInstallationDirectory,
-							BorderLayout.CENTER);
-					tohInstallationDirectoryPanel.add(
-							buttonSelectTOHInstallationDirectory,
-							BorderLayout.EAST);
+					textFieldTOHInstallationDirectory.setBackground(Color.WHITE);
+					tohInstallationDirectoryPanel.add(textFieldTOHInstallationDirectory, BorderLayout.CENTER);
+					tohInstallationDirectoryPanel.add(buttonSelectTOHInstallationDirectory, BorderLayout.EAST);
 					vBox.add(tohInstallationDirectoryPanel);
 				}
 				vBox.add(Box.createVerticalStrut(5));
 				{
 					JPanel allInArmAInstallationDirectoryLabelPanel = new JPanel();
-					allInArmAInstallationDirectoryLabelPanel
-							.setLayout(new FlowLayout(FlowLayout.LEFT));
-					JLabel labelAllInArmAinstallationDirectory = new JLabel(
-							"@AllinArma");
-					allInArmAInstallationDirectoryLabelPanel
-							.add(labelAllInArmAinstallationDirectory);
+					allInArmAInstallationDirectoryLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+					JLabel labelAllInArmAinstallationDirectory = new JLabel("@AllinArma");
+					allInArmAInstallationDirectoryLabelPanel.add(labelAllInArmAinstallationDirectory);
 					vBox.add(allInArmAInstallationDirectoryLabelPanel);
 				}
 				{
 					JPanel allInArmAInstallationDirectoryPanel = new JPanel();
-					allInArmAInstallationDirectoryPanel
-							.setLayout(new BorderLayout());
+					allInArmAInstallationDirectoryPanel.setLayout(new BorderLayout());
 					textFieldAllInArmAInstallationDirectory = new JTextField();
 					textFieldAllInArmAInstallationDirectory.setEnabled(false);
 					textFieldAllInArmAInstallationDirectory.setEditable(false);
-					textFieldAllInArmAInstallationDirectory
-							.setPreferredSize(new Dimension(75, 25));
-					textFieldAllInArmAInstallationDirectory
-							.setBackground(Color.WHITE);
-					allInArmAInstallationDirectoryPanel.add(
-							textFieldAllInArmAInstallationDirectory,
+					textFieldAllInArmAInstallationDirectory.setPreferredSize(new Dimension(75, 25));
+					textFieldAllInArmAInstallationDirectory.setBackground(Color.WHITE);
+					allInArmAInstallationDirectoryPanel.add(textFieldAllInArmAInstallationDirectory,
 							BorderLayout.CENTER);
 					vBox.add(allInArmAInstallationDirectoryPanel);
 				}
@@ -260,43 +213,35 @@ public class AiaInstallerDialog extends JDialog implements UIConstants {
 		}
 
 		this.pack();
-		this.setMinimumSize(new Dimension(
-				facade.getMainPanel().getBounds().width,
-				this.getBounds().height));
-		this.setPreferredSize(new Dimension(
-				facade.getMainPanel().getBounds().width,
-				this.getBounds().height));
+		this.setMinimumSize(new Dimension(facade.getMainPanel().getBounds().width, this.getBounds().height));
+		this.setPreferredSize(new Dimension(facade.getMainPanel().getBounds().width, this.getBounds().height));
 
 		this.setLocationRelativeTo(facade.getMainPanel());
 
-		buttonSelectArmA2OAInstallationDirectory
-				.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						buttonSelectArmA2OAInstallationDirectoryPerformed();
-					}
-				});
-		buttonSelectArmA2InstallationDirectory
-				.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						buttonSelectArmA2InstallationDirectoryPerformed();
-					}
-				});
-		buttonSelectArmAInstallationDirectory
-				.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						buttonSelectArmAInstallationDirectoryPerfomed();
-					}
-				});
-		buttonSelectTOHInstallationDirectory
-				.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						buttonSelectTOHInstallationDirectoryPerformed();
-					}
-				});
+		buttonSelectArmA2OAInstallationDirectory.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonSelectArmA2OAInstallationDirectoryPerformed();
+			}
+		});
+		buttonSelectArmA2InstallationDirectory.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonSelectArmA2InstallationDirectoryPerformed();
+			}
+		});
+		buttonSelectArmAInstallationDirectory.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonSelectArmAInstallationDirectoryPerfomed();
+			}
+		});
+		buttonSelectTOHInstallationDirectory.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonSelectTOHInstallationDirectoryPerformed();
+			}
+		});
 		buttonOK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -320,20 +265,15 @@ public class AiaInstallerDialog extends JDialog implements UIConstants {
 
 	public void init() {
 
-		AiAOptionsDTO aiAOptionsDTO = configurationService
-				.determineAiAOptions();
-		textFieldArmA2InstallationDirectory.setText(aiAOptionsDTO
-				.getArma2Path());
-		textFieldArmA2OAInstallationDirectory.setText(aiAOptionsDTO
-				.getArma2OAPath());
+		AiAOptionsDTO aiAOptionsDTO = configurationService.determineAiAOptions();
+		textFieldArmA2InstallationDirectory.setText(aiAOptionsDTO.getArma2Path());
+		textFieldArmA2OAInstallationDirectory.setText(aiAOptionsDTO.getArma2OAPath());
 		textFieldArmAInstallationDirectory.setText(aiAOptionsDTO.getArmaPath());
 		textFieldTOHInstallationDirectory.setText(aiAOptionsDTO.getTohPath());
-		if (aiAOptionsDTO.getAllinArmaPath() == null
-				|| aiAOptionsDTO.getAllinArmaPath().isEmpty()) {
+		if (aiAOptionsDTO.getAllinArmaPath() == null || aiAOptionsDTO.getAllinArmaPath().isEmpty()) {
 			textFieldAllInArmAInstallationDirectory.setText("Not found!");
 		} else {
-			textFieldAllInArmAInstallationDirectory.setText(aiAOptionsDTO
-					.getAllinArmaPath());
+			textFieldAllInArmAInstallationDirectory.setText(aiAOptionsDTO.getAllinArmaPath());
 		}
 	}
 
@@ -396,10 +336,8 @@ public class AiaInstallerDialog extends JDialog implements UIConstants {
 	private void buttonOKPerformed() {
 
 		AiAOptionsDTO aiAOptionsDTO = new AiAOptionsDTO();
-		aiAOptionsDTO.setArma2Path(textFieldArmA2InstallationDirectory
-				.getText());
-		aiAOptionsDTO.setArma2OAPath(textFieldArmA2OAInstallationDirectory
-				.getText());
+		aiAOptionsDTO.setArma2Path(textFieldArmA2InstallationDirectory.getText());
+		aiAOptionsDTO.setArma2OAPath(textFieldArmA2OAInstallationDirectory.getText());
 		aiAOptionsDTO.setArmaPath(textFieldArmAInstallationDirectory.getText());
 		aiAOptionsDTO.setTohPath(textFieldTOHInstallationDirectory.getText());
 		configurationService.setAiAOptions(aiAOptionsDTO);

@@ -44,7 +44,7 @@ public class EventRenameDialog extends AbstractEventDialog {
 				List<EventDTO> eventDTOs = repositoryService
 						.getEvents(repositoryName);
 				for (EventDTO eventDTO : eventDTOs) {
-					if (eventDTO.equals(newEventName)) {
+					if (eventDTO.getName().equals(newEventName)) {
 						labelWarning.setText("duplicate name!");
 						labelWarning.setFont(labelWarning.getFont().deriveFont(
 								Font.ITALIC));

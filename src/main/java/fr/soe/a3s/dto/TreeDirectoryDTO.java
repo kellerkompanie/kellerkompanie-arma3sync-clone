@@ -1,13 +1,18 @@
 package fr.soe.a3s.dto;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import fr.soe.a3s.constant.ModsetType;
 
-public class TreeDirectoryDTO implements TreeNodeDTO {
+public class TreeDirectoryDTO implements TreeNodeDTO, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6087559817135871955L;
 	private String name;
 	private boolean selected = false;
 	private ModsetType modsetType;
@@ -95,17 +100,30 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 		list.remove(treeNodeDTO);
 	}
 
+	public boolean contains(TreeNodeDTO treeNodeDTO) {
+
+		for (TreeNodeDTO t : list) {
+			if (t.getName().equals(treeNodeDTO.getName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public List<TreeNodeDTO> getList() {
 		return list;
 	}
 
 	@Override
 	public String toString() {
-		if (updated){
-			return name + " " + "(synchronized)";
-		}else {
-			return name;
+		String stg = name;
+		if (modsetType != null) {
+			stg = stg + " " + "(modset)";
 		}
+		if (updated) {
+			stg = stg + " " + "(synchronized)";
+		}
+		return stg;
 	}
 
 	public ModsetType getModsetType() {
@@ -123,4 +141,5 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 	public void setModsetRepositoryName(String modsetRepositoryName) {
 		this.modsetRepositoryName = modsetRepositoryName;
 	}
+
 }

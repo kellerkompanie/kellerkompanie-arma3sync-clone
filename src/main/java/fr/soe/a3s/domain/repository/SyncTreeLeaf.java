@@ -20,6 +20,7 @@ public class SyncTreeLeaf extends SyncTreeNodeMethods implements SyncTreeNode,
 	private boolean updated = false;
 	private boolean deleted = false;
 	private boolean compressed = false;
+	private transient boolean optional = false;
 
 	public SyncTreeLeaf(String name, SyncTreeDirectory parent) {
 		super();
@@ -142,5 +143,15 @@ public class SyncTreeLeaf extends SyncTreeNodeMethods implements SyncTreeNode,
 	@Override
 	public String getRelativePath() {
 		return determinePath(this);
+	}
+
+	@Override
+	public void setOptional(boolean value) {
+		this.optional = value;
+	}
+
+	@Override
+	public boolean isOptional() {
+		return this.optional;
 	}
 }

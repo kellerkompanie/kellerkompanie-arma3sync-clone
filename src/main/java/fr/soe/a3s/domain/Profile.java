@@ -3,8 +3,6 @@ package fr.soe.a3s.domain;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import fr.soe.a3s.domain.configration.LauncherOptions;
 

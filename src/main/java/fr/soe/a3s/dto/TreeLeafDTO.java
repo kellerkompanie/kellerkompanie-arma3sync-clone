@@ -1,15 +1,23 @@
 package fr.soe.a3s.dto;
 
-public class TreeLeafDTO implements TreeNodeDTO {
+import java.io.Serializable;
 
+public class TreeLeafDTO implements TreeNodeDTO, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -63525453155040102L;
 	private String name;
 	private boolean selected = false;
 	private boolean missing = false;
 	private boolean optional = false;
 	private boolean duplicate = false;
 	private boolean duplicatedSelection = false;
-	private String sourceRelativePath;
+	private String sourceRelativePath = null;
+	private String sourceFilePath = null;
 	private TreeDirectoryDTO parent;
+	private String description;
 
 	@Override
 	public String getName() {
@@ -60,6 +68,11 @@ public class TreeLeafDTO implements TreeNodeDTO {
 	@Override
 	public String toString() {
 		String stg = name;
+		if (description != null) {
+			if (description != "") {
+				stg = stg + " " + "(" + description + ")";
+			}
+		}
 		if (optional) {
 			stg = stg + " " + "(optional)";
 		}
@@ -71,7 +84,11 @@ public class TreeLeafDTO implements TreeNodeDTO {
 			}
 		}
 		if (missing) {
-			stg = stg + " " + "(missing)";
+			if (sourceFilePath != null) {
+				stg = stg + " " + "(missing from " + sourceFilePath + ")";
+			} else {
+				stg = stg + " " + "(missing)";
+			}
 		}
 		if (duplicatedSelection) {
 			stg = stg + " " + "(duplicate selection)";
@@ -111,11 +128,27 @@ public class TreeLeafDTO implements TreeNodeDTO {
 		this.sourceRelativePath = sourceRelativePath;
 	}
 
+	public String getSourceFilePath() {
+		return sourceFilePath;
+	}
+
+	public void setSourceFilePath(String sourceFilePath) {
+		this.sourceFilePath = sourceFilePath;
+	}
+
 	public boolean isDuplicatedSelection() {
 		return duplicatedSelection;
 	}
 
 	public void setDuplicatedSelection(boolean value) {
 		this.duplicatedSelection = value;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }

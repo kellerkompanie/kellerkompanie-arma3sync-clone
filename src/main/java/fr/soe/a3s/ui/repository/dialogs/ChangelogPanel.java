@@ -86,11 +86,11 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 					.createEtchedBorder(BevelBorder.LOWERED));
 			this.add(scrollpane, BorderLayout.CENTER);
 		}
-		
+
 		this.pack();
 		this.setMinimumSize(new Dimension(400, 400));
 		this.setLocationRelativeTo(facade.getMainPanel());
-		
+
 		buttonSwitch.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -153,7 +153,7 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 			textArea.setRows(1);
 			textArea.setCaretPosition(0);
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Repository", JOptionPane.ERROR_MESSAGE);
+					e.getMessage(), repositoryName, JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -195,7 +195,7 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 			Toolkit.getDefaultToolkit().getSystemClipboard()
 					.setContents(ss, null);
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Changelog copied to clipboard.", "Changelog",
+					"Changelog copied to clipboard.", repositoryName,
 					JOptionPane.INFORMATION_MESSAGE);
 		} catch (IllegalStateException e) {
 			e.printStackTrace();

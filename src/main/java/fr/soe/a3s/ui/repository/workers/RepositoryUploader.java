@@ -1,9 +1,7 @@
 package fr.soe.a3s.ui.repository.workers;
 
-import java.io.IOException;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.controller.ObserverConnectionLost;
@@ -13,15 +11,9 @@ import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.LoadingException;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.administration.RepositoryUploadProcessor;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.AdminPanel;
-import fr.soe.a3s.ui.repository.dialogs.ConnectionLostDialog;
-import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
-import fr.soe.a3s.utils.ErrorPrinter;
 import fr.soe.a3s.utils.UnitConverter;
 
 public class RepositoryUploader extends Thread implements DataAccessConstants {
@@ -30,7 +22,6 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 	private final AdminPanel adminPanel;
 	/* Data */
 	private final String repositoryName;
-	private final String repositoryPath;
 	/* Tests */
 	private boolean canceled;
 	/* Service */
@@ -40,11 +31,9 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 	private ObserverError observerError;
 	private ObserverConnectionLost observerConnectionLost;
 
-	public RepositoryUploader(Facade facade, String repositoryName,
-			String repositoryPath, AdminPanel adminPanel) {
+	public RepositoryUploader(Facade facade, String repositoryName, AdminPanel adminPanel) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
-		this.repositoryPath = repositoryPath;
 		this.adminPanel = adminPanel;
 	}
 
@@ -59,41 +48,37 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 
 		adminPanel.getUploadrogressBar().setIndeterminate(true);
 
-		repositoryUploadProcessor = new RepositoryUploadProcessor(
-				repositoryName);
+		repositoryUploadProcessor = new RepositoryUploadProcessor(repositoryName);
 		repositoryUploadProcessor.addObserverText(new ObserverText() {
 			@Override
 			public void update(String text) {
 				executeUpdateText(text);
 			}
 		});
-		repositoryUploadProcessor
-				.addObserverCountProgress(new ObserverCountInt() {
-					@Override
-					public void update(int value) {
-						executeUpdateProgress(value);
-					}
-				});
-		repositoryUploadProcessor
-				.addObserverUploadedSize(new ObserverCountLong() {
-					@Override
-					public void update(long value) {
-						executeUpdateUploadedSize(value);
-					}
-				});
+		repositoryUploadProcessor.addObserverCountProgress(new ObserverCountInt() {
+			@Override
+			public void update(int value) {
+				executeUpdateProgress(value);
+			}
+		});
+		repositoryUploadProcessor.addObserverUploadedSize(new ObserverCountLong() {
+			@Override
+			public void update(long value) {
+				executeUpdateUploadedSize(value);
+			}
+		});
 		repositoryUploadProcessor.addObserverTotalSize(new ObserverCountLong() {
 			@Override
 			public void update(long value) {
 				executeUpdateTotalSize(value);
 			}
 		});
-		repositoryUploadProcessor
-				.addObserverRemainingTime(new ObserverCountLong() {
-					@Override
-					public void update(long value) {
-						executeUpdateRemainingTime(value);
-					}
-				});
+		repositoryUploadProcessor.addObserverRemainingTime(new ObserverCountLong() {
+			@Override
+			public void update(long value) {
+				executeUpdateRemainingTime(value);
+			}
+		});
 		repositoryUploadProcessor.addObserverSpeed(new ObserverCountLong() {
 			@Override
 			public void update(long value) {
@@ -112,13 +97,12 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 				executeError(errors);
 			}
 		});
-		repositoryUploadProcessor
-				.addObserverConnectionLost(new ObserverConnectionLost() {
-					@Override
-					public void lost() {
-						executeConnectionLost();
-					}
-				});
+		repositoryUploadProcessor.addObserverConnectionLost(new ObserverConnectionLost() {
+			@Override
+			public void lost() {
+				executeConnectionLost();
+			}
+		});
 
 		repositoryUploadProcessor.run();
 	}
@@ -132,10 +116,8 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 		adminPanel.getButtonBuildOptions().setEnabled(false);
 		adminPanel.getButtonUploadOptions().setEnabled(false);
 		adminPanel.getButtonView().setEnabled(false);
-		adminPanel.getRepositoryPanel().getDownloadPanel()
-				.getButtonCheckForAddonsStart().setEnabled(false);
-		adminPanel.getRepositoryPanel().getDownloadPanel()
-				.getButtonDownloadStart().setEnabled(false);
+		adminPanel.getRepositoryPanel().getDownloadPanel().getButtonCheckForAddonsStart().setEnabled(false);
+		adminPanel.getRepositoryPanel().getDownloadPanel().getButtonDownloadStart().setEnabled(false);
 		adminPanel.getUploadInformationBox().setVisible(true);
 		adminPanel.getUploadTotalSizeLabelValue().setText("");
 		adminPanel.getUploadedLabelValue().setText("");
@@ -157,10 +139,8 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 		adminPanel.getButtonBuildOptions().setEnabled(true);
 		adminPanel.getButtonUploadOptions().setEnabled(true);
 		adminPanel.getButtonView().setEnabled(true);
-		adminPanel.getRepositoryPanel().getDownloadPanel()
-				.getButtonCheckForAddonsStart().setEnabled(true);
-		adminPanel.getRepositoryPanel().getDownloadPanel()
-				.getButtonDownloadStart().setEnabled(true);
+		adminPanel.getRepositoryPanel().getDownloadPanel().getButtonCheckForAddonsStart().setEnabled(true);
+		adminPanel.getRepositoryPanel().getDownloadPanel().getButtonDownloadStart().setEnabled(true);
 		adminPanel.getUploadInformationBox().setVisible(false);
 		adminPanel.getUploadTotalSizeLabelValue().setText("");
 		adminPanel.getUploadedLabelValue().setText("");
@@ -189,29 +169,25 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 
 	private void executeUpdateUploadedSize(long value) {
 		if (!canceled) {
-			adminPanel.getUploadedLabelValue().setText(
-					UnitConverter.convertSize(value));
+			adminPanel.getUploadedLabelValue().setText(UnitConverter.convertSize(value));
 		}
 	}
 
 	private void executeUpdateTotalSize(long value) {
 		if (!canceled) {
-			adminPanel.getUploadTotalSizeLabelValue().setText(
-					UnitConverter.convertSize(value));
+			adminPanel.getUploadTotalSizeLabelValue().setText(UnitConverter.convertSize(value));
 		}
 	}
 
 	private void executeUpdateRemainingTime(long value) {
 		if (!canceled) {
-			adminPanel.getUploadRemainingTimeValue().setText(
-					UnitConverter.convertTime(value));
+			adminPanel.getUploadRemainingTimeValue().setText(UnitConverter.convertTime(value));
 		}
 	}
 
 	private void executeUpdateSpeed(long value) {
 		if (!canceled) {
-			adminPanel.getUploadSpeedLabelValue().setText(
-					UnitConverter.convertSpeed(value));
+			adminPanel.getUploadSpeedLabelValue().setText(UnitConverter.convertSpeed(value));
 		}
 	}
 
@@ -223,8 +199,7 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 
 			canceled = true;
 
-			System.out.println("Repository: " + repositoryName
-					+ " - repository upload finished.");
+			System.out.println("Repository: " + repositoryName + " - repository upload finished.");
 
 			adminPanel.getUploadrogressBar().setString("100%");
 			adminPanel.getUploadrogressBar().setValue(100);
@@ -245,8 +220,7 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 
 			canceled = true;
 
-			System.out.println("Repository: " + repositoryName
-					+ " - repository upload finished with error.");
+			System.out.println("Repository: " + repositoryName + " - repository upload finished with error.");
 
 			adminPanel.getUploadrogressBar().setString("Error!");
 
@@ -265,10 +239,9 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 		if (!canceled) {
 
 			canceled = true;
-			
-			System.out.println("Repository: " + repositoryName
-					+ " - connection lost.");
-			
+
+			System.out.println("Repository: " + repositoryName + " - connection lost.");
+
 			adminPanel.getUploadrogressBar().setString("Error!");
 
 			initAdminPanelForEndUpload();
@@ -280,9 +253,7 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 	}
 
 	private void terminate() {
-
 		repositoryUploadProcessor.cancel();
-		System.gc();
 	}
 
 	public void cancel() {

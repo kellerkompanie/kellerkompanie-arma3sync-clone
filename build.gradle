@@ -10,6 +10,8 @@ repositories {
 }
 
 dependencies {
+    compile 'org.apache.httpcomponents:httpclient:4.5.13'
+    compile group: 'com.github.lookfirst', name: 'sardine', version: '5.9'
     compile 'de.huxhorn.lilith:de.huxhorn.lilith.3rdparty.junique:1.0.4'
     compile group: 'com.jtattoo', name: 'JTattoo', version: '1.6.10'
     compile group: 'jaxen', name: 'jaxen', version: '1.1'

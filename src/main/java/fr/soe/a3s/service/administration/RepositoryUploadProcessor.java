@@ -1,11 +1,12 @@
 package fr.soe.a3s.service.administration;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.controller.ObserverConnectionLost;
 import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverCountLong;
@@ -13,14 +14,11 @@ import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.controller.ObserverUpload;
-import fr.soe.a3s.dto.ProtocolDTO;
-import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 
 public class RepositoryUploadProcessor {
 
@@ -31,7 +29,7 @@ public class RepositoryUploadProcessor {
 	private long startTime, deltaTimeSpeed;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
-	private ConnexionService connexionService;
+	private ConnectionService connexionService;
 	private FilesUploadManager filesManager;
 	/* Tests */
 	private boolean canceled = false;
@@ -51,48 +49,35 @@ public class RepositoryUploadProcessor {
 	public void run() {
 
 		try {
-			// Set Uploading state
-			repositoryService.setUploading(repositoryName, true);
-
 			// 1. Check repository upload protocol
-			RepositoryDTO repositoryDTO = repositoryService
-					.getRepository(repositoryName);
-			ProtocolDTO protocoleDTO = repositoryDTO.getProtocolDTO();
-			ProtocolType protocolType = protocoleDTO.getProtocolType();
-			ProtocolDTO uploadProtocoleDTO = repositoryDTO
-					.getUploadProtocoleDTO();
-			if (uploadProtocoleDTO == null
-					&& protocoleDTO.getProtocolType().equals(ProtocolType.FTP)) {
-				repositoryService.setRepositoryUploadProtocole(repositoryName,
-						protocoleDTO.getUrl(), protocoleDTO.getPort(),
-						protocoleDTO.getLogin(), protocoleDTO.getPassword(),
-						protocolType, null, null);
-			} else if (uploadProtocoleDTO == null) {
+			AbstractProtocole uploadProtocol = repositoryService
+					.getUploadProtocol(repositoryName);
+
+			if (uploadProtocol == null) {
 				String message = "Please use the upload options to configure a connection.";
 				throw new CheckException(message);
 			}
 
-			connexionService = ConnexionServiceFactory
-					.getServiceForRepositoryUpload(repositoryName);
+			connexionService = new ConnectionService(uploadProtocol);
 
-			connexionService.getConnexionDAO().addObserverText(
-					new ObserverText() {
+			connexionService.getConnexionDAOs().get(0)
+					.addObserverText(new ObserverText() {
 						@Override
 						public void update(String text) {
 							executeUpdateText(text);
 						}
 					});
 
-			connexionService.getConnexionDAO().addObserverCount(
-					new ObserverCountInt() {
+			connexionService.getConnexionDAOs().get(0)
+					.addObserverCount(new ObserverCountInt() {
 						@Override
 						public void update(int value) {
 							executeUpdateSingleSizeProgress(value);
 						}
 					});
 
-			connexionService.getConnexionDAO().addObserverUpload(
-					new ObserverUpload() {
+			connexionService.getConnexionDAOs().get(0)
+					.addObserverUpload(new ObserverUpload() {
 
 						@Override
 						public void updateTotalSize(long value) {
@@ -129,20 +114,21 @@ public class RepositoryUploadProcessor {
 					});
 
 			// 2. Read local sync, autoconfig, serverInfo, changelogs
-			repositoryService.readLocalyBuildedRepository(repositoryName);
+			repositoryService.readLocalyBuildedRepository(repositoryName);// IOException
 
-			// 3. Determine files to check, upload and delete, throw
-			connexionService.getSyncWithUploadProtocole(repositoryName);// !!!
-																		// SocketException
-
+			// 3. Determine files to check, upload and delete
+			try {
+				connexionService.getSyncWithUploadProtocole(repositoryName);// IOException
+			} catch (IOException e) {
+				if (!(e instanceof FileNotFoundException)) {// if remoteSync not found
+					throw e;
+				}
+			}
+			// SocketException
 			SyncTreeDirectoryDTO localSync = repositoryService
 					.getLocalSync(repositoryName);// not null
 			SyncTreeDirectoryDTO remoteSync = repositoryService
 					.getSync(repositoryName);// may be null
-
-			if (localSync == null) {
-				throw new SyncFileNotFoundException(repositoryName);
-			}
 
 			filesManager = new FilesUploadManager();
 			filesManager.setLocalSync(localSync);
@@ -165,10 +151,10 @@ public class RepositoryUploadProcessor {
 			executEnd();
 
 		} catch (SocketTimeoutException | SocketException e1) {
-			connexionService.getConnexionDAO()
+			connexionService.getConnexionDAOs().get(0)
 					.updateObserverUploadConnectionLost();
 		} catch (Exception e2) {
-			e2.printStackTrace();
+			// e2.printStackTrace();
 			List<Exception> errors = new ArrayList<Exception>();
 			errors.add(e2);
 			executeError(errors);
@@ -176,20 +162,14 @@ public class RepositoryUploadProcessor {
 	}
 
 	private void executEnd() {
-
-		repositoryService.setUploading(repositoryName, false);
 		observerEndUpload.end();
 	}
 
 	private void executeError(List<Exception> errors) {
-
-		repositoryService.setUploading(repositoryName, false);
 		observerError.error(errors);
 	}
 
 	private void executeConnectionLost() {
-
-		repositoryService.setUploading(repositoryName, false);
 		observerConnectionLost.lost();
 	}
 
@@ -240,7 +220,7 @@ public class RepositoryUploadProcessor {
 		long delta = endTime - deltaTimeSpeed;
 
 		if (delta > (Math.pow(10, 9)) / 2) {// 0.5s
-			long speed = connexionService.getConnexionDAO().getSpeed();
+			long speed = connexionService.getConnexionDAOs().get(0).getSpeed();
 			deltaTimeSpeed = endTime;
 			if (observerSpeed != null) {
 				observerSpeed.update(speed);

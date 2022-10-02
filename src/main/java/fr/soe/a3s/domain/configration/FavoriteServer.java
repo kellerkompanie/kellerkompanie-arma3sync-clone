@@ -13,12 +13,12 @@ public class FavoriteServer implements Comparable, Serializable {
 	private String modsetName;
 	private String repositoryName;
 
-	public String getName() {
+	public String getDescription() {
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setDescription(String description) {
+		this.name = description;
 	}
 
 	public String getIpAddress() {
@@ -60,7 +60,7 @@ public class FavoriteServer implements Comparable, Serializable {
 	public void setModsetName(String modsetName) {
 		this.modsetName = modsetName;
 	}
-	
+
 	public String getRepositoryName() {
 		return repositoryName;
 	}
@@ -71,11 +71,11 @@ public class FavoriteServer implements Comparable, Serializable {
 
 	@Override
 	public int compareTo(Object other) {
-		String name = ((FavoriteServer) other).getName();
+		String name = ((FavoriteServer) other).getDescription();
 		int result = 1;
-		if (name.compareToIgnoreCase(getName()) > 0)
+		if (name.compareToIgnoreCase(getDescription()) > 0)
 			result = -1;
-		else if (name.compareToIgnoreCase(getName()) == 0)
+		else if (name.compareToIgnoreCase(getDescription()) == 0)
 			result = 0;
 		return result;
 	}

@@ -2,10 +2,10 @@ package fr.soe.a3s.dao;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.domain.Profile;
@@ -25,7 +25,7 @@ public class ProfileDAO implements DataAccessConstants {
 
 		File directory = new File(PROFILES_FOLDER_PATH);
 		File[] subfiles = directory.listFiles();
-		List<String> profilesFailedToLoad = new ArrayList<String>();
+		Map<String, Exception> profilesFailedToLoad = new TreeMap<String, Exception>();
 		if (subfiles != null) {
 			for (File file : subfiles) {
 				if (file.isFile() && file.getName().contains(PROFILE_EXTENSION)) {
@@ -35,7 +35,7 @@ public class ProfileDAO implements DataAccessConstants {
 							mapProfiles.put(profile.getName(), profile);
 						}
 					} catch (Exception e) {
-						profilesFailedToLoad.add(file.getName());
+						profilesFailedToLoad.put(file.getName(),e);
 					}
 				}
 			}
@@ -48,9 +48,17 @@ public class ProfileDAO implements DataAccessConstants {
 		}
 
 		if (!profilesFailedToLoad.isEmpty()) {
-			String message = "Failded to load profiles:";
-			for (String name : profilesFailedToLoad) {
-				message = message + "\n" + " - " + name;
+			String message = "Failed to load profiles:";
+			for (Iterator<String> iter = profilesFailedToLoad.keySet()
+					.iterator(); iter.hasNext();) {
+				String profileName = iter.next();
+				Exception e = profilesFailedToLoad.get(profileName);
+				if (e.getMessage() != null) {
+					message = message + "\n" + " - " + profileName + ": "
+							+ e.getMessage();
+				} else {
+					message = message + "\n" + " - " + profileName;
+				}
 			}
 			throw new LoadingException(message);
 		}
@@ -81,7 +89,7 @@ public class ProfileDAO implements DataAccessConstants {
 			}
 			String message = "Failed to write file: "
 					+ FileAccessMethods.getCanonicalPath(profileFile);
-			throw new WritingException(e.getMessage());
+			throw new WritingException(message + "\n" + e.getMessage());
 		} finally {
 			if (backupFile.exists()) {
 				FileAccessMethods.deleteFile(backupFile);

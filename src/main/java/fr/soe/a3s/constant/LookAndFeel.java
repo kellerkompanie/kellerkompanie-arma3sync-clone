@@ -1,11 +1,9 @@
 package fr.soe.a3s.constant;
 
-import com.jtattoo.plaf.acryl.AcrylLookAndFeel;
-
 public enum LookAndFeel {
 
-	LAF_DEFAULT("Default"), LAF_ALUMINIUM("Aluminium"), LAF_GRAPHITE("Graphite"), LAF_HIFI(
-			"Hifi"), LAF_NOIRE("Noire");
+	LAF_DEFAULT("Default"), LAF_ALUMINIUM("Aluminium"), LAF_GRAPHITE("Graphite"), LAF_HIFI("Hifi"), LAF_NOIRE(
+			"Noire"), LAF_METAL("Metal");
 
 	private String name;
 
@@ -29,6 +27,8 @@ public enum LookAndFeel {
 			return LAF_HIFI;
 		} else if (lookAndFeel.equals(LAF_NOIRE.getName())) {
 			return LAF_NOIRE;
+		} else if (lookAndFeel.equals(LAF_METAL.getName())) {
+			return LAF_METAL;
 		} else {
 			return null;
 		}

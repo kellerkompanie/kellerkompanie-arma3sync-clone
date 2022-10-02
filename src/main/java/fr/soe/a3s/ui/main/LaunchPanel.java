@@ -28,7 +28,7 @@ import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.exception.LaunchException;
-import fr.soe.a3s.service.CommonService;
+import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
@@ -60,9 +60,9 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	/* Services */
 	private final LaunchService launchService = new LaunchService();
 	private final ConfigurationService configurationService = new ConfigurationService();
-	private final CommonService commonService = new CommonService();
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final ProfileService profileService = new ProfileService();
+	private final AddonService addonService = new AddonService();
 
 	public LaunchPanel(Facade facade) {
 
@@ -110,9 +110,8 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				}
 				{
 					gameVersionComboBox = new JComboBox();
-					ComboBoxModel gameVersionModel = new DefaultComboBoxModel(
-							new String[] { GameVersions.ARMA3.getDescription(),
-									GameVersions.ARMA3_AIA.getDescription() });
+					ComboBoxModel gameVersionModel = new DefaultComboBoxModel(new String[] {
+							GameVersions.ARMA3.getDescription(), GameVersions.ARMA3_AIA.getDescription() });
 					gameVersionComboBox.setModel(gameVersionModel);
 					gameVersionComboBox.setFocusable(false);
 					hBox.add(gameVersionComboBox);
@@ -173,13 +172,11 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		String defaultModset = configurationService.getDefaultModset();
 		String gameVersion = configurationService.getGameVersion();
 
-		List<FavoriteServerDTO> favoriteServersDTO = configurationService
-				.getFavoriteServers();
-		ComboBoxModel joinServerModel = new DefaultComboBoxModel(
-				new String[] { "" });
+		List<FavoriteServerDTO> favoriteServersDTO = configurationService.getFavoriteServers();
+		ComboBoxModel joinServerModel = new DefaultComboBoxModel(new String[] { "" });
 		this.joinServerComboBox.setModel(joinServerModel);
 		for (int i = 0; i < favoriteServersDTO.size(); i++) {
-			String stg = favoriteServersDTO.get(i).getName();
+			String stg = favoriteServersDTO.get(i).getDescription();
 			if (!(favoriteServersDTO.get(i).getModsetName() == null)
 					&& !("".equals(favoriteServersDTO.get(i).getModsetName()))) {
 				stg = stg + " - " + favoriteServersDTO.get(i).getModsetName();
@@ -187,14 +184,12 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			this.joinServerComboBox.addItem(stg);
 		}
 
-		List<RepositoryDTO> repositoryDTOs = repositoryService
-				.getRepositories();
+		List<RepositoryDTO> repositoryDTOs = repositoryService.getRepositories();
 
 		map = new TreeMap<String, Object>();
 		for (RepositoryDTO repositoryDTO : repositoryDTOs) {
 			map.put(repositoryDTO.getName(), repositoryDTO);
-			List<EventDTO> list2 = repositoryService.getEvents(repositoryDTO
-					.getName());
+			List<EventDTO> list2 = repositoryService.getEvents(repositoryDTO.getName());
 			for (EventDTO eventDTO : list2) {
 				map.put(eventDTO.getName(), eventDTO);
 			}
@@ -202,8 +197,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 
 		if (serverName != null) {
 			if (defaultModset != null) {
-				this.joinServerComboBox.setSelectedItem(serverName + " - "
-						+ defaultModset);
+				this.joinServerComboBox.setSelectedItem(serverName + " - " + defaultModset);
 			} else {
 				this.joinServerComboBox.setSelectedItem(serverName);
 			}
@@ -221,21 +215,17 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	private void serverSelectionPerformed() {
 
 		if (!isModifying) {
-			String selection = (String) this.joinServerComboBox
-					.getSelectedItem();
+			String selection = (String) this.joinServerComboBox.getSelectedItem();
 			int selectedIndex = this.joinServerComboBox.getSelectedIndex();
 			if (selection == null || "".equals(selection)) {
 				configurationService.setServerName(null);
 				configurationService.setDefautlModset(null);
 			} else {
-				List<FavoriteServerDTO> favoriteServersDTO = configurationService
-						.getFavoriteServers();
-				if (selectedIndex != -1
-						&& selectedIndex <= favoriteServersDTO.size()
+				List<FavoriteServerDTO> favoriteServersDTO = configurationService.getFavoriteServers();
+				if (selectedIndex != -1 && selectedIndex <= favoriteServersDTO.size()
 						&& !favoriteServersDTO.isEmpty()) {
-					FavoriteServerDTO favoriteServerDTO = favoriteServersDTO
-							.get(selectedIndex - 1);
-					String serverName = favoriteServerDTO.getName();
+					FavoriteServerDTO favoriteServerDTO = favoriteServersDTO.get(selectedIndex - 1);
+					String serverName = favoriteServerDTO.getDescription();
 					String modsetName = favoriteServerDTO.getModsetName();
 					configurationService.setServerName(serverName);
 					configurationService.setDefautlModset(modsetName);
@@ -246,32 +236,26 @@ public class LaunchPanel extends JPanel implements UIConstants {
 							List<String> list = new ArrayList<String>();
 							String name = ((RepositoryDTO) objectDTO).getName();
 							list.add(name);
-							facade.getAddonsPanel().getGroupManager()
-									.addGroupFromRepository(list, false);
+							facade.getAddonsPanel().getGroupManager().addGroupFromRepository(list, false);
 						} else if (objectDTO instanceof EventDTO) {
 							List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
 							EventDTO eventDTO = (EventDTO) objectDTO;
 							eventDTOs.add(eventDTO);
-							facade.getAddonsPanel().getGroupManager()
-									.addGroupFromEvents(eventDTOs, false);
+							facade.getAddonsPanel().getGroupManager().addGroupFromEvents(eventDTOs, false);
 						}
-						facade.getAddonsPanel().getGroupManager()
-								.select(modsetName);
+						facade.getAddonsPanel().getGroupManager().select(modsetName);
 					}
 				}
 			}
-			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 		}
 	}
 
 	private void gameVersionSelectionPerformed() {
 
 		if (!isModifying) {
-			String gameVersion = (String) this.gameVersionComboBox
-					.getSelectedItem();
+			String gameVersion = (String) this.gameVersionComboBox.getSelectedItem();
 			configurationService.setGameVersion(gameVersion);
 			configurationService.determineAiAOptions();
-			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 		}
 	}
 
@@ -283,16 +267,20 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		// Update join server addons selection
 		serverSelectionPerformed();
 
+		// Update addon panel
+		facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
+
 		/* Blocking messages */
 		try {
 			// Check selected addons
-			facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
-			List<String> missingAddons = launchService.getMissingAddons();
-			if (missingAddons.size() != 0) {
-				throw new LaunchException("Some addons are missing.");
+			List<String> missingSelectedAddons = new ArrayList<String>();
+			addonService.checkMissingSelectedAddons(profileService.getAddonGroups(), missingSelectedAddons);
+			if (missingSelectedAddons.size() != 0) {
+				throw new LaunchException("Some selected addons are missing.");
 			}
-			List<String> duplicatedAddons = launchService.getDuplicatedAddons();
-			if (duplicatedAddons.size() != 0) {
+			List<String> duplicateAddonsSelection = new ArrayList<String>();
+			addonService.checkDuplicateAddonsSelection(profileService.getAddonGroups(), duplicateAddonsSelection);
+			if (duplicateAddonsSelection.size() != 0) {
 				throw new LaunchException("Duplicate addons selection.");
 			}
 
@@ -304,19 +292,17 @@ public class LaunchPanel extends JPanel implements UIConstants {
 
 		} catch (LaunchException e) {
 			// Failed to launch!
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Failed to launch ArmA 3.\n" + e.getMessage(),
+			JOptionPane.showMessageDialog(facade.getMainPanel(), "Failed to launch ArmA 3.\n" + e.getMessage(),
 					"ArmA 3 Start Game", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
 		/* Warning messages */
 		// Check if addons are not being downloaded
-		if (repositoryService.isDownloading()) {
-			String message = "Addons are currently being updated." + "\n"
-					+ "Proceed with launch anyway?";
-			int res = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-					message, "ArmA 3 Start Game", JOptionPane.YES_NO_OPTION);
+		if (facade.getMainPanel().isDownloading()) {
+			String message = "Addons files are currently being updated." + "\n" + "Proceed with launch anyway?";
+			int res = JOptionPane.showConfirmDialog(facade.getMainPanel(), message, "ArmA 3 Start Game",
+					JOptionPane.YES_NO_OPTION);
 			if (res == 1) {
 				return;
 			}
@@ -335,16 +321,12 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				name = eventDTO.getRepositoryName();
 			}
 			if (name != null) {
-				RepositoryStatus status = repositoryService
-						.getRepositorySyncStatus(name);
-				if (status.equals(RepositoryStatus.UPDATED)
-						|| status.equals(RepositoryStatus.ERROR)) {
-					String message = "Repository: " + name
-							+ " have been updated." + "\n"
+				RepositoryStatus status = repositoryService.getRepositorySyncStatus(name);
+				if (status.equals(RepositoryStatus.UPDATED) || status.equals(RepositoryStatus.ERROR)) {
+					String message = "Repository: " + name + " have been updated." + "\n"
 							+ "Proceed with launch anyway?";
-					int res = JOptionPane.showConfirmDialog(
-							facade.getMainPanel(), message,
-							"ArmA 3 Start Game", JOptionPane.YES_NO_OPTION);
+					int res = JOptionPane.showConfirmDialog(facade.getMainPanel(), message, "ArmA 3 Start Game",
+							JOptionPane.YES_NO_OPTION);
 					if (res == 1) {
 						return;
 					}
@@ -352,11 +334,12 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			}
 		}
 
+		//
+
 		launchService.getLauncherDAO().addObserverError(new ObserverError() {
 			@Override
 			public void error(List<Exception> errors) {
-				JOptionPane.showMessageDialog(facade.getMainPanel(), errors
-						.get(0).getMessage(), "ArmA 3 Start Game",
+				JOptionPane.showMessageDialog(facade.getMainPanel(), errors.get(0).getMessage(), "ArmA 3 Start Game",
 						JOptionPane.ERROR_MESSAGE);
 			}
 		});
@@ -365,8 +348,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			@Override
 			public void end() {
 				PreferencesService preferencesService = new PreferencesService();
-				MinimizationType minimize = preferencesService.getPreferences()
-						.getLaunchPanelGameLaunch();
+				MinimizationType minimize = preferencesService.getPreferences().getLaunchPanelGameLaunch();
 				if (MinimizationType.TASK_BAR.equals(minimize)) {
 					facade.getMainPanel().setToTaskBar();
 				} else if (MinimizationType.TRAY.equals(minimize)) {

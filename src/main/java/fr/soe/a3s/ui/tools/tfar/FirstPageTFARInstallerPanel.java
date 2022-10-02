@@ -301,8 +301,9 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 				textFieldPluginInstallationDirectory.setText(tfarPluginPath);
 			}
 		} else {
-			String tfarInstallationDirectoryPath = addonService
-					.getTFARinstallationFolder();
+			String tfarInstallationDirectoryPath = null;
+//			String tfarInstallationDirectoryPath = addonService
+//					.getTFARinstallationFolder();
 			if (tfarInstallationDirectoryPath != null) {
 				String path = tfarInstallationDirectoryPath
 						+ "/@task_force_radio/plugins";
@@ -323,8 +324,9 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 						.setText(tfarUserconfigPath);
 			}
 		} else {
-			String tfarInstallationDirectoryPath = addonService
-					.getTFARinstallationFolder();
+			String tfarInstallationDirectoryPath = null;
+			// String tfarInstallationDirectoryPath = addonService
+			// .getTFARinstallationFolder();
 			if (tfarInstallationDirectoryPath != null) {
 				String path = tfarInstallationDirectoryPath
 						+ "/@task_force_radio/userconfig";
@@ -480,7 +482,7 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 			message = "TFAR plugin directory is missing.";
 		} else if (textFieldUserconfigInstallationDirectory.getText().isEmpty()) {
 			message = "TFAR userconfig directory is missing.";
-		} else if (labelTS3Value.equals("Unknown")) {
+		} else if (labelTS3Value.getText().equals("Unknown")) {
 			message = "Can't determine between TS3 32/64 bit.";
 		}
 

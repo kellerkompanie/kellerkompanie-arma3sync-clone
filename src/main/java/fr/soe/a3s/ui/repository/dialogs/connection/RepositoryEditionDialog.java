@@ -22,9 +22,7 @@ import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.dialogs.progress.ProgressSynchronizationDialog;
 
-public class RepositoryEditionDialog extends AbstractDialog
-		implements
-			DataAccessConstants {
+public class RepositoryEditionDialog extends AbstractDialog implements DataAccessConstants {
 
 	private DescriptionPanel descriptionPanel;
 	private ProtocolPanel protocolPanel;
@@ -60,8 +58,8 @@ public class RepositoryEditionDialog extends AbstractDialog
 		this.pack();
 		int height = this.getBounds().height;
 		int width = this.getBounds().width;
-		if (width < 450) {
-			this.setPreferredSize(new Dimension(450, height));
+		if (width < 510) {
+			this.setPreferredSize(new Dimension(510, height));
 		}
 		this.pack();
 		this.setLocationRelativeTo(facade.getMainPanel());
@@ -72,10 +70,8 @@ public class RepositoryEditionDialog extends AbstractDialog
 		this.setTitle("New repository");
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(new String[]{
-				ProtocolType.FTP.getDescription(),
-				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription()});
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] { ProtocolType.FTP.getDescription(),
+				ProtocolType.HTTP.getDescription(), ProtocolType.HTTPS.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
@@ -91,24 +87,19 @@ public class RepositoryEditionDialog extends AbstractDialog
 		descriptionPanel.init(repositoryName);
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(new String[]{
-				ProtocolType.FTP.getDescription(),
-				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription()});
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] { ProtocolType.FTP.getDescription(),
+				ProtocolType.HTTP.getDescription(), ProtocolType.HTTPS.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		try {
 			/* Init Repository and Connection Section */
-			RepositoryDTO repositoryDTO = repositoryService
-					.getRepository(repositoryName);
-			ProtocolDTO protocoleDTO = repositoryDTO.getProtocolDTO();
-			ProtocolType protocole = protocoleDTO.getProtocolType();
-			comboBoxProtocolModel.setSelectedItem(protocole.getDescription());
+			RepositoryDTO repositoryDTO = repositoryService.getRepository(repositoryName);
+			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
+			protocolPanel.init(protocoleDTO);
 			connectionPanel.init(protocoleDTO);
 		} catch (RepositoryException e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -117,50 +108,42 @@ public class RepositoryEditionDialog extends AbstractDialog
 
 		try {
 			String newRepositoryName = descriptionPanel.getRepositoryName();
-			ProtocolType protocolType = ProtocolType
-					.getEnum((String) comboBoxProtocolModel.getSelectedItem());
+			ProtocolType protocolType = ProtocolType.getEnum((String) comboBoxProtocolModel.getSelectedItem());
 			String url = connectionPanel.getUrl();
 			String port = connectionPanel.getPort();
 			String login = connectionPanel.getLogin();
 			String password = connectionPanel.getPassword();
+			boolean validateSSLCertificate = protocolPanel.getCheckBoxValidateSSLCertificate().isSelected();
 
 			if (initialRepositoryName != null) {// Edit Repository
 				if (initialRepositoryName.equals(newRepositoryName)) {
-					repositoryService.setRepository(initialRepositoryName, url,
-							port, login, password, protocolType);
+					repositoryService.setRepository(initialRepositoryName, url, port, login, password, protocolType,validateSSLCertificate);
 				} else {
-					repositoryService.renameRepository(initialRepositoryName,
-							newRepositoryName);
-					repositoryService.setRepository(newRepositoryName, url,
-							port, login, password, protocolType);
+					repositoryService.renameRepository(initialRepositoryName, newRepositoryName);
+					repositoryService.setRepository(newRepositoryName, url, port, login, password, protocolType,validateSSLCertificate);
 				}
-				repositoryService
-						.resetRepositoryUploadProtocol(newRepositoryName);
+				repositoryService.resetRepositoryUploadProtocol(newRepositoryName);
 			} else {// New Repository
-				repositoryService.createRepository(newRepositoryName, url,
-						port, login, password, protocolType);
+				repositoryService.createRepository(newRepositoryName, url, port, login, password, protocolType,
+						validateSSLCertificate);
 				// Set default download path
-				List<String> addonSearchDirectories = profileService
-						.getAddonSearchDirectoryPaths();
+				List<String> addonSearchDirectories = profileService.getAddonSearchDirectoryPaths();
 				if (!addonSearchDirectories.isEmpty()) {
-					repositoryService.setDefaultDownloadLocation(
-							newRepositoryName, addonSearchDirectories.get(0));
+					repositoryService.setDefaultDownloadLocation(newRepositoryName, null,
+							addonSearchDirectories.get(0));
 				}
 			}
 
 			repositoryService.write(newRepositoryName);
 			this.dispose();
 
-			ProgressSynchronizationDialog synchronizingPanel = new ProgressSynchronizationDialog(
-					facade);
+			ProgressSynchronizationDialog synchronizingPanel = new ProgressSynchronizationDialog(facade);
 			synchronizingPanel.setVisible(true);
 			synchronizingPanel.init(newRepositoryName);
 		} catch (CheckException e) {
-			JOptionPane.showMessageDialog(this, e.getMessage(), "Warning",
-					JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
 		} catch (RepositoryNotFoundException | WritingException e) {
-			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

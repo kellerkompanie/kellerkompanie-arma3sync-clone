@@ -23,8 +23,7 @@ public class PreferencesDAO implements DataAccessConstants {
 				}
 			}
 		} catch (Exception e) {
-			throw new LoadingException("Failed to read file: "
-					+ FileAccessMethods.getCanonicalPath(file));
+			throw new LoadingException("Failed to read file: " + FileAccessMethods.getCanonicalPath(file));
 		}
 	}
 
@@ -40,9 +39,8 @@ public class PreferencesDAO implements DataAccessConstants {
 			A3SFilesAccessor.write(preferences, file);
 		} catch (IOException e) {
 			e.printStackTrace();
-			String message = "Failed to write file: "
-					+ FileAccessMethods.getCanonicalPath(file);
-			throw new WritingException(e.getMessage());
+			String message = "Failed to write file: " + FileAccessMethods.getCanonicalPath(file);
+			throw new WritingException(message);
 		}
 	}
 
@@ -58,17 +56,14 @@ public class PreferencesDAO implements DataAccessConstants {
 	public boolean addToWindowsRegistry(boolean devMode) {
 
 		boolean ok = true;
-		
+
 		try {
-			
 			String key = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 			String value = "ArmA3Sync";
-			String path = "\""
-					+ FileAccessMethods.getCanonicalPath(new File(""))
-					+ "\\ArmA3Sync-registry-lnk.lnk" + "\"";
+			String path = "\"" + FileAccessMethods.getCanonicalPath(new File("")) + "\\ArmA3Sync.exe" + "\"" + " "
+					+ "-run";
 
-			WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, key,
-					value, path);
+			WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, key, value, path);
 		} catch (Exception e) {
 			ok = false;
 			String message = "Failed to write into Windows registry.";
@@ -86,8 +81,7 @@ public class PreferencesDAO implements DataAccessConstants {
 
 		if (found) {
 			try {
-				WinRegistry.deleteValue(WinRegistry.HKEY_LOCAL_MACHINE, key,
-						value);
+				WinRegistry.deleteValue(WinRegistry.HKEY_LOCAL_MACHINE, key, value);
 			} catch (Exception e) {
 			}
 		}

@@ -11,6 +11,7 @@ public class TreeLeaf implements TreeNode, Serializable {
 	private String name;
 	private boolean selected = false;
 	private boolean optional = false;
+	private transient boolean missing = false;
 	@Deprecated
 	private final boolean duplicate = false;
 	private TreeDirectory parent;
@@ -82,5 +83,13 @@ public class TreeLeaf implements TreeNode, Serializable {
 	@Override
 	public boolean isOptional() {
 		return this.optional;
+	}
+
+	public boolean isMissing() {
+		return this.missing;
+	}
+
+	public void setMissing(boolean value) {
+		this.missing = value;
 	}
 }

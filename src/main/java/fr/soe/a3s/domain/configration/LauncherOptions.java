@@ -16,7 +16,11 @@ public class LauncherOptions implements Serializable {
 	private boolean windowMode = false;
 	private boolean checkSignatures = false;
 	private boolean autoRestart = false;
+	private boolean missionFile = false;
+	private String missionFilePath;
+	@Deprecated
 	private boolean runBeta = false;
+	@Deprecated
 	private boolean xpCompatibilityMode = false;
 	private String maxMemorySelection;
 	private int cpuCountSelection = 0;
@@ -61,22 +65,6 @@ public class LauncherOptions implements Serializable {
 
 	public void setWindowMode(boolean windowMode) {
 		this.windowMode = windowMode;
-	}
-
-	public boolean isRunBeta() {
-		return runBeta;
-	}
-
-	public void setRunBeta(boolean runBeta) {
-		this.runBeta = runBeta;
-	}
-
-	public boolean isXpCompatibilityMode() {
-		return xpCompatibilityMode;
-	}
-
-	public void setXpCompatibilityMode(boolean xpCompatibilityMode) {
-		this.xpCompatibilityMode = xpCompatibilityMode;
 	}
 
 	public String getMaxMemorySelection() {
@@ -189,5 +177,21 @@ public class LauncherOptions implements Serializable {
 
 	public void setMallocSelection(String mallocSelection) {
 		this.mallocSelection = mallocSelection;
+	}
+
+	public boolean isMissionFile() {
+		return missionFile;
+	}
+
+	public void setMissionFile(boolean missionFile) {
+		this.missionFile = missionFile;
+	}
+
+	public String getMissionFilePath() {
+		return missionFilePath;
+	}
+
+	public void setMissionFilePath(String missionFilePath) {
+		this.missionFilePath = missionFilePath;
 	}
 }

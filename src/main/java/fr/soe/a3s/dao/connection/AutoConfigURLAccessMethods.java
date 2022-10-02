@@ -18,8 +18,7 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 	/**
 	 * Determine autoconfigUrl from repository protocol
 	 * 
-	 * @param protocol
-	 *            not null
+	 * @param protocol not null
 	 * @return string autoconfig url
 	 */
 	public static String determineAutoConfigUrl(AbstractProtocole protocol) {
@@ -27,17 +26,14 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		String repositoryUrl = protocol.getUrl();
 		String port = protocol.getPort();
 		String login = protocol.getLogin();
-		String password = protocol.getPassword();
 		String hostname = protocol.getHostname();
 		String remotePath = protocol.getRemotePath();
 
 		if (login.equalsIgnoreCase("anonymous")) {
 			login = "";
-			password = "";
 		}
 
-		if (protocol.getPort().equals(
-				protocol.getProtocolType().getDefaultPort())) {
+		if (protocol.getPort().equals(protocol.getProtocolType().getDefaultPort())) {
 			port = "";
 		}
 
@@ -46,7 +42,7 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 			autoConfigURL = hostname + ":" + port + remotePath;
 		}
 
-		autoConfigURL = autoConfigURL + AUTOCONFIG_FILE_PATH;
+		autoConfigURL = autoConfigURL + "/" + A3S_FOlDER_NAME + "/" + AUTOCONFIG_FILE_NAME;
 
 		return autoConfigURL;
 	}
@@ -59,18 +55,14 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 	 * @return
 	 * @throws CheckException
 	 */
-	public static AbstractProtocole parse(String autoConfigURL)
-			throws CheckException {
+	public static AbstractProtocole parse(String autoConfigURL) throws CheckException {
 
 		ProtocolType protocolType = null;
-		if (autoConfigURL.toLowerCase().trim()
-				.contains(ProtocolType.FTP.getPrompt())) {
+		if (autoConfigURL.toLowerCase().trim().contains(ProtocolType.FTP.getPrompt())) {
 			protocolType = ProtocolType.FTP;
-		} else if (autoConfigURL.toLowerCase().trim()
-				.contains(ProtocolType.HTTP.getPrompt())) {
+		} else if (autoConfigURL.toLowerCase().trim().contains(ProtocolType.HTTP.getPrompt())) {
 			protocolType = ProtocolType.HTTP;
-		} else if (autoConfigURL.toLowerCase().trim()
-				.contains(ProtocolType.HTTPS.getPrompt())) {
+		} else if (autoConfigURL.toLowerCase().trim().contains(ProtocolType.HTTPS.getPrompt())) {
 			protocolType = ProtocolType.HTTPS;
 		}
 		// else if (autoConfigURL.toLowerCase().trim()
@@ -78,17 +70,15 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		// protocolType = ProtocolType.A3S;
 		// }
 		else {
-			String message = "Invalid url or unsupported protocol." + "\n"
-					+ "Url must start with " + ProtocolType.FTP.getPrompt()
-					+ " or " + ProtocolType.HTTP.getPrompt() + " or  "
+			String message = "Invalid url or unsupported protocol." + "\n" + "Url must start with "
+					+ ProtocolType.FTP.getPrompt() + " or " + ProtocolType.HTTP.getPrompt() + " or  "
 					+ ProtocolType.HTTPS.getPrompt();
 			throw new CheckException(message);
 		}
 
 		assert (protocolType != null);
 
-		autoConfigURL = autoConfigURL.substring(protocolType.getPrompt()
-				.length());
+		autoConfigURL = autoConfigURL.substring(protocolType.getPrompt().length());
 
 		// if (protocolType.equals(ProtocolType.A3S)) {
 		// return parseA3S(autoConfigURL);
@@ -101,13 +91,11 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 
 	/**
 	 * 
-	 * @param autoConfigURL
-	 *            : repositoryUrl/encryptedLoginInfos
+	 * @param autoConfigURL : repositoryUrl/encryptedLoginInfos
 	 * @return AbstractProtocole or null
 	 * @throws CheckException
 	 */
-	private static AbstractProtocole parseA3S(String autoConfigURL)
-			throws CheckException {
+	private static AbstractProtocole parseA3S(String autoConfigURL) throws CheckException {
 
 		String url = "";
 		String port = "";
@@ -129,8 +117,7 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		if (index1 != -1) {
 			try {
 				Cipher cipher = EncryptionProvider.getDecryptionCipher();
-			} catch (NoSuchAlgorithmException | NoSuchPaddingException
-					| InvalidKeyException e) {
+			} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
 				e.printStackTrace();
 				throw new RuntimeException(e);
 			}
@@ -139,20 +126,16 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 			throw new CheckException(message);
 		}
 
-		return AbstractProtocoleFactory.getProtocol(url, port, login, password,
-				protocolType);
+		return AbstractProtocoleFactory.getProtocol(url, port, login, password, protocolType, false);
 	}
 
 	/**
 	 * 
-	 * @param autoConfigURL
-	 *            : repositoryUrl/.a3s/autoconfig
-	 * @param protocolType
-	 *            not null
+	 * @param autoConfigURL : repositoryUrl/.a3s/autoconfig
+	 * @param protocolType  not null
 	 * @return AbstractProtocole or null
 	 */
-	private static AbstractProtocole parseStandard(String autoConfigURL,
-			ProtocolType protocolType) {
+	private static AbstractProtocole parseStandard(String autoConfigURL, ProtocolType protocolType) {
 
 		String url = "";
 		String port = "";
@@ -193,7 +176,6 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		String login = "anonymous";
 		String password = "";
 
-		return AbstractProtocoleFactory.getProtocol(url, port, login, password,
-				protocolType);
+		return AbstractProtocoleFactory.getProtocol(url, port, login, password, protocolType, false);
 	}
 }

@@ -21,9 +21,8 @@ public class AddonsChecker extends Thread {
 	private final DownloadPanel downloadPanel;
 	/* Data */
 	private final String repositoryName;
-	private final boolean withEvents;
+	private final String eventName;
 	private SyncTreeDirectoryDTO parent;
-	private String serverRangeRequestResponseHeader = null;
 	private boolean saveStateCheckBoxExactMath, saveStateCheckBoxAutoDiscover;
 	/* Test */
 	private boolean canceled;
@@ -34,26 +33,23 @@ public class AddonsChecker extends Thread {
 	private ObserverEnd observerEnd;
 	private ObserverError observerError;
 
-	public AddonsChecker(Facade facade, String repositoryName,
-			boolean withEvents, DownloadPanel downloadPanel) {
+	public AddonsChecker(Facade facade, String repositoryName, String eventName, DownloadPanel downloadPanel) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
-		this.withEvents = withEvents;
+		this.eventName = eventName;
 		this.downloadPanel = downloadPanel;
 	}
 
 	@Override
 	public void run() {
 
-		System.out.println("Checking for Addons on repository: "
-				+ repositoryName);
+		System.out.println("Checking for Addons on repository: " + repositoryName);
 
 		// Initialize
 		initDownloadPanelForStartCheck();
 		canceled = false;
 
-		filesCheckProcessor = new FilesCheckProcessor(repositoryName,
-				withEvents);
+		filesCheckProcessor = new FilesCheckProcessor(repositoryName, eventName);
 		filesCheckProcessor.addObserverCount(new ObserverCountInt() {
 			@Override
 			public void update(int value) {
@@ -97,17 +93,13 @@ public class AddonsChecker extends Thread {
 			if (parent == null) {// true if default download location is null
 				executeEnd();
 			} else {
-				System.out
-						.println("Determining file completion on repository: "
-								+ repositoryName);
+				System.out.println("Determining file completion on repository: " + repositoryName);
 
-				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(
-						true);
+				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(true);
 				downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
 				downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
 
-				this.serverRangeRequestResponseHeader = filesCompletionProcessor
-						.run(parent); // non blocking execution
+				filesCompletionProcessor.run(parent); // non blocking execution
 			}
 		}
 	}
@@ -115,16 +107,12 @@ public class AddonsChecker extends Thread {
 	private void initDownloadPanelForStartCheck() {
 
 		downloadPanel.getArbre().setEnabled(false);
-		downloadPanel.getLabelCheckForAddonsStatus().setText(
-				"Checking files...");
-		downloadPanel.getLabelCheckForAddonsStatus().setForeground(
-				DownloadPanel.GREEN);
+		downloadPanel.getLabelCheckForAddonsStatus().setText("Checking files...");
+		downloadPanel.getLabelCheckForAddonsStatus().setForeground(DownloadPanel.GREEN);
 		downloadPanel.getCheckBoxSelectAll().setEnabled(false);
 		downloadPanel.getCheckBoxExpandAll().setEnabled(false);
-		saveStateCheckBoxExactMath = downloadPanel.getCheckBoxExactMatch()
-				.isEnabled();
-		saveStateCheckBoxAutoDiscover = downloadPanel.getCheckBoxAutoDiscover()
-				.isEnabled();
+		saveStateCheckBoxExactMath = downloadPanel.getCheckBoxExactMatch().isEnabled();
+		saveStateCheckBoxAutoDiscover = downloadPanel.getCheckBoxAutoDiscover().isEnabled();
 		downloadPanel.getCheckBoxExactMatch().setEnabled(false);
 		downloadPanel.getCheckBoxAutoDiscover().setEnabled(false);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
@@ -145,10 +133,8 @@ public class AddonsChecker extends Thread {
 		downloadPanel.getArbre().setEnabled(true);
 		downloadPanel.getCheckBoxSelectAll().setEnabled(true);
 		downloadPanel.getCheckBoxExpandAll().setEnabled(true);
-		downloadPanel.getCheckBoxExactMatch().setEnabled(
-				saveStateCheckBoxExactMath);
-		downloadPanel.getCheckBoxAutoDiscover().setEnabled(
-				saveStateCheckBoxAutoDiscover);
+		downloadPanel.getCheckBoxExactMatch().setEnabled(saveStateCheckBoxExactMath);
+		downloadPanel.getCheckBoxAutoDiscover().setEnabled(saveStateCheckBoxAutoDiscover);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(true);
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
 		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
@@ -166,8 +152,7 @@ public class AddonsChecker extends Thread {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(
-						false);
+				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
 				downloadPanel.getProgressBarCheckForAddons().setValue(value);
 			}
 		});
@@ -181,13 +166,11 @@ public class AddonsChecker extends Thread {
 
 			this.canceled = true;
 
-			System.out.println("Checking for Addons on repository: "
-					+ repositoryName + " - finished.");
+			System.out.println("Checking for Addons on repository: " + repositoryName + " - finished.");
 
 			// Set notification
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
-			downloadPanel.getLabelCheckForAddonsStatus().setForeground(
-					DownloadPanel.GREEN);
+			downloadPanel.getLabelCheckForAddonsStatus().setForeground(DownloadPanel.GREEN);
 
 			initDownlaodPanelForEndCheck();
 
@@ -206,13 +189,11 @@ public class AddonsChecker extends Thread {
 
 			this.canceled = true;
 
-			System.out.println("Checking for Addons on repository: "
-					+ repositoryName + " - finished with errors.");
+			System.out.println("Checking for Addons on repository: " + repositoryName + " - finished with errors.");
 
 			// Set notification
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
-			downloadPanel.getLabelCheckForAddonsStatus().setForeground(
-					Color.RED);
+			downloadPanel.getLabelCheckForAddonsStatus().setForeground(Color.RED);
 
 			initDownlaodPanelForEndCheck();
 
@@ -233,22 +214,16 @@ public class AddonsChecker extends Thread {
 
 	public void cancel() {
 
-		System.out.println("Canceling Checking for Addons on repository: "
-				+ repositoryName);
+		System.out.println("Canceling Checking for Addons on repository: " + repositoryName);
 
 		this.canceled = true;
 
 		downloadPanel.getLabelCheckForAddonsStatus().setText("Canceled!");
-		downloadPanel.getLabelCheckForAddonsStatus().setForeground(
-				DownloadPanel.GREEN);
+		downloadPanel.getLabelCheckForAddonsStatus().setForeground(DownloadPanel.GREEN);
 
 		initDownlaodPanelForEndCheck();
 
 		terminate();
-	}
-
-	public String getServerRangeRequestResponseHeader() {
-		return serverRangeRequestResponseHeader;
 	}
 
 	public void addObserverEnd(ObserverEnd obs) {

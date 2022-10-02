@@ -1,23 +1,16 @@
 package fr.soe.a3s.ui.repository.workers;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.exception.remote.RemoteRepositoryException;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.administration.RepositoryCheckProcessor;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.AdminPanel;
-import fr.soe.a3s.ui.repository.dialogs.error.ErrorsListDialog;
-import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
-import fr.soe.a3s.utils.ErrorPrinter;
 
 public class RepositoryChecker extends Thread implements DataAccessConstants {
 
@@ -29,9 +22,11 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 	private boolean canceled;
 	/* Services */
 	private RepositoryCheckProcessor repositoryCheckProcessor;
+	/* observers */
+	private ObserverError observerEnd;
+	private ObserverError observerError;
 
-	public RepositoryChecker(Facade facade, String repositoryName,
-			AdminPanel adminPanel) {
+	public RepositoryChecker(Facade facade, String repositoryName, AdminPanel adminPanel) {
 		this.facade = facade;
 		this.adminPanel = adminPanel;
 		this.repositoryName = repositoryName;
@@ -40,23 +35,21 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 	@Override
 	public void run() {
 
-		System.out.println("Starting checking repository content: "
-				+ repositoryName);
+		System.out.println("Starting checking repository content: " + repositoryName);
 
 		// Init AdminPanel for start checking
 		initAdminPanelForStartCheck();
 		canceled = false;
-		
+
 		this.adminPanel.getCheckProgressBar().setIndeterminate(true);
 
 		repositoryCheckProcessor = new RepositoryCheckProcessor(repositoryName);
-		repositoryCheckProcessor
-				.addObserverCountProgress(new ObserverCountInt() {
-					@Override
-					public void update(int value) {
-						executeUpdateCountProgress(value);
-					}
-				});
+		repositoryCheckProcessor.addObserverCountProgress(new ObserverCountInt() {
+			@Override
+			public void update(int value) {
+				executeUpdateCountProgress(value);
+			}
+		});
 		repositoryCheckProcessor.addObserverCountErrors(new ObserverCountInt() {
 			@Override
 			public void update(int value) {
@@ -88,16 +81,13 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 		this.adminPanel.getButtonUploadOptions().setEnabled(false);
 		this.adminPanel.getButtonCopyAutoConfigURL().setEnabled(false);
 		this.adminPanel.getButtonCheck().setText("Stop");
-		this.adminPanel.getCheckProgressBar().setString(
-				"Checking remote files...");
+		this.adminPanel.getCheckProgressBar().setString("Checking remote files...");
 		this.adminPanel.getCheckProgressBar().setStringPainted(true);
 		this.adminPanel.getCheckProgressBar().setMaximum(100);
 		this.adminPanel.getCheckProgressBar().setMinimum(0);
-		this.adminPanel.getCheckErrorLabel().setForeground(
-				new Color(45, 125, 45));
+		this.adminPanel.getCheckErrorLabel().setForeground(new Color(45, 125, 45));
 		this.adminPanel.getCheckErrorLabelValue().setText("0");
-		this.adminPanel.getCheckErrorLabelValue().setForeground(
-				new Color(45, 125, 45));
+		this.adminPanel.getCheckErrorLabelValue().setForeground(new Color(45, 125, 45));
 		this.adminPanel.getCheckInformationBox().setVisible(true);
 	}
 
@@ -114,11 +104,9 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 		this.adminPanel.getCheckProgressBar().setStringPainted(false);
 		this.adminPanel.getCheckProgressBar().setMaximum(0);
 		this.adminPanel.getCheckProgressBar().setMinimum(0);
-		this.adminPanel.getCheckErrorLabel().setForeground(
-				new Color(45, 125, 45));
+		this.adminPanel.getCheckErrorLabel().setForeground(new Color(45, 125, 45));
 		this.adminPanel.getCheckErrorLabelValue().setText("0");
-		this.adminPanel.getCheckErrorLabelValue().setForeground(
-				new Color(45, 125, 45));
+		this.adminPanel.getCheckErrorLabelValue().setForeground(new Color(45, 125, 45));
 		this.adminPanel.getCheckInformationBox().setVisible(false);
 	}
 
@@ -148,33 +136,23 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 
 			canceled = true;
 
-			this.adminPanel.getCheckProgressBar().setValue(100);
-			this.adminPanel.getCheckProgressBar().setString("100%");
-
 			if (errors.isEmpty()) {
-				System.out.println("Repository " + repositoryName
-						+ " - repository is synchronized.");
-				String message = "Repository " + repositoryName + "\n"
-						+ "Repository is synchronized.";
-				JOptionPane.showMessageDialog(facade.getMainPanel(), message,
-						"Check repository", JOptionPane.INFORMATION_MESSAGE);
+				System.out.println("Repository: " + repositoryName + " - repository is synchronized.");
 			} else {
-				System.out.println("Repository " + repositoryName
-						+ " - repository is not synchronized.");
+				System.out.println("Repository: " + repositoryName + " - repository is not synchronized.");
 				for (Exception e : errors) {
 					System.out.println(e.getMessage());
 				}
-				ErrorsListDialog dialog = new ErrorsListDialog(facade,
-						"Check repository",
-						"Check repository finished with errors:", errors,
-						repositoryName);
-				dialog.show();
 			}
 
-			this.adminPanel.init(repositoryName);
-			
+			this.adminPanel.getCheckProgressBar().setValue(100);
+			this.adminPanel.getCheckProgressBar().setString("100%");
+
 			initAdminPanelForEndCheck();
 			terminate();
+			
+			// Admin panel
+			observerEnd.error(errors);
 		}
 	}
 
@@ -186,30 +164,15 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 
 			canceled = true;
 
-			System.out.println("Repository " + repositoryName
-					+ " - synchronization finished with error.");
-			
+			System.out.println("Repository: " + repositoryName + " - synchronization finished with error.");
+
 			this.adminPanel.getCheckProgressBar().setString("Error!");
 
-			Exception ex = errors.get(0);
-			if (ex instanceof RepositoryException
-					|| ex instanceof RemoteRepositoryException
-					|| ex instanceof IOException) {
-				String message = ErrorPrinter.printRepositoryManagedError(
-						repositoryName, ex);
-				JOptionPane.showMessageDialog(facade.getMainPanel(), message,
-						"Check repository synchronization",
-						JOptionPane.ERROR_MESSAGE);
-			} else {
-				ErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
-				UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
-						facade, "Check repository synchronization", ex,
-						repositoryName);
-				dialog.show();
-			}
-			
 			initAdminPanelForEndCheck();
 			terminate();
+			
+			// Admin panel
+			observerError.error(errors);
 		}
 	}
 
@@ -224,5 +187,13 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 		this.canceled = true;
 		initAdminPanelForEndCheck();
 		terminate();
+	}
+
+	public void addObserverEnd(ObserverError obs) {
+		this.observerEnd = obs;
+	}
+
+	public void addObserverError(ObserverError obs) {
+		this.observerError = obs;
 	}
 }

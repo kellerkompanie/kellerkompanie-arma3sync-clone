@@ -1,6 +1,7 @@
 package fr.soe.a3s.ui.main;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -20,24 +21,24 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 
 import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.MaxMemoryValues;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
-import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.ProfileService;
+import fr.soe.a3s.ui.ExtensionFilter;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
@@ -51,34 +52,25 @@ import fr.soe.a3s.ui.UIConstants;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class LauncherOptionsPanel extends JPanel implements DocumentListener,
-		UIConstants {
+public class LauncherOptionsPanel extends JPanel implements DocumentListener, UIConstants {
 
 	private final Facade facade;
 	private final JPanel launcherOptionsPanel, performancePanel;
-	private JPanel armaPanel;
-	private JPanel steamPanel;
-	private final JTextArea runParametersTextArea,
-			additionalParametersTextArea;
-	private final JScrollPane scrollPaneRunParameters,
-			scrollPaneAditionalParameters;
-	private JTextField textFieldArmAExecutableLocation,
-			textFieldSteamExecutableLocation;
-	private JButton buttonSelectArmAExe, buttonSelectSteamExe;
-	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount,
-			comboBoxExThreads, comboBoxMalloc;
-	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
-			checkBoxShowScriptErrors, checkBoxMaxMemory, checkBoxCpuCount,
-			checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs,
-			checkBoxCheckSignatures, checkBoxExThreads, checkBoxEnableHT,
-			checkBoxFilePatching, checkBoxAutoRestart, checkBoxMalloc,
-			checkBoxEnableBattleye, checkBoxHugePages;
-	private JLabel labelMallocPath;
+	private final JTextArea runParametersTextArea, additionalParametersTextArea;
+	private final JScrollPane scrollPaneRunParameters, scrollPaneAditionalParameters;
+	private JTextField textFieldArmAExecutableLocation;
+	private JButton buttonSelectArmAExe;
+	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount, comboBoxExThreads, comboBoxMalloc;
+	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode, checkBoxShowScriptErrors,
+			checkBoxMaxMemory, checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs,
+			checkBoxCheckSignatures, checkBoxExThreads, checkBoxEnableHT, checkBoxFilePatching, checkBoxAutoRestart,
+			checkBoxMissionFile, checkBoxMalloc, checkBoxEnableBattleye, checkBoxHugePages;
+	private JTextField textFieldMissionFile;
+	private JButton buttonSelectMissionFile;
 
 	/* Services */
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final ProfileService profileService = new ProfileService();
-	private final AddonService addonService = new AddonService();
 	private final LaunchService launchService = new LaunchService();
 
 	public LauncherOptionsPanel(Facade facade) {
@@ -94,381 +86,416 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		mainPanel.setLayout(new BorderLayout());
 		vertBox1.add(mainPanel);
 
-		JPanel centerPanel = new JPanel();
-		GridLayout grid1 = new GridLayout(2, 2);
-		centerPanel.setLayout(grid1);
-		mainPanel.add(centerPanel, BorderLayout.CENTER);
-
-		// vertBox1.add(centerPanel, BorderLayout.CENTER);
-		//
-
-		launcherOptionsPanel = new JPanel();
-		launcherOptionsPanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Launcher Options"));
-
-		performancePanel = new JPanel();
-		performancePanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Performance"));
-
-		/* Launcher options */
-		launcherOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-		Box vBox = Box.createVerticalBox();
-		launcherOptionsPanel.add(vBox);
+		JPanel leftPanel = new JPanel();
+		GridLayout grid1 = new GridLayout(2, 1);
+		leftPanel.setLayout(grid1);
+		mainPanel.add(leftPanel, BorderLayout.WEST);
 		{
-			JPanel panel = new JPanel();
-			panel.setLayout(new GridBagLayout());
-			vBox.add(panel);
+			/* Launcher options Panel */
+
+			launcherOptionsPanel = new JPanel();
+			launcherOptionsPanel.setBorder(
+					BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Launcher Options"));
+			leftPanel.add(launcherOptionsPanel);
+
+			launcherOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			Box vBox = Box.createVerticalBox();
+			launcherOptionsPanel.add(vBox);
 			{
-				checkBoxProfiles = new JCheckBox();
-				checkBoxProfiles.setText("Profile:");
-				checkBoxProfiles.setFocusable(false);
-				comboBoxProfiles = new JComboBox();
-				javax.swing.filechooser.FileSystemView fsv = javax.swing.filechooser.FileSystemView
-						.getFileSystemView();
-				File myDocuments = fsv.getDefaultDirectory();
-				List<String> listProfileNames = new ArrayList<String>();
-				if (myDocuments != null) {
-					File[] subfiles = myDocuments.listFiles();
-					if (subfiles != null) {
-						for (File file : subfiles) {
-							String name = file.getName().toUpperCase();
-							if (name.contains("ARMA 3")
-									&& name.contains("OTHER PROFILES")) {
-								File[] subf = file.listFiles();
-								if (subf != null) {
-									for (int i = 0; i < subf.length; i++) {
-										listProfileNames.add(subf[i].getName()
-												.replaceAll("(%*)20", " ")
-												.replaceAll("%2e", "."));
+				JPanel panel = new JPanel();
+				panel.setLayout(new GridBagLayout());
+				vBox.add(panel);
+				{
+					checkBoxProfiles = new JCheckBox();
+					checkBoxProfiles.setText("Profile:");
+					checkBoxProfiles.setFocusable(false);
+					comboBoxProfiles = new JComboBox();
+					javax.swing.filechooser.FileSystemView fsv = javax.swing.filechooser.FileSystemView
+							.getFileSystemView();
+					File myDocuments = fsv.getDefaultDirectory();
+					List<String> listProfileNames = new ArrayList<String>();
+					if (myDocuments != null) {
+						File[] subfiles = myDocuments.listFiles();
+						if (subfiles != null) {
+							for (File file : subfiles) {
+								String name = file.getName().toUpperCase();
+								if (name.contains("ARMA 3") && name.contains("OTHER PROFILES")) {
+									File[] subf = file.listFiles();
+									if (subf != null) {
+										for (int i = 0; i < subf.length; i++) {
+											listProfileNames.add(
+													subf[i].getName().replaceAll("(%*)20", " ").replaceAll("%2e", "."));
+										}
 									}
 								}
 							}
 						}
 					}
+					String[] tab = new String[listProfileNames.size() + 1];
+					tab[0] = "Default";
+					for (int i = 0; i < listProfileNames.size(); i++) {
+						tab[i + 1] = listProfileNames.get(i);
+					}
+					ComboBoxModel profilesModel = new DefaultComboBoxModel(tab);
+					comboBoxProfiles.setModel(profilesModel);
+					comboBoxProfiles.setFocusable(false);
 
+					{
+						GridBagConstraints c = new GridBagConstraints();
+						c.fill = GridBagConstraints.HORIZONTAL;
+						c.weightx = 0.5;
+						c.weighty = 0;
+						c.gridx = 0;
+						c.gridy = 0;
+						panel.add(checkBoxProfiles, c);
+					}
+					{
+						GridBagConstraints c = new GridBagConstraints();
+						c.fill = GridBagConstraints.HORIZONTAL;
+						c.weightx = 10.0;
+						c.weighty = 0;
+						c.gridx = 1;
+						c.gridy = 0;
+						panel.add(comboBoxProfiles, c);
+					}
 				}
-				String[] tab = new String[listProfileNames.size() + 1];
-				tab[0] = "Default";
-				for (int i = 0; i < listProfileNames.size(); i++) {
-					tab[i + 1] = listProfileNames.get(i);
+				{
+					checkBoxShowScriptErrors = new JCheckBox();
+					checkBoxShowScriptErrors.setText("Show script errors");
+					checkBoxShowScriptErrors.setFocusable(false);
+					Font boldFont = checkBoxShowScriptErrors.getFont().deriveFont(Font.BOLD);
+					checkBoxShowScriptErrors.setFont(boldFont);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxShowScriptErrors);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
 				}
-				ComboBoxModel profilesModel = new DefaultComboBoxModel(tab);
-				comboBoxProfiles.setModel(profilesModel);
-				comboBoxProfiles.setFocusable(false);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 0;
-				c.gridy = 0;
-				panel.add(checkBoxProfiles, c);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 1;
-				c.gridy = 0;
-				panel.add(comboBoxProfiles, c);
-			}
-		}
-		{
-			checkBoxShowScriptErrors = new JCheckBox();
-			checkBoxShowScriptErrors.setText("Show script errors");
-			checkBoxShowScriptErrors.setFocusable(false);
-			Font boldFont = checkBoxShowScriptErrors.getFont().deriveFont(
-					Font.BOLD);
-			checkBoxShowScriptErrors.setFont(boldFont);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxShowScriptErrors);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxNoPause = new JCheckBox();
-			checkBoxNoPause.setText("No Pause");
-			checkBoxNoPause.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxNoPause);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxWindowMode = new JCheckBox();
-			checkBoxWindowMode.setText("Window Mode");
-			checkBoxWindowMode.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxWindowMode);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxFilePatching = new JCheckBox();
-			checkBoxFilePatching.setText("File Patching");
-			checkBoxFilePatching.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxFilePatching);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxCheckSignatures = new JCheckBox();
-			checkBoxCheckSignatures.setText("Check signatures");
-			checkBoxCheckSignatures.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxCheckSignatures);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxEnableBattleye = new JCheckBox();
-			checkBoxEnableBattleye.setText("Enable Battleye");
-			checkBoxEnableBattleye.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxEnableBattleye);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxAutoRestart = new JCheckBox();
-			checkBoxAutoRestart.setText("Auto-restart");
-			checkBoxAutoRestart.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxAutoRestart);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-
-		/* Performances */
-		performancePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-		vBox = Box.createVerticalBox();
-		performancePanel.add(vBox);
-		{
-			JPanel panel = new JPanel();
-			panel.setLayout(new GridBagLayout());
-			vBox.add(panel);
-			{
-				checkBoxMaxMemory = new JCheckBox();
-				checkBoxMaxMemory.setText("Max Memory:");
-				checkBoxMaxMemory.setFocusable(false);
-				comboBoxMaxMemory = new JComboBox();
-				comboBoxMaxMemory.setFocusable(false);
-
-				ComboBoxModel maxMemoryModel = new DefaultComboBoxModel(
-						new String[] {
-								"",
-								Integer.toString(MaxMemoryValues.MIN.getValue()),
-								Integer.toString(MaxMemoryValues.MEDIUM
-										.getValue()),
-								Integer.toString(MaxMemoryValues.MAX.getValue()),
-								Integer.toString(MaxMemoryValues.MAX64
-										.getValue()) });
-				comboBoxMaxMemory.setModel(maxMemoryModel);
-			}
-			{
-				checkBoxCpuCount = new JCheckBox();
-				checkBoxCpuCount.setText("CPU Count:");
-				checkBoxCpuCount.setFocusable(false);
-				comboBoxCpuCount = new JComboBox();
-				comboBoxCpuCount.setFocusable(false);
-				Runtime runtime = Runtime.getRuntime();
-				int nbProcessors = runtime.availableProcessors();
-				String[] tab = new String[nbProcessors + 1];
-				tab[0] = "";
-				for (int i = 1; i <= nbProcessors; i++) {
-					tab[i] = Integer.toString(i);
+				{
+					checkBoxNoPause = new JCheckBox();
+					checkBoxNoPause.setText("No Pause");
+					checkBoxNoPause.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxNoPause);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
 				}
-				ComboBoxModel cpuCountModel = new DefaultComboBoxModel(tab);
-				comboBoxCpuCount.setModel(cpuCountModel);
-			}
-			{
-				checkBoxExThreads = new JCheckBox();
-				checkBoxExThreads.setText("ExThreads:");
-				checkBoxExThreads.setFocusable(false);
-				comboBoxExThreads = new JComboBox();
-				comboBoxExThreads.setFocusable(false);
-				ComboBoxModel exThreadsModel = new DefaultComboBoxModel(
-						new String[] { "", "0", "1", "3", "5", "7" });
-				comboBoxExThreads.setModel(exThreadsModel);
-			}
-			{
-				checkBoxMalloc = new JCheckBox();
-				checkBoxMalloc.setText("Malloc:");
-				checkBoxMalloc.setFocusable(false);
-				comboBoxMalloc = new JComboBox();
-				comboBoxMalloc.setFocusable(false);
-				ComboBoxModel mallocModel = new DefaultComboBoxModel(
-						new String[] { "", "system" });
-				comboBoxMalloc.setModel(mallocModel);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 0;
-				c.gridy = 0;
-				panel.add(checkBoxMaxMemory, c);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 1;
-				c.gridy = 0;
-				panel.add(comboBoxMaxMemory, c);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 0;
-				c.gridy = 1;
-				panel.add(checkBoxCpuCount, c);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 1;
-				c.gridy = 1;
-				panel.add(comboBoxCpuCount, c);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 0;
-				c.gridy = 2;
-				panel.add(checkBoxExThreads, c);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 1;
-				c.gridy = 2;
-				panel.add(comboBoxExThreads, c);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 0;
-				c.gridy = 3;
-				panel.add(checkBoxMalloc, c);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 1;
-				c.gridy = 3;
-				panel.add(comboBoxMalloc, c);
-			}
-		}
-		{
-			checkBoxEnableHT = new JCheckBox();
-			checkBoxEnableHT.setText("Enable HT");
-			checkBoxEnableHT.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxEnableHT);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxHugePages = new JCheckBox();
-			checkBoxHugePages.setText("Huge pages");
-			checkBoxHugePages.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxHugePages);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxNoSplashScreen = new JCheckBox();
-			checkBoxNoSplashScreen.setText("No Splash Screen");
-			checkBoxNoSplashScreen.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxNoSplashScreen);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxDefaultWorld = new JCheckBox();
-			checkBoxDefaultWorld.setText("Default World Empty");
-			checkBoxDefaultWorld.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxDefaultWorld);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxNoLogs = new JCheckBox();
-			checkBoxNoLogs.setText("No logs");
-			checkBoxNoLogs.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxNoLogs);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		vBox.add(Box.createVerticalStrut(20));
+				{
+					checkBoxWindowMode = new JCheckBox();
+					checkBoxWindowMode.setText("Window Mode");
+					checkBoxWindowMode.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxWindowMode);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
+				{
+					checkBoxFilePatching = new JCheckBox();
+					checkBoxFilePatching.setText("File Patching");
+					checkBoxFilePatching.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxFilePatching);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
+				{
+					checkBoxCheckSignatures = new JCheckBox();
+					checkBoxCheckSignatures.setText("Check signatures");
+					checkBoxCheckSignatures.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxCheckSignatures);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
+				{
+					checkBoxEnableBattleye = new JCheckBox();
+					checkBoxEnableBattleye.setText("Enable Battleye");
+					checkBoxEnableBattleye.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxEnableBattleye);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
+				{
+					checkBoxAutoRestart = new JCheckBox();
+					checkBoxAutoRestart.setText("Auto-restart");
+					checkBoxAutoRestart.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxAutoRestart);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
 
-		/* Run parameters */
-		runParametersTextArea = new JTextArea();
-		Font labelFont = UIManager.getFont("Label.font");
-		runParametersTextArea.setFont(new Font(labelFont.getName(),
-				labelFont.getStyle(), labelFont.getSize()));
-		runParametersTextArea.setLineWrap(true);
-		runParametersTextArea.setEditable(false);
-		runParametersTextArea.setBorder(BorderFactory
-				.createBevelBorder(BevelBorder.LOWERED));
-		scrollPaneRunParameters = new JScrollPane(runParametersTextArea);
-		scrollPaneRunParameters.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Run Parameters"));
+				{
+					JPanel panelMissionFile = new JPanel();
+					panelMissionFile.setLayout(new GridBagLayout());
+					vBox.add(panelMissionFile);
 
-		/* Additional parameters */
-		additionalParametersTextArea = new JTextArea();
-		additionalParametersTextArea.setFont(new Font(labelFont.getName(),
-				labelFont.getStyle(), labelFont.getSize()));
-		additionalParametersTextArea.setLineWrap(true);
-		additionalParametersTextArea.setBorder(BorderFactory
-				.createBevelBorder(BevelBorder.LOWERED));
-		scrollPaneAditionalParameters = new JScrollPane(
-				additionalParametersTextArea);
-		scrollPaneAditionalParameters.setBorder(BorderFactory
-				.createTitledBorder(BorderFactory.createEtchedBorder(),
-						"Additional Parameters"));
+					checkBoxMissionFile = new JCheckBox();
+					checkBoxMissionFile.setText("Mission file:");
+					checkBoxMissionFile.setFocusable(false);
+					textFieldMissionFile = new JTextField();
+					textFieldMissionFile.setFocusable(false);
+					textFieldMissionFile.setEditable(false);
+					buttonSelectMissionFile = new JButton();
+					buttonSelectMissionFile.setText("Select");
+					buttonSelectMissionFile.setFocusable(false);
+					{
+						GridBagConstraints c = new GridBagConstraints();
+						c.fill = GridBagConstraints.HORIZONTAL;
+						c.weightx = 0.5;
+						c.weighty = 0;
+						c.gridx = 0;
+						c.gridy = 1;
+						panelMissionFile.add(checkBoxMissionFile, c);
+					}
+					{
+						GridBagConstraints c = new GridBagConstraints();
+						c.fill = GridBagConstraints.HORIZONTAL;
+						c.weightx = 10;
+						c.weighty = 0;
+						c.gridx = 1;
+						c.gridy = 1;
+						panelMissionFile.add(textFieldMissionFile, c);
+					}
+					{
+						GridBagConstraints c = new GridBagConstraints();
+						c.fill = GridBagConstraints.HORIZONTAL;
+						c.weightx = 0.5;
+						c.weighty = 0;
+						c.gridx = 2;
+						c.gridy = 1;
+						panelMissionFile.add(buttonSelectMissionFile, c);
+					}
+				}
+			}
 
-		centerPanel.add(launcherOptionsPanel);
-		centerPanel.add(scrollPaneRunParameters);
-		centerPanel.add(performancePanel);
-		centerPanel.add(scrollPaneAditionalParameters);
+			/* Performances Panel */
+
+			performancePanel = new JPanel();
+			performancePanel
+					.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Performance"));
+			leftPanel.add(performancePanel);
+
+			performancePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			vBox = Box.createVerticalBox();
+			performancePanel.add(vBox);
+			{
+				JPanel panel = new JPanel();
+				panel.setLayout(new GridBagLayout());
+				vBox.add(panel);
+				{
+					checkBoxMaxMemory = new JCheckBox();
+					checkBoxMaxMemory.setText("Max Memory:");
+					checkBoxMaxMemory.setFocusable(false);
+					comboBoxMaxMemory = new JComboBox();
+					comboBoxMaxMemory.setFocusable(false);
+
+					ComboBoxModel maxMemoryModel = new DefaultComboBoxModel(
+							new String[] { "", Integer.toString(MaxMemoryValues.MIN.getValue()),
+									Integer.toString(MaxMemoryValues.MAX32.getValue()),
+									Integer.toString(MaxMemoryValues.MAX64.getValue()) });
+					comboBoxMaxMemory.setModel(maxMemoryModel);
+				}
+				{
+					checkBoxCpuCount = new JCheckBox();
+					checkBoxCpuCount.setText("CPU Count:");
+					checkBoxCpuCount.setFocusable(false);
+					comboBoxCpuCount = new JComboBox();
+					comboBoxCpuCount.setFocusable(false);
+					Runtime runtime = Runtime.getRuntime();
+					int nbProcessors = runtime.availableProcessors();
+					String[] tab = new String[nbProcessors + 1];
+					tab[0] = "";
+					for (int i = 1; i <= nbProcessors; i++) {
+						tab[i] = Integer.toString(i);
+					}
+					ComboBoxModel cpuCountModel = new DefaultComboBoxModel(tab);
+					comboBoxCpuCount.setModel(cpuCountModel);
+				}
+				{
+					checkBoxExThreads = new JCheckBox();
+					checkBoxExThreads.setText("ExThreads:");
+					checkBoxExThreads.setFocusable(false);
+					comboBoxExThreads = new JComboBox();
+					comboBoxExThreads.setFocusable(false);
+					ComboBoxModel exThreadsModel = new DefaultComboBoxModel(
+							new String[] { "", "0", "1", "3", "5", "7" });
+					comboBoxExThreads.setModel(exThreadsModel);
+				}
+				{
+					checkBoxMalloc = new JCheckBox();
+					checkBoxMalloc.setText("Malloc:");
+					checkBoxMalloc.setFocusable(false);
+					comboBoxMalloc = new JComboBox();
+					comboBoxMalloc.setFocusable(false);
+					ComboBoxModel mallocModel = new DefaultComboBoxModel(new String[] { "", "system" });
+					comboBoxMalloc.setModel(mallocModel);
+				}
+				{
+					GridBagConstraints c = new GridBagConstraints();
+					c.fill = GridBagConstraints.HORIZONTAL;
+					c.weightx = 0.5;
+					c.weighty = 0;
+					c.gridx = 0;
+					c.gridy = 0;
+					panel.add(checkBoxMaxMemory, c);
+				}
+				{
+					GridBagConstraints c = new GridBagConstraints();
+					c.fill = GridBagConstraints.HORIZONTAL;
+					c.weightx = 0.5;
+					c.weighty = 0;
+					c.gridx = 1;
+					c.gridy = 0;
+					panel.add(comboBoxMaxMemory, c);
+				}
+				{
+					GridBagConstraints c = new GridBagConstraints();
+					c.fill = GridBagConstraints.HORIZONTAL;
+					c.weightx = 0.5;
+					c.weighty = 0;
+					c.gridx = 0;
+					c.gridy = 1;
+					panel.add(checkBoxCpuCount, c);
+				}
+				{
+					GridBagConstraints c = new GridBagConstraints();
+					c.fill = GridBagConstraints.HORIZONTAL;
+					c.weightx = 0.5;
+					c.weighty = 0;
+					c.gridx = 1;
+					c.gridy = 1;
+					panel.add(comboBoxCpuCount, c);
+				}
+				{
+					GridBagConstraints c = new GridBagConstraints();
+					c.fill = GridBagConstraints.HORIZONTAL;
+					c.weightx = 0.5;
+					c.weighty = 0;
+					c.gridx = 0;
+					c.gridy = 2;
+					panel.add(checkBoxExThreads, c);
+				}
+				{
+					GridBagConstraints c = new GridBagConstraints();
+					c.fill = GridBagConstraints.HORIZONTAL;
+					c.weightx = 0.5;
+					c.weighty = 0;
+					c.gridx = 1;
+					c.gridy = 2;
+					panel.add(comboBoxExThreads, c);
+				}
+				{
+					GridBagConstraints c = new GridBagConstraints();
+					c.fill = GridBagConstraints.HORIZONTAL;
+					c.weightx = 0.5;
+					c.weighty = 0;
+					c.gridx = 0;
+					c.gridy = 3;
+					panel.add(checkBoxMalloc, c);
+				}
+				{
+					GridBagConstraints c = new GridBagConstraints();
+					c.fill = GridBagConstraints.HORIZONTAL;
+					c.weightx = 0.5;
+					c.weighty = 0;
+					c.gridx = 1;
+					c.gridy = 3;
+					panel.add(comboBoxMalloc, c);
+				}
+				{
+					checkBoxEnableHT = new JCheckBox();
+					checkBoxEnableHT.setText("Enable HT");
+					checkBoxEnableHT.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxEnableHT);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
+				{
+					checkBoxHugePages = new JCheckBox();
+					checkBoxHugePages.setText("Huge pages");
+					checkBoxHugePages.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxHugePages);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
+				{
+					checkBoxNoSplashScreen = new JCheckBox();
+					checkBoxNoSplashScreen.setText("No Splash Screen");
+					checkBoxNoSplashScreen.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxNoSplashScreen);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
+				{
+					checkBoxDefaultWorld = new JCheckBox();
+					checkBoxDefaultWorld.setText("Default World Empty");
+					checkBoxDefaultWorld.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxDefaultWorld);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
+				{
+					checkBoxNoLogs = new JCheckBox();
+					checkBoxNoLogs.setText("No logs");
+					checkBoxNoLogs.setFocusable(false);
+					Box hBox = Box.createHorizontalBox();
+					hBox.add(checkBoxNoLogs);
+					hBox.add(Box.createHorizontalGlue());
+					vBox.add(hBox);
+				}
+			}
+			vBox.add(Box.createVerticalStrut(20));
+		}
+
+		JPanel rightPanel = new JPanel();
+		GridLayout grid2 = new GridLayout(2, 1);
+		rightPanel.setLayout(grid2);
+		mainPanel.add(rightPanel, BorderLayout.CENTER);
+		{
+			/* Run parameters Panel */
+
+			runParametersTextArea = new JTextArea();
+			Font labelFont = UIManager.getFont("Label.font");
+			runParametersTextArea.setFont(new Font(labelFont.getName(), labelFont.getStyle(), labelFont.getSize()));
+			runParametersTextArea.setLineWrap(true);
+			runParametersTextArea.setEditable(false);
+			runParametersTextArea.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+			scrollPaneRunParameters = new JScrollPane(runParametersTextArea);
+			scrollPaneRunParameters
+					.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Run Parameters"));
+			rightPanel.add(scrollPaneRunParameters);
+
+			/* Additional parameters Panel */
+
+			additionalParametersTextArea = new JTextArea();
+
+			additionalParametersTextArea
+					.setFont(new Font(labelFont.getName(), labelFont.getStyle(), labelFont.getSize()));
+			additionalParametersTextArea.setLineWrap(true);
+			additionalParametersTextArea.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+			scrollPaneAditionalParameters = new JScrollPane(additionalParametersTextArea);
+			scrollPaneAditionalParameters.setBorder(
+					BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Additional Parameters"));
+			rightPanel.add(scrollPaneAditionalParameters);
+		}
 
 		/* Executable locations */
-		vBox = Box.createVerticalBox();
+		Box vBox = Box.createVerticalBox();
 		vBox.add(Box.createVerticalStrut(5));
 		JPanel southPanel = new JPanel();
-		southPanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(),
+		southPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
 				"ArmA III Executable Location (game/server)"));
 		southPanel.setLayout(new BorderLayout());
 		{
 			textFieldArmAExecutableLocation = new JTextField();
 			textFieldArmAExecutableLocation.setEditable(false);
 			buttonSelectArmAExe = new JButton("Select");
-			southPanel
-					.add(textFieldArmAExecutableLocation, BorderLayout.CENTER);
+			southPanel.add(textFieldArmAExecutableLocation, BorderLayout.CENTER);
 			southPanel.add(buttonSelectArmAExe, BorderLayout.EAST);
 		}
 		vBox.add(southPanel);
@@ -477,6 +504,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 		/* Align Profiles comboBox */
 		checkBoxProfiles.setPreferredSize(checkBoxMaxMemory.getPreferredSize());
+
+		/* Align Mission file textField */
+		checkBoxMissionFile.setPreferredSize(checkBoxMaxMemory.getPreferredSize());
+		textFieldMissionFile.setPreferredSize(comboBoxProfiles.getPreferredSize());
+		
+		/**/
+		rightPanel.setPreferredSize(leftPanel.getPreferredSize());
 
 		checkBoxProfiles.addActionListener(new ActionListener() {
 			@Override
@@ -488,6 +522,18 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				comboBoxProfilesPerformed();
+			}
+		});
+		checkBoxMissionFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				checkBoxMissionFilePerformed();
+			}
+		});
+		buttonSelectMissionFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonSelectMissionFilePerformed();
 			}
 		});
 		checkBoxShowScriptErrors.addActionListener(new ActionListener() {
@@ -622,15 +668,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 	private void setContextualHelp() {
 
-		comboBoxProfiles
-				.setToolTipText("(optional) Select in game profile name");
+		comboBoxProfiles.setToolTipText("(optional) Select in game profile name");
+		checkBoxMissionFile.setToolTipText("Open mission in Editor");
 		checkBoxShowScriptErrors.setToolTipText("Show in game script error");
-		checkBoxNoPause
-				.setToolTipText("Don't suspend the game when placed in background");
-		checkBoxFilePatching
-				.setToolTipText("Allow the game to load unpacked data");
-		checkBoxWindowMode
-				.setToolTipText("Display the game windowed instead of full screen");
+		checkBoxNoPause.setToolTipText("Don't suspend the game when placed in background");
+		checkBoxFilePatching.setToolTipText("Allow the game to load unpacked data");
+		checkBoxWindowMode.setToolTipText("Display the game windowed instead of full screen");
 		checkBoxCheckSignatures.setToolTipText("Check signatures of PBO files");
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		checkBoxMaxMemory.setToolTipText("Restricts memory allocation");
@@ -639,14 +682,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		comboBoxExThreads.setToolTipText("Sets number of extra threads to use");
 		checkBoxExThreads.setToolTipText("Sets number of extra threads to use");
 		checkBoxEnableHT.setToolTipText("Use all hyper-threaded cpu cores");
-		checkBoxHugePages
-				.setToolTipText("Enables huge pages with the default memory allocator");
+		checkBoxHugePages.setToolTipText("Enables huge pages");
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
 		checkBoxDefaultWorld.setToolTipText("No world loaded at game startup");
 		checkBoxNoLogs.setToolTipText("Do not write errors into RPT file");
 		checkBoxAutoRestart.setToolTipText("Auto-restart game/server");
 		checkBoxMalloc.setToolTipText("Sets memory allocator");
-		checkBoxEnableBattleye.setToolTipText("Start the game with Battleye");
+		checkBoxEnableBattleye.setToolTipText("Start the game with Battleye Executable");
 	}
 
 	public void update(int flag) {
@@ -656,64 +698,60 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			// update Malloc comboBox Model and Battleye
 			updateOptions();
 
+			/* Update Run Parameters */
 			updateRunParameters();
 
-			/* Additional Run Parameters */
+			/* Update Additional Run Parameters */
 			updateAdditionalRunParameters();
 		}
 
-		else if (flag == OP_ADDON_SELECTION_CHANGED || flag == OP_GROUP_CHANGED
-				|| flag == OP_ADDON_PRIORITY_CHANGED
+		else if (flag == OP_ADDON_SELECTION_CHANGED || flag == OP_GROUP_CHANGED || flag == OP_ADDON_PRIORITY_CHANGED
 				|| flag == OP_ADDON_FILES_CHANGED) {
 
+			/* Update Run Parameters */
 			updateRunParameters();
 		}
 	}
 
 	private void updateOptions() {
 
-		LauncherOptionsDTO launcherOptionsDTO = profileService
-				.getLauncherOptions();
+		LauncherOptionsDTO launcherOptionsDTO = profileService.getLauncherOptions();
 
 		/* Launcher options */
 		if (launcherOptionsDTO.getGameProfile() != null) {
-			comboBoxProfiles.setSelectedItem(launcherOptionsDTO
-					.getGameProfile());
+			comboBoxProfiles.setSelectedItem(launcherOptionsDTO.getGameProfile());
 			checkBoxProfiles.setSelected(true);
 		} else {
 			comboBoxProfiles.setSelectedIndex(0);
 		}
 
-		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO
-				.isShowScriptError());
+		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO.isShowScriptError());
 		checkBoxNoPause.setSelected(launcherOptionsDTO.isNoPause());
 		checkBoxFilePatching.setSelected(launcherOptionsDTO.isFilePatching());
 		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
-		checkBoxCheckSignatures.setSelected(launcherOptionsDTO
-				.isCheckSignatures());
-
+		checkBoxCheckSignatures.setSelected(launcherOptionsDTO.isCheckSignatures());
 		checkBoxAutoRestart.setSelected(launcherOptionsDTO.isAutoRestart());
+		checkBoxMissionFile.setSelected(launcherOptionsDTO.isMissionFile());
+		textFieldMissionFile.setText(launcherOptionsDTO.getMissionFilePath());
+		textFieldMissionFile.setToolTipText(launcherOptionsDTO.getMissionFilePath());
 
 		/* Performance */
 		if (launcherOptionsDTO.getMaxMemorySelection() != null) {
-			comboBoxMaxMemory.setSelectedItem(launcherOptionsDTO
-					.getMaxMemorySelection());
+			comboBoxMaxMemory.setSelectedItem(launcherOptionsDTO.getMaxMemorySelection());
 			checkBoxMaxMemory.setSelected(true);
 		} else {
 			comboBoxMaxMemory.setSelectedIndex(0);
 		}
 
 		if (launcherOptionsDTO.getCpuCountSelection() != 0) {
-			comboBoxCpuCount.setSelectedItem(Integer
-					.toString(launcherOptionsDTO.getCpuCountSelection()));
+			comboBoxCpuCount.setSelectedItem(Integer.toString(launcherOptionsDTO.getCpuCountSelection()));
 			checkBoxCpuCount.setSelected(true);
 		} else {
 			comboBoxCpuCount.setSelectedIndex(0);
 		}
 
 		if (launcherOptionsDTO.getExThreadsSelection() != null) {
-			comboBoxExThreads.setSelectedItem(launcherOptionsDTO
-					.getExThreadsSelection());
+			comboBoxExThreads.setSelectedItem(launcherOptionsDTO.getExThreadsSelection());
 			checkBoxExThreads.setSelected(true);
 		} else {
 			comboBoxExThreads.setSelectedIndex(0);
@@ -721,8 +759,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 		checkBoxEnableHT.setSelected(launcherOptionsDTO.isEnableHT());
 		checkBoxHugePages.setSelected(launcherOptionsDTO.isHugePages());
-		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
-				.isNoSplashScreen());
+		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO.isNoSplashScreen());
 		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
 		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
 
@@ -735,8 +772,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (arma3ExePath != null) {
 			File arma3ExeFile = new File(arma3ExePath);
 			if (arma3ExeFile.exists()) {// set executable location
-				textFieldArmAExecutableLocation.setText(launcherOptionsDTO
-						.getArma3ExePath());
+				textFieldArmAExecutableLocation.setText(launcherOptionsDTO.getArma3ExePath());
 			}
 			if (arma3ExeFile.getParentFile() != null) {// set Malloc
 				File parent = new File(arma3ExeFile.getParent());
@@ -763,17 +799,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				ComboBoxModel mallocModel = new DefaultComboBoxModel(tab);
 				comboBoxMalloc.setModel(mallocModel);
 				if (launcherOptionsDTO.getMallocSelection() != null) {
-					comboBoxMalloc.setSelectedItem(launcherOptionsDTO
-							.getMallocSelection());
+					comboBoxMalloc.setSelectedItem(launcherOptionsDTO.getMallocSelection());
 					checkBoxMalloc.setSelected(true);
-					checkBoxHugePages.setSelected(false);
-					checkBoxHugePages.setEnabled(false);
 				} else {
 					comboBoxMalloc.setSelectedIndex(0);
 				}
 			}
-			if (arma3ExeFile.getName().toLowerCase()
-					.equals(GameExecutables.BATTLEYE.getDescription())) {
+			if (arma3ExeFile.getName().toLowerCase().equals(GameExecutables.BATTLEYE.getDescription())) {
 				checkBoxEnableBattleye.setSelected(true);
 			}
 		}
@@ -829,9 +861,60 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		updateRunParameters();
 	}
 
+	private void checkBoxMissionFilePerformed() {
+
+		profileService.setCheckBoxMissionFile(checkBoxMissionFile.isSelected());
+
+		if (checkBoxMissionFile.isSelected()) {
+			Color textFieldForeground = UIManager.getColor("TextField.foreground");
+			textFieldMissionFile.setForeground(textFieldForeground);
+		} else {
+			textFieldMissionFile.setForeground(Color.LIGHT_GRAY);
+		}
+		updateRunParameters();
+	}
+
+	private void buttonSelectMissionFilePerformed() {
+
+		String missionFilePath = textFieldMissionFile.getText();
+
+		JFileChooser fc = null;
+		if (missionFilePath == null) {
+			fc = new JFileChooser();
+		} else {
+			File missionFile = new File(missionFilePath);
+			if (missionFile.exists()) {
+				fc = new JFileChooser(missionFile);
+			} else {
+				fc = new JFileChooser();
+			}
+		}
+
+		FileFilter currentFileFilter = fc.getFileFilter();
+		if (currentFileFilter != null) {
+			fc.removeChoosableFileFilter(currentFileFilter);
+		}
+		String[] extensions = new String[] { "mission.sqm", "mission.biedi" };
+		FileFilter typeMission = new ExtensionFilter("Arma 3 mission file (mission.sqm,mission.biedi)", extensions);
+		fc.addChoosableFileFilter(typeMission);
+
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			File file = fc.getSelectedFile();
+			String path = file.getAbsolutePath();
+			profileService.setMissionFilePath(path);
+			textFieldMissionFile.setText(path);
+			textFieldMissionFile.setToolTipText(path);
+			checkBoxMissionFile.setSelected(true);
+			profileService.setCheckBoxMissionFile(true);
+			Color textFieldForeground = UIManager.getColor("TextField.foreground");
+			textFieldMissionFile.setForeground(textFieldForeground);
+		}
+	}
+
 	private void checkBoxShowScriptErrorsPerformed() {
-		profileService.setCheckBoxShowScriptErrors(checkBoxShowScriptErrors
-				.isSelected());
+		profileService.setCheckBoxShowScriptErrors(checkBoxShowScriptErrors.isSelected());
 		updateRunParameters();
 	}
 
@@ -841,8 +924,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	}
 
 	private void checkBoxNoFilePatchingPerformed() {
-		profileService.setCheckBoxFilePatching(checkBoxFilePatching
-				.isSelected());
+		profileService.setCheckBoxFilePatching(checkBoxFilePatching.isSelected());
 		updateRunParameters();
 	}
 
@@ -852,8 +934,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	}
 
 	private void checkBoxCheckSignaturesPerformed() {
-		profileService.setCheckBoxCheckSignatures(checkBoxCheckSignatures
-				.isSelected());
+		profileService.setCheckBoxCheckSignatures(checkBoxCheckSignatures.isSelected());
 		updateRunParameters();
 	}
 
@@ -871,27 +952,21 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (arma3ExeFile != null) {
 			File parent = arma3ExeFile.getParentFile();
 			if (parent != null) {
-				if (arma3ExeFile.getName().equals(
-						GameExecutables.BATTLEYE.getDescription())) {
-					
+				if (arma3ExeFile.getName().equals(GameExecutables.BATTLEYE.getDescription())) {
+
 					boolean is64bit = false;
 					if (System.getProperty("os.name").toLowerCase().contains("windows")) {
 						is64bit = (System.getenv("ProgramFiles(x86)") != null);
 					}
-				
-					if (is64bit){
-						newArma3ExePath = parent.getAbsolutePath() + "/"
-								+ GameExecutables.GAME_x64.getDescription();
+
+					if (is64bit) {
+						newArma3ExePath = parent.getAbsolutePath() + "/" + GameExecutables.GAME_x64.getDescription();
+					} else {
+						newArma3ExePath = parent.getAbsolutePath() + "/" + GameExecutables.GAME.getDescription();
 					}
-					else {
-						newArma3ExePath = parent.getAbsolutePath() + "/"
-								+ GameExecutables.GAME.getDescription();
-					}
-				} else if (arma3ExeFile.getName().equals(
-						GameExecutables.GAME.getDescription())|| arma3ExeFile.getName().equals(
-								GameExecutables.GAME_x64.getDescription())) {
-					newArma3ExePath = parent.getAbsolutePath() + "/"
-							+ GameExecutables.BATTLEYE.getDescription();
+				} else if (arma3ExeFile.getName().equals(GameExecutables.GAME.getDescription())
+						|| arma3ExeFile.getName().equals(GameExecutables.GAME_x64.getDescription())) {
+					newArma3ExePath = parent.getAbsolutePath() + "/" + GameExecutables.BATTLEYE.getDescription();
 				}
 			}
 		}
@@ -899,11 +974,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (newArma3ExePath != null) {
 			File newArma3Exe = new File(newArma3ExePath);
 			if (newArma3Exe.exists()) {
-				textFieldArmAExecutableLocation.setText(newArma3Exe
-						.getAbsolutePath());
+				textFieldArmAExecutableLocation.setText(newArma3Exe.getAbsolutePath());
 				profileService.setArmA3ExePath(newArma3Exe.getAbsolutePath());
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"ArmA 3 Executable Location have changed.",
+				JOptionPane.showMessageDialog(facade.getMainPanel(), "ArmA 3 Executable Location have changed.",
 						"Information", JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
@@ -1002,13 +1075,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (!mallocDll.isEmpty()) {
 			checkBoxMalloc.setSelected(true);
 			profileService.setMalloc(mallocDll);
-			checkBoxHugePages.setSelected(false);
-			checkBoxHugePages.setEnabled(false);
-			profileService.setHugePages(false);
 		} else {
 			checkBoxMalloc.setSelected(false);
 			profileService.setMalloc(null);
-			checkBoxHugePages.setEnabled(true);
 		}
 		updateRunParameters();
 	}
@@ -1076,6 +1145,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			textFieldArmAExecutableLocation.setText(path);
 			updateOptions();
 		}
+
+		this.facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 	}
 
 	/* additionalParametersTextArea modification Listener */

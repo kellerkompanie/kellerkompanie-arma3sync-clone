@@ -22,9 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -44,23 +43,32 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
+import javax.xml.parsers.ParserConfigurationException;
 
 import net.jimmc.jshortcut.JShellLink;
+
+import org.xml.sax.SAXException;
+
 import fr.soe.a3s.constant.CheckRepositoriesFrequency;
 import fr.soe.a3s.constant.DefaultProfileName;
+import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
-import fr.soe.a3s.exception.FtpException;
+import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.FtpService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.help.AboutDialog;
@@ -82,6 +90,8 @@ import fr.soe.a3s.ui.tools.tfar.FirstPageTFARInstallerPanel;
 public class MainPanel extends JFrame implements UIConstants {
 
 	private final Facade facade;
+
+	/* UI */
 	private static final String TAB_TITLE_ADDONS = "Addons";
 	private static final String TAB_TITLE_ADDON_OPTIONS = "Addon Options";
 	private static final String TAB_TITLE_LAUNCH_OPTIONS = "Launcher Options";
@@ -89,25 +99,22 @@ public class MainPanel extends JFrame implements UIConstants {
 	private static final String TAB_TITLE_EXTENAL_APPS = "External Apps";
 	private static final String TAB_TITLE_SYNC = "Repositories";
 	private JMenuBar menuBar;
-	private JMenu menuProfiles, menuGroups, menuHelp, menuTools,
-			menuItemAutoConfig;
-	private JMenuItem menuItemEdit, menuItemHelp, menuItemuUpdates,
-			menuItemAbout, menuItemPreferences, menuItemACRE2wizard,
-			menuItemRPTviewer, menuItemeExportAsShortcut, menuItemAiAwizard,
-			menuItemBISforum, menuItemAutoConfigImport,
-			menuItemAutoConfigExport, menuItemBikeyExtractor,
-			menuItemConfigureProxy;
+	private JMenu menuProfiles, menuGroups, menuHelp, menuTools, menuItemAutoConfig;
+	private JMenuItem menuItemEdit, menuItemHelp, menuItemuUpdates, menuItemAbout, menuItemPreferences,
+			menuItemACRE2wizard, menuItemRPTviewer, menuItemeExportAsShortcut, menuItemAiAwizard, menuItemBISforum,
+			menuItemAutoConfigImport, menuItemAutoConfigExport, menuItemBikeyExtractor, menuItemConfigureProxy;
 	private JTabbedPane tabbedPane;
 	private JPanel infoPanel, launchPanel;
 	private PopupMenu popup;
 	private MenuItem launchItem, exitItem;
 	private final Container contenu;
-	private JMenuItem menuItemAddGroup, menuItemDuplicateGroup,
-			menuItemRenameGroup, menuItemRemoveGroup, menuItemTFARwizard,
-			menuDonate;
+	private JMenuItem menuItemAddGroup, menuItemDuplicateGroup, menuItemRenameGroup, menuItemRemoveGroup,
+			menuItemTFARwizard, menuDonate;
+
 	/* System tray */
 	private SystemTray tray;
 	private TrayIcon trayIcon;
+
 	/* Services */
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final ProfileService profileService = new ProfileService();
@@ -115,8 +122,9 @@ public class MainPanel extends JFrame implements UIConstants {
 	private final PreferencesService preferencesService = new PreferencesService();
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final LaunchService launchService = new LaunchService();
-	/* Data */
-	private final Map<String, Integer> mapTabIndexes = new LinkedHashMap<String, Integer>();
+
+	/* Manager */
+	private final DynamicTabManager dynamicTabManager = new DynamicTabManager();
 
 	public MainPanel(Facade facade) {
 
@@ -137,8 +145,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuProfiles = new JMenu("Profiles");
 		menuBar.add(menuProfiles);
 		menuItemEdit = new JMenuItem("Edit", new ImageIcon(EDIT));
-		menuItemeExportAsShortcut = new JMenuItem("Shortcut", new ImageIcon(
-				SHORTCUT));
+		menuItemeExportAsShortcut = new JMenuItem("Shortcut", new ImageIcon(SHORTCUT));
 		JSeparator s = new JSeparator();
 		menuProfiles.add(menuItemEdit);
 		menuProfiles.add(menuItemeExportAsShortcut);
@@ -153,24 +160,19 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuGroups.add(menuItemDuplicateGroup);
 		menuGroups.add(menuItemRenameGroup);
 		menuGroups.add(menuItemRemoveGroup);
-		menuBar.add(menuGroups);
+		// menuBar.add(menuGroups);
 
 		menuTools = new JMenu("Tools");
 		menuBar.add(menuTools);
-		menuItemACRE2wizard = new JMenuItem("ACRE 2 installer", new ImageIcon(
-				ACRE2_SMALL));
+		menuItemACRE2wizard = new JMenuItem("ACRE 2 installer", new ImageIcon(ACRE2_SMALL));
 		// menuTools.add(menuItemACRE2wizard);
-		menuItemTFARwizard = new JMenuItem("TFAR installer", new ImageIcon(
-				TFAR_SMALL));
+		menuItemTFARwizard = new JMenuItem("TFAR installer", new ImageIcon(TFAR_SMALL));
 		// menuTools.add(menuItemTFARwizard);
-		menuItemAiAwizard = new JMenuItem("AiA tweaker", new ImageIcon(
-				AIA_SMALL));
+		menuItemAiAwizard = new JMenuItem("AiA tweaker", new ImageIcon(AIA_SMALL));
 		menuTools.add(menuItemAiAwizard);
-		menuItemRPTviewer = new JMenuItem("RPT viewer",
-				new ImageIcon(RPT_SMALL));
+		menuItemRPTviewer = new JMenuItem("RPT viewer", new ImageIcon(RPT_SMALL));
 		menuTools.add(menuItemRPTviewer);
-		menuItemBikeyExtractor = new JMenuItem("Bikey extractor",
-				new ImageIcon(BIKEY_SMALL));
+		menuItemBikeyExtractor = new JMenuItem("Bikey extractor", new ImageIcon(BIKEY_SMALL));
 		menuTools.add(menuItemBikeyExtractor);
 		menuHelp = new JMenu("Help");
 		menuItemHelp = new JMenuItem("Online Help", new ImageIcon(HELP));
@@ -179,8 +181,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuHelp.add(menuItemBISforum);
 		JSeparator s1 = new JSeparator();
 		menuHelp.add(s1);
-		menuItemPreferences = new JMenuItem("Preferences", new ImageIcon(
-				PREFERENCES));
+		menuItemPreferences = new JMenuItem("Preferences", new ImageIcon(PREFERENCES));
 		menuHelp.add(menuItemPreferences);
 		menuItemAutoConfig = new JMenu("Auto-config");
 		menuHelp.add(menuItemAutoConfig);
@@ -190,8 +191,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuItemAutoConfig.add(menuItemAutoConfigExport);
 		menuItemConfigureProxy = new JMenuItem("Configure proxy");
 		menuHelp.add(menuItemConfigureProxy);
-		menuItemuUpdates = new JMenuItem("Check for Updates", new ImageIcon(
-				UPDATE));
+		menuItemuUpdates = new JMenuItem("Check for Updates", new ImageIcon(UPDATE));
 		menuHelp.add(menuItemuUpdates);
 		JSeparator s2 = new JSeparator();
 		menuHelp.add(s2);
@@ -212,13 +212,10 @@ public class MainPanel extends JFrame implements UIConstants {
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.addTab(TAB_TITLE_ADDONS, new AddonsPanel(facade));
-		tabbedPane.addTab(TAB_TITLE_ADDON_OPTIONS,
-				new AddonOptionsPanel(facade));
-		tabbedPane.addTab(TAB_TITLE_LAUNCH_OPTIONS, new LauncherOptionsPanel(
-				facade));
+		tabbedPane.addTab(TAB_TITLE_ADDON_OPTIONS, new AddonOptionsPanel(facade));
+		tabbedPane.addTab(TAB_TITLE_LAUNCH_OPTIONS, new LauncherOptionsPanel(facade));
 		tabbedPane.addTab(TAB_TITLE_ONLINE, new OnlinePanel(facade));
-		tabbedPane.addTab(TAB_TITLE_EXTENAL_APPS,
-				new ExternalApplicationsPanel(facade));
+		tabbedPane.addTab(TAB_TITLE_EXTENAL_APPS, new ExternalApplicationsPanel(facade));
 		tabbedPane.addTab(TAB_TITLE_SYNC, new SyncPanel(facade));
 		contenu.add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFocusable(false);
@@ -475,13 +472,11 @@ public class MainPanel extends JFrame implements UIConstants {
 		/* Ensure profile with name profileName really exists */
 		String profileName = configurationService.getProfileName();
 		if (profileName == null) {
-			configurationService.setProfileName(DefaultProfileName.DEFAULT
-					.getDescription());
+			configurationService.setProfileName(DefaultProfileName.DEFAULT.getDescription());
 		} else {
 			List<String> profileNames = profileService.getProfileNames();
 			if (!profileNames.contains(profileName)) {
-				configurationService.setProfileName(DefaultProfileName.DEFAULT
-						.getDescription());
+				configurationService.setProfileName(DefaultProfileName.DEFAULT.getDescription());
 			}
 		}
 
@@ -517,10 +512,8 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Center app into the middle of the screen */
 		Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-		int x = (int) ((screenDimension.getWidth() - this.getPreferredSize()
-				.getWidth()) / 2);
-		int y = (int) ((screenDimension.getHeight() - this.getPreferredSize()
-				.getHeight()) / 2);
+		int x = (int) ((screenDimension.getWidth() - this.getPreferredSize().getWidth()) / 2);
+		int y = (int) ((screenDimension.getHeight() - this.getPreferredSize().getHeight()) / 2);
 		this.setLocation(x, y);
 
 		/* Copy old Addons search directories to profile */
@@ -528,8 +521,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		if (set != null) {
 			Iterator iter = set.iterator();
 			while (iter.hasNext()) {
-				profileService
-						.addAddonSearchDirectoryPath((String) iter.next());
+				profileService.addAddonSearchDirectoryPath((String) iter.next());
 			}
 			configurationService.resetAddonSearchDirectoryPaths();
 		}
@@ -539,15 +531,12 @@ public class MainPanel extends JFrame implements UIConstants {
 		if (oldLps != null) {
 			profileService.setArmA3ExePath(oldLps.getArma3ExePath());
 			profileService.setCheckBoxAutoRestart(oldLps.isAutoRestart());
-			profileService.setCheckBoxCheckSignatures(oldLps
-					.isCheckSignatures());
+			profileService.setCheckBoxCheckSignatures(oldLps.isCheckSignatures());
 			profileService.setCheckBoxFilePatching(oldLps.isFilePatching());
 			profileService.setCheckBoxNoPause(oldLps.isNoPause());
-			profileService.setCheckBoxShowScriptErrors(oldLps
-					.isShowScriptErrors());
+			profileService.setCheckBoxShowScriptErrors(oldLps.isShowScriptErrors());
 			profileService.setCheckBoxWindowMode(oldLps.isWindowMode());
-			profileService.setCpuCount(Integer.toString(oldLps
-					.getCpuCountSelection()));
+			profileService.setCpuCount(Integer.toString(oldLps.getCpuCountSelection()));
 			profileService.setDefaultWorld(oldLps.isDefaultWorld());
 			profileService.setEnableHT(oldLps.isEnableHT());
 			profileService.setHugePages(oldLps.isHugePages());
@@ -560,17 +549,17 @@ public class MainPanel extends JFrame implements UIConstants {
 			configurationService.resetLauncherOptions();
 		}
 
-		/* Init active views */
-		updateTabs(OP_PROFILE_CHANGED);
-
 		/* Show GUI */
 		if (facade.isRunMode()) {
 			setToTray();
 		} else {
 			setVisible(true);
 			/* Check ArmA3 Executable location */
-			showWellcomeDialog();
+			checkArmA3ExeLocation();
 		}
+
+		/* Init active views */
+		updateTabs(OP_PROFILE_CHANGED);
 	}
 
 	public void initBackGround() {
@@ -619,8 +608,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		assert (initProfileName != null);
 		for (int i = 0; i < profileNames.size(); i++) {
 			final String profileName = profileNames.get(i);
-			JCheckBoxMenuItem menuItemProfile = new JCheckBoxMenuItem(
-					profileName);
+			JCheckBoxMenuItem menuItemProfile = new JCheckBoxMenuItem(profileName);
 			menuProfiles.add(menuItemProfile);
 			if (profileName.equals(initProfileName)) {
 				menuItemProfile.setSelected(true);
@@ -639,8 +627,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		int numberMenuItems = menuProfiles.getItemCount();
 
 		for (int i = numberMenuItems - 1; i > 2; i--) {
-			JCheckBoxMenuItem checkBoxItem = (JCheckBoxMenuItem) menuProfiles
-					.getItem(i);
+			JCheckBoxMenuItem checkBoxItem = (JCheckBoxMenuItem) menuProfiles.getItem(i);
 			checkBoxItem.setSelected(false);
 		}
 
@@ -685,11 +672,9 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Windows only */
 		String osName = System.getProperty("os.name");
-		if (!osName.contains("Windows")) {
-			JOptionPane.showMessageDialog(this,
-					"This feature is not available for your system.",
-					"Export profile as shortcut",
-					JOptionPane.INFORMATION_MESSAGE);
+		if (!osName.toLowerCase().contains("windows")) {
+			JOptionPane.showMessageDialog(this, "This feature is not available for your system.",
+					"Export profile as shortcut", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
@@ -702,14 +687,9 @@ public class MainPanel extends JFrame implements UIConstants {
 		String exePath = profileService.getArma3ExePath();
 
 		if (exePath == null || "".equals(exePath)) {
-			String message = "ArmA 3 Executable location is missing for profile name "
-					+ profileName
-					+ "."
-					+ "\n"
+			String message = "ArmA 3 Executable location is missing for profile name " + profileName + "." + "\n"
 					+ "Please checkout Launcher Options panel.";
-			JOptionPane.showMessageDialog(this, message,
-					"Export profile as shortcut",
-					JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(this, message, "Export profile as shortcut", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
@@ -726,31 +706,25 @@ public class MainPanel extends JFrame implements UIConstants {
 			link.setPath(exePath);
 			link.setArguments(arguments);
 			link.save();
-			String message = "Shortcut has been created on desktop for profile "
-					+ profileName + ".";
-			JOptionPane.showMessageDialog(this, message,
-					"Export profile as shortcut",
-					JOptionPane.INFORMATION_MESSAGE);
+			String message = "Shortcut has been created on desktop for profile " + profileName + ".";
+			JOptionPane.showMessageDialog(this, message, "Export profile as shortcut", JOptionPane.INFORMATION_MESSAGE);
 		} catch (Exception e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(this, "Failed to create shortcut"
-					+ "\n" + e.getMessage(), "Export profile as shortcut",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Failed to create shortcut" + "\n" + e.getMessage(),
+					"Export profile as shortcut", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
 	private void menuItemACRE2wizardPerformed() {
 
-		FirstPageACRE2InstallerDialog firstPage = new FirstPageACRE2InstallerDialog(
-				facade);
+		FirstPageACRE2InstallerDialog firstPage = new FirstPageACRE2InstallerDialog(facade);
 		firstPage.init();
 		firstPage.setVisible(true);
 	}
 
 	private void menuItemTFARwizardPerformed() {
 
-		FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(
-				facade);
+		FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(facade);
 		firstPage.init();
 		firstPage.setVisible(true);
 	}
@@ -770,8 +744,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuItemBikeyExtractorPerformed() {
 
-		BiKeyExtractorDialog biKeyExtactorPanel = new BiKeyExtractorDialog(
-				facade);
+		BiKeyExtractorDialog biKeyExtactorPanel = new BiKeyExtractorDialog(facade);
 		biKeyExtactorPanel.init();
 		biKeyExtactorPanel.setVisible(true);
 	}
@@ -787,9 +760,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				desktop.browse(url);
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(this,
-					"Can't open system web browser.", "Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Can't open system web browser.", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 	}
@@ -805,9 +776,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				desktop.browse(url);
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(this,
-					"Can't open system web browser.", "Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Can't open system web browser.", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 	}
@@ -819,23 +788,20 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void menuItemAutoConfigImportPerformed() {
-		AutoConfigImportDialog autoConfigImportPanel = new AutoConfigImportDialog(
-				facade);
+		AutoConfigImportDialog autoConfigImportPanel = new AutoConfigImportDialog(facade);
 		autoConfigImportPanel.setVisible(true);
 	}
 
 	private void menuItemAutoConfigExportPerformed() {
 
-		AutoConfigExportDialog autoConfigExportPanel = new AutoConfigExportDialog(
-				facade);
+		AutoConfigExportDialog autoConfigExportPanel = new AutoConfigExportDialog(facade);
 		autoConfigExportPanel.init();
 		autoConfigExportPanel.setVisible(true);
 	}
 
 	private void menuItemConfigureProxyPerformed() {
 
-		ProxyConfigurationDialog proxyConfigurationDialog = new ProxyConfigurationDialog(
-				facade);
+		ProxyConfigurationDialog proxyConfigurationDialog = new ProxyConfigurationDialog(facade);
 		proxyConfigurationDialog.init();
 		proxyConfigurationDialog.setVisible(true);
 	}
@@ -865,9 +831,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				desktop.browse(url);
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(this,
-					"Can't open system web browser.", "Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Can't open system web browser.", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 	}
@@ -890,22 +854,14 @@ public class MainPanel extends JFrame implements UIConstants {
 			commonService.save(getHeight(), getWidth());
 		} catch (WritingException e) {
 			close = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-					e.getMessage() + "\n" + "Exit ArmA3Sync anyway?", "Error",
-					JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+					e.getMessage() + "\n" + "Exit ArmA3Sync anyway?", "Error", JOptionPane.YES_NO_OPTION,
+					JOptionPane.ERROR_MESSAGE);
 		} finally {
 			if (close == 0) {
 				dispose();
 				System.exit(0);
 			}
 		}
-	}
-
-	private void trayIconPerformed() {
-		setToFront();
-	}
-
-	private void launchTrayItemPerformed() {
-		setToFront();
 	}
 
 	private void exitTrayItemPerformed() {
@@ -915,15 +871,45 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuExitPerformed();
 	}
 
+	private void trayIconPerformed() {
+		if (SystemTray.isSupported()) {
+			tray.remove(trayIcon);
+		}
+		this.setState(JFrame.NORMAL);
+		this.setVisible(true);
+		if (facade.getInfoUpdatedRepositoryPanel() != null) {
+			facade.getMainPanel().showSyncPanel();
+			facade.getInfoUpdatedRepositoryPanel().setVisible(true);
+		} else {
+			this.toFront();
+		}
+	}
+
+	private void launchTrayItemPerformed() {
+		if (SystemTray.isSupported()) {
+			tray.remove(trayIcon);
+		}
+		this.setState(JFrame.NORMAL);
+		this.setVisible(true);
+		if (facade.getInfoUpdatedRepositoryPanel() != null) {
+			facade.getMainPanel().showSyncPanel();
+			facade.getInfoUpdatedRepositoryPanel().setVisible(true);
+		} else {
+			this.toFront();
+		}
+	}
+
+	// Main Panel front
 	public void setToFront() {
 		if (SystemTray.isSupported()) {
 			tray.remove(trayIcon);
 		}
 		this.setState(JFrame.NORMAL);
 		this.setVisible(true);
-		this.toFront();// put mainpanel front
+		this.toFront();
 	}
 
+	// Current panel to front
 	public void recoverFromTray() {
 		if (SystemTray.isSupported()) {
 			tray.remove(trayIcon);
@@ -949,10 +935,23 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 	}
 
+	public boolean isToTray() {
+		if (SystemTray.isSupported()) {
+			if (tray.getTrayIcons().length != 0) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
 	public void displayMessageToSystemTray(String message) {
-		if (tray.getTrayIcons().length != 0) {
-			trayIcon.displayMessage("ArmA3Sync", message,
-					TrayIcon.MessageType.INFO);
+		if (SystemTray.isSupported()) {
+			if (tray.getTrayIcons().length != 0) {
+				trayIcon.displayMessage("ArmA3Sync", message, TrayIcon.MessageType.INFO);
+			}
 		}
 	}
 
@@ -979,16 +978,23 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		System.out.println("Checking for updates...");
 
-		FtpService ftpService = new FtpService(1);
-		String availableVersion = null;
+		String url = DataAccessConstants.UPDTATE_REPOSITORY_ADRESS;
+		String port = Integer.toString(DataAccessConstants.UPDTATE_REPOSITORY_PORT);
+		String login = DataAccessConstants.UPDTATE_REPOSITORY_LOGIN;
+		String password = DataAccessConstants.UPDTATE_REPOSITORY_PASS;
+		ProtocolType protocolType = ProtocolType.FTP;
 
+		AbstractProtocole protocol = new Ftp(url, port, login, password, protocolType);
+
+		String availableVersion = null;
 		try {
-			availableVersion = ftpService.checkForUpdates(facade.isDevMode());
-		} catch (FtpException e) {
+			ConnectionService connectionService = new ConnectionService(protocol);
+			availableVersion = connectionService.checkForUpdates(facade.isDevMode(), protocol);
+		} catch (CheckException | IOException | ParserConfigurationException | SAXException e) {
 			System.out.println(e.getMessage());
 			if (withInfoMessage) {
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						e.getMessage(), "Update", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(), "Update",
+						JOptionPane.ERROR_MESSAGE);
 			}
 			return;
 		}
@@ -996,8 +1002,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		if (availableVersion != null) {
 			displayMessageToSystemTray("A new update is available");
 			int response = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-					"A new update is available. Proceed update?", "Update",
-					JOptionPane.OK_CANCEL_OPTION);
+					"A new update is available. Proceed update?", "Update", JOptionPane.OK_CANCEL_OPTION);
 
 			if (response == 0) {
 				// Proceed with update
@@ -1010,32 +1015,40 @@ public class MainPanel extends JFrame implements UIConstants {
 					System.exit(0);
 				} catch (IOException ex) {
 					ex.printStackTrace();
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							ex.getMessage(), "Update",
+					JOptionPane.showMessageDialog(facade.getMainPanel(), ex.getMessage(), "Update",
 							JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		} else if (withInfoMessage) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"No new update available.", "Update",
+			JOptionPane.showMessageDialog(facade.getMainPanel(), "No new update available.", "Update",
 					JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 
-	public void showWellcomeDialog() {
+	public void checkArmA3ExeLocation() {
 
+		boolean invalid = false;
 		String path = profileService.getArma3ExePath();
-
-		boolean show = false;
 		if (path == null) {
-			show = true;
+			invalid = true;
 		} else if ("".equals(path)) {
-			show = true;
+			invalid = true;
 		} else if (!(new File(path)).exists()) {
-			show = true;
+			invalid = true;
 		}
 
-		if (show) {
+		if (invalid) {
+			String arma3FolderPath = configurationService.determineArmA3Path();
+			if (arma3FolderPath != null) {
+				File arma3ExeFile = new File(arma3FolderPath, GameExecutables.GAME_x64.getDescription());
+				if (arma3ExeFile.exists()) {
+					profileService.setArmA3ExePath(arma3ExeFile.getAbsolutePath());
+					invalid = false;
+				}
+			}
+		}
+
+		if (invalid) {
 			WelcomeDialog wellcomePanel = new WelcomeDialog(facade);
 			wellcomePanel.toFront();
 			wellcomePanel.setVisible(true);
@@ -1044,12 +1057,11 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void checkRepositories() {
 
-		CheckRepositoriesFrequency checkRepositoriesFrequency = preferencesService
-				.getPreferences().getCheckRepositoriesFrequency();
+		CheckRepositoriesFrequency checkRepositoriesFrequency = preferencesService.getPreferences()
+				.getCheckRepositoriesFrequency();
 		TaskCheckRepositories task = new TaskCheckRepositories(facade);
 		TasksManager tasksManager = TasksManager.getInstance();
-		if (checkRepositoriesFrequency
-				.equals(CheckRepositoriesFrequency.DISABLED)) {
+		if (checkRepositoriesFrequency.equals(CheckRepositoriesFrequency.DISABLED)) {
 			tasksManager.addTask(task, 0);// execute now, no repetition
 		} else {
 			int frequency = checkRepositoriesFrequency.getFrequency();// min
@@ -1063,16 +1075,33 @@ public class MainPanel extends JFrame implements UIConstants {
 		tabbedPane.setSelectedIndex(5);
 	}
 
-	public RepositoryPanel openRepository(final String repositoryName,
-			boolean select) {
+	public RepositoryPanel openRepository(final String repositoryName, final String eventName, final boolean select,
+			final boolean asAdmin) {
 
-		String title = repositoryName;
-		RepositoryPanel newRepositoryPanel = null;
-		if (!mapTabIndexes.containsKey(title)) {
-			newRepositoryPanel = new RepositoryPanel(facade);
-			addClosableTab(newRepositoryPanel, repositoryName);
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, eventName);
+
+		String title = null;
+		if (eventName != null) {
+			title = eventName;
+		} else {
+			title = repositoryName;
+		}
+
+		if (dynamicTabFound == null) {
+
+			RepositoryPanel newRepositoryPanel = new RepositoryPanel(facade);
+
+			DynamicTab newDynamicTab = new DynamicTab();
+			newDynamicTab.setEventName(eventName);
+			newDynamicTab.setRepositoryName(repositoryName);
+			newDynamicTab.setTitle(title);
+			newDynamicTab.setAsAdmin(asAdmin);
+
+			addClosableTab(newRepositoryPanel, newDynamicTab);
 			final int index = tabbedPane.getTabCount() - 1;
-			mapTabIndexes.put(title, index);
+			newDynamicTab.setTabIndex(index);
+			dynamicTabManager.add(newDynamicTab);
+
 			if (select) {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
@@ -1081,29 +1110,101 @@ public class MainPanel extends JFrame implements UIConstants {
 					}
 				});
 			}
+			return newRepositoryPanel;
+
 		} else {
-			final int index = mapTabIndexes.get(title);
-			if (select) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						tabbedPane.setSelectedIndex(index);
+			if (dynamicTabFound.isAsAdmin() == asAdmin) {
+				final int index = dynamicTabFound.getTabIndex();
+				if (select) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							tabbedPane.setSelectedIndex(index);
+						}
+					});
+				}
+				return null;
+			} else {
+				boolean closed = closeRepository(repositoryName, eventName, false);
+				if (closed) {
+					RepositoryPanel newRepositoryPanel = new RepositoryPanel(facade);
+
+					DynamicTab newDynamicTab = new DynamicTab();
+					newDynamicTab.setEventName(eventName);
+					newDynamicTab.setRepositoryName(repositoryName);
+					newDynamicTab.setTitle(title);
+					newDynamicTab.setAsAdmin(asAdmin);
+
+					addClosableTab(newRepositoryPanel, newDynamicTab);
+					final int index2 = tabbedPane.getTabCount() - 1;
+					newDynamicTab.setTabIndex(index2);
+					dynamicTabManager.add(newDynamicTab);
+
+					if (select) {
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								tabbedPane.setSelectedIndex(index2);
+							}
+						});
 					}
-				});
+					return newRepositoryPanel;
+				} else {
+					final int index2 = dynamicTabFound.getTabIndex();
+					if (select) {
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								tabbedPane.setSelectedIndex(index2);
+							}
+						});
+					}
+					return null;
+				}
 			}
 		}
-		return newRepositoryPanel;
+
+		/*
+		 * if (mapTabIndexes.containsKey(repositoryName)) { final int index =
+		 * mapTabIndexes.get(repositoryName); RepositoryPanel repositoryPanel =
+		 * (RepositoryPanel) tabbedPane.getComponentAt(index); if
+		 * (!repositoryPanel.getName().equals(title)) { boolean isClose =
+		 * closeRepository(repositoryName, false); if (isClose) { RepositoryPanel
+		 * newRepositoryPanel = new RepositoryPanel(facade);
+		 * addClosableTab(newRepositoryPanel, title, repositoryName); final int index2 =
+		 * tabbedPane.getTabCount() - 1; mapTabIndexes.put(repositoryName, index2); if
+		 * (select) { SwingUtilities.invokeLater(new Runnable() {
+		 * 
+		 * @Override public void run() { tabbedPane.setSelectedIndex(index2); } }); }
+		 * return newRepositoryPanel; } else { final int index2 =
+		 * mapTabIndexes.get(repositoryName); if (select) {
+		 * SwingUtilities.invokeLater(new Runnable() {
+		 * 
+		 * @Override public void run() { tabbedPane.setSelectedIndex(index2); } }); }
+		 * return null; } } else { final int index2 = mapTabIndexes.get(repositoryName);
+		 * if (select) { SwingUtilities.invokeLater(new Runnable() {
+		 * 
+		 * @Override public void run() { tabbedPane.setSelectedIndex(index2); } }); }
+		 * return null; } } else { RepositoryPanel newRepositoryPanel = new
+		 * RepositoryPanel(facade); addClosableTab(newRepositoryPanel, title,
+		 * repositoryName); final int index = tabbedPane.getTabCount() - 1;
+		 * mapTabIndexes.put(repositoryName, index); if (select) {
+		 * SwingUtilities.invokeLater(new Runnable() {
+		 * 
+		 * @Override public void run() { tabbedPane.setSelectedIndex(index); } }); }
+		 * return newRepositoryPanel; }
+		 */
 	}
 
-	public void addClosableTab(final JComponent c, final String title) {
+	public void addClosableTab(final JComponent c, final DynamicTab dynamicTab) {
 
 		// Add the tab to the pane without any label
 		tabbedPane.addTab(null, c);
+		// c.setName(dynamicTab.getTitle());
 		int pos = tabbedPane.indexOfComponent(c);
 
 		// Now assign the component for the tab
-		tabbedPane.setTabComponentAt(pos, new CloseableTabComponent(tabbedPane,
-				title));
+		tabbedPane.setTabComponentAt(pos, new CloseableTabComponent(tabbedPane, dynamicTab));
 	}
 
 	// A component for the custom tabs with a closer button
@@ -1120,7 +1221,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		private Color selectedColor = null; // the foreground color of the title
 											// lable if tab is selected
 
-		public CloseableTabComponent(JTabbedPane aTabbedPane, final String title) {
+		public CloseableTabComponent(JTabbedPane aTabbedPane, final DynamicTab dynamicTab) {
 
 			FlowLayout f = new FlowLayout(FlowLayout.CENTER, 5, 0);
 			this.setLayout(f);
@@ -1129,7 +1230,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			setOpaque(false);
 
 			// setup the controls of this tab component
-			titleLabel = new JLabel(title);
+			titleLabel = new JLabel(dynamicTab.getTitle());
 			titleLabel.setOpaque(false);
 			// get the defaults for rendering the title label
 			defaultFont = titleLabel.getFont();
@@ -1145,8 +1246,8 @@ public class MainPanel extends JFrame implements UIConstants {
 			add(titleLabel);
 			add(closeButton);
 			/*
-			 * Add a thin border to keep the image below the top edge of the tab
-			 * when the tab is selected
+			 * Add a thin border to keep the image below the top edge of the tab when the
+			 * tab is selected
 			 */
 			setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 
@@ -1155,11 +1256,10 @@ public class MainPanel extends JFrame implements UIConstants {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					/*
-					 * The component parameter must be declared "final" so that
-					 * it can be referenced in the anonymous listener class like
-					 * this.
+					 * The component parameter must be declared "final" so that it can be referenced
+					 * in the anonymous listener class like this.
 					 */
-					closeRepository(title);
+					closeRepository(dynamicTab.getRepositoryName(), dynamicTab.getEventName(), false);
 				}
 			};
 			closeButton.addActionListener(listener);
@@ -1183,8 +1283,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			if (titleLabel != null) {
 				defaultFont = titleLabel.getFont().deriveFont(~Font.BOLD);
 				selectedFont = titleLabel.getFont().deriveFont(Font.BOLD);
-				selectedColor = UIManager
-						.getColor("TabbedPane.selectedForeground");
+				selectedColor = UIManager.getColor("TabbedPane.selectedForeground");
 				if (selectedColor == null) {
 					selectedColor = tabbedPane.getForeground();
 				}
@@ -1203,13 +1302,11 @@ public class MainPanel extends JFrame implements UIConstants {
 					if (tabbedPane.getForegroundAt(tabIndex) instanceof ColorUIResource) {
 						titleLabel.setForeground(selectedColor);
 					} else {
-						titleLabel.setForeground(tabbedPane
-								.getForegroundAt(tabIndex));
+						titleLabel.setForeground(tabbedPane.getForegroundAt(tabIndex));
 					}
 				} else {
 					titleLabel.setFont(defaultFont);
-					titleLabel.setForeground(tabbedPane
-							.getForegroundAt(tabIndex));
+					titleLabel.setForeground(tabbedPane.getForegroundAt(tabIndex));
 				}
 			}
 			super.paint(g);
@@ -1235,8 +1332,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			setBorder(BorderFactory.createEmptyBorder());
 			setFocusable(false);
 			// the preferrd size of this button is the size of the closer image
-			prefSize = new Dimension(CLOSER_ICON.getIconWidth(),
-					CLOSER_ICON.getIconHeight());
+			prefSize = new Dimension(CLOSER_ICON.getIconWidth(), CLOSER_ICON.getIconHeight());
 		}
 
 		@Override
@@ -1245,52 +1341,304 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 	}
 
-	public boolean closeRepository(String repositoryName) {
+	public boolean closeRepository(final String repositoryName, final String eventName, final boolean silent) {
 
-		boolean isCheckingForAddons = repositoryService
-				.isCheckingForAddons(repositoryName);
-		boolean isDownloading = repositoryService.isDownloading(repositoryName);
-		boolean isUploading = repositoryService.isUploading(repositoryName);
-		boolean isBuilding = repositoryService.isBuilding(repositoryName);
-		boolean isChecking = repositoryService.isChecking(repositoryName);
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, eventName);
+		if (dynamicTabFound != null) {
+			String message = dynamicTabManager.canClose(dynamicTabFound);
+			if (message == null) {
+				tabbedPane.remove(dynamicTabFound.getTabIndex());
+				dynamicTabManager.remove(dynamicTabFound);
+				return true;
+			} else {
+				if (!silent) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(), message, dynamicTabFound.getTitle(),
+							JOptionPane.INFORMATION_MESSAGE);
+				}
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
 
-		if (!isCheckingForAddons && !isDownloading && !isUploading
-				&& !isBuilding && !isChecking) {
-			if (mapTabIndexes.get(repositoryName) != null) {
-				tabbedPane.remove(mapTabIndexes.get(repositoryName));
-				mapTabIndexes.remove(repositoryName);
-				int index = 6;// First Index
-				for (Iterator<String> i = mapTabIndexes.keySet().iterator(); i
-						.hasNext();) {
-					String key = i.next();
-					mapTabIndexes.put(key, index);
-					index++;
+	public void selectRepository(final String repositoryName, final String eventName) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, eventName);
+		if (dynamicTabFound != null) {
+			final int index = dynamicTabFound.getTabIndex();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					tabbedPane.setSelectedIndex(index);
+				}
+			});
+		}
+	}
+
+	public String getRepositoryTitle(String repositoryName, String eventName) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, eventName);
+		if (dynamicTabFound != null) {
+			return dynamicTabFound.getTitle();
+		}
+		return "";
+	}
+
+	public boolean isCheckingForAddons(final String repositoryName, final String eventName) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, eventName);
+		if (dynamicTabFound != null) {
+			return dynamicTabFound.isCheckingForAddons();
+		} else {
+			return false;
+		}
+	}
+
+	public void setCheckingForAddons(final String repositoryName, final String eventName, final boolean value) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, eventName);
+		if (dynamicTabFound != null) {
+			dynamicTabFound.setCheckingForAddons(value);
+		}
+	}
+
+	public boolean isDownloading(final String repositoryName, final String eventName) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, eventName);
+		if (dynamicTabFound != null) {
+			return dynamicTabFound.isDownloading();
+		} else {
+			return false;
+		}
+	}
+
+	public void setDownloading(final String repositoryName, final String eventName, final boolean value) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, eventName);
+		if (dynamicTabFound != null) {
+			dynamicTabFound.setDownloading(value);
+		}
+	}
+
+	public boolean isDownloading() {
+		return dynamicTabManager.isDownloading();
+	}
+
+	public boolean isBuilding(final String repositoryName) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, null);
+		if (dynamicTabFound != null) {
+			return dynamicTabFound.isBuilding();
+		} else {
+			return false;
+		}
+	}
+
+	public void setBuilding(final String repositoryName, final boolean value) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, null);
+		if (dynamicTabFound != null) {
+			dynamicTabFound.setBuilding(value);
+		}
+	}
+
+	public boolean isUploading(final String repositoryName) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, null);
+		if (dynamicTabFound != null) {
+			return dynamicTabFound.isUploading();
+		} else {
+			return false;
+		}
+	}
+
+	public void setUploading(final String repositoryName, final boolean value) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, null);
+		if (dynamicTabFound != null) {
+			dynamicTabFound.setUploading(value);
+		}
+	}
+
+	public boolean isChecking(final String repositoryName) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, null);
+		if (dynamicTabFound != null) {
+			return dynamicTabFound.isChecking();
+		} else {
+			return false;
+		}
+	}
+
+	public void setChecking(final String repositoryName, final boolean value) {
+
+		DynamicTab dynamicTabFound = dynamicTabManager.find(repositoryName, null);
+		if (dynamicTabFound != null) {
+			dynamicTabFound.setChecking(value);
+		}
+	}
+
+	private class DynamicTabManager {
+
+		private final List<DynamicTab> dynamicTabs = new LinkedList<DynamicTab>();
+
+		public DynamicTab find(final String repositoryName, String eventName) {
+
+			DynamicTab dynamicTabFound = null;
+			for (int i = 0; i < dynamicTabs.size(); i++) {
+				DynamicTab dynamicTab = dynamicTabs.get(i);
+				if (dynamicTab.getRepositoryName().equals(repositoryName)) {
+					if (dynamicTab.getEventName() == null && eventName == null) {
+						dynamicTabFound = dynamicTab;
+					} else if (dynamicTab.getEventName() != null && eventName != null) {
+						if (dynamicTab.getEventName().equals(eventName)) {
+							dynamicTabFound = dynamicTab;
+						}
+					}
+				}
+				if (dynamicTabFound != null) {
+					break;
 				}
 			}
-			return true;
-		} else if (isCheckingForAddons) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository can't be closed.\nFiles are being checked.",
-					repositoryName, JOptionPane.INFORMATION_MESSAGE);
-		} else if (isDownloading) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository can't be closed.\nFiles are being downloaded.",
-					repositoryName, JOptionPane.INFORMATION_MESSAGE);
-		} else if (isUploading) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository can't be closed.\nFiles are being uploaded.",
-					repositoryName, JOptionPane.INFORMATION_MESSAGE);
-		} else if (isChecking) {
-			JOptionPane
-					.showMessageDialog(
-							facade.getMainPanel(),
-							"Repository can't be closed.\nRepository is being checked.",
-							repositoryName, JOptionPane.INFORMATION_MESSAGE);
-		} else if (isBuilding) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository can't be closed.\nRepository is being built.",
-					repositoryName, JOptionPane.INFORMATION_MESSAGE);
+			return dynamicTabFound;
 		}
-		return false;
+
+		public void add(DynamicTab newDynamicTab) {
+			dynamicTabs.add(newDynamicTab);
+		}
+
+		public String canClose(DynamicTab dynamicTabFound) {
+
+			if (dynamicTabFound.isCheckingForAddons()) {
+				return "Tab can't be closed.\nFiles are being checked.";
+			} else if (dynamicTabFound.isDownloading()) {
+				return "Tab can't be closed.\nFiles are being downloaded.";
+			} else if (dynamicTabFound.isBuilding()) {
+				return "Tab can't be closed.\nFiles are being proceeded.";
+			} else if (dynamicTabFound.isUploading()) {
+				return "Tab can't be closed.\nFiles are being uploaded.";
+			} else if (dynamicTabFound.isChecking()) {
+				return "Tab can't be closed.\nFiles are being checked.";
+			} else {
+				return null;
+			}
+		}
+
+		public void remove(DynamicTab dynamicTabFound) {
+
+			dynamicTabs.remove(dynamicTabFound);
+			int index = 6;// First Index
+			for (int i = 0; i < dynamicTabs.size(); i++) {
+				DynamicTab dynamicTab = dynamicTabs.get(i);
+				dynamicTab.setTabIndex(index);
+				index++;
+			}
+		}
+
+		public boolean isDownloading() {
+
+			for (int i = 0; i < dynamicTabs.size(); i++) {
+				DynamicTab dynamicTab = dynamicTabs.get(i);
+				if (dynamicTab.isDownloading()) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	private class DynamicTab {
+
+		private int tabIndex = 0;
+		private String title = "";
+		private String repositoryName = null;
+		private String eventName = null;
+		private boolean asAdmin = false;
+		private boolean isCheckingForAddons = false;
+		private boolean isDownloading = false;
+		private boolean isBuilding = false;
+		private boolean isUploading = false;
+		private boolean isChecking = false;
+
+		public int getTabIndex() {
+			return tabIndex;
+		}
+
+		public void setTabIndex(int tabIndex) {
+			this.tabIndex = tabIndex;
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public void setTitle(String title) {
+			this.title = title;
+		}
+
+		public String getRepositoryName() {
+			return repositoryName;
+		}
+
+		public void setRepositoryName(String repositoryName) {
+			this.repositoryName = repositoryName;
+		}
+
+		public String getEventName() {
+			return eventName;
+		}
+
+		public void setEventName(String eventName) {
+			this.eventName = eventName;
+		}
+
+		public boolean isAsAdmin() {
+			return asAdmin;
+		}
+
+		public void setAsAdmin(boolean asAdmin) {
+			this.asAdmin = asAdmin;
+		}
+
+		public boolean isCheckingForAddons() {
+			return isCheckingForAddons;
+		}
+
+		public void setCheckingForAddons(boolean value) {
+			this.isCheckingForAddons = value;
+		}
+
+		public boolean isDownloading() {
+			return isDownloading;
+		}
+
+		public void setDownloading(boolean value) {
+			this.isDownloading = value;
+		}
+
+		public boolean isBuilding() {
+			return isBuilding;
+		}
+
+		public void setBuilding(boolean isBuilding) {
+			this.isBuilding = isBuilding;
+		}
+
+		public boolean isUploading() {
+			return isUploading;
+		}
+
+		public void setUploading(boolean isUploading) {
+			this.isUploading = isUploading;
+		}
+
+		public boolean isChecking() {
+			return this.isChecking;
+		}
+
+		public void setChecking(boolean value) {
+			this.isChecking = value;
+		}
 	}
 }

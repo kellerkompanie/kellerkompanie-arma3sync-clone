@@ -1,16 +1,13 @@
 package fr.soe.a3s.ui.repository.dialogs;
 
 import java.awt.BorderLayout;
-import java.awt.Image;
 
 import javax.swing.Box;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImagePanel;
-import fr.soe.a3s.ui.ImageResizer;
 
 public class ConnectionLostDialog extends AbstractDialog {
 
@@ -19,7 +16,8 @@ public class ConnectionLostDialog extends AbstractDialog {
 	private int delay = 5;
 	private boolean reconnect = true;
 
-	public ConnectionLostDialog(Facade facade, String repositoryName,String title) {
+	public ConnectionLostDialog(Facade facade, String repositoryName,
+			String title) {
 		super(facade, title, true);
 		this.setResizable(false);
 

@@ -5,20 +5,20 @@ import java.util.List;
 
 import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverError;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.exception.remote.RemoteAutoconfigFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteChangelogsFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteServerInfoFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteSyncFileNotFoundException;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 
 public class RepositoryCheckProcessor {
 
 	private final String repositoryName;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
-	private ConnexionService connexionService;
+	private ConnectionService connexionService;
 	/* observers */
 	private ObserverCountInt observerCountProgress;// not null
 	private ObserverCountInt observerCountErrors;// null if no recording
@@ -32,11 +32,9 @@ public class RepositoryCheckProcessor {
 	public void run() {
 
 		try {
-			// Set checking state
-			repositoryService.setChecking(repositoryName, true);
-
-			connexionService = ConnexionServiceFactory
-					.getServiceForRepositoryManagement(repositoryName);
+			AbstractProtocole protocole = repositoryService
+					.getProtocol(repositoryName);
+			connexionService = new ConnectionService(protocole);
 			connexionService.getSync(repositoryName);
 			connexionService.getServerInfo(repositoryName);
 			connexionService.getChangelogs(repositoryName);
@@ -58,10 +56,10 @@ public class RepositoryCheckProcessor {
 				throw new RemoteAutoconfigFileNotFoundException();
 			}
 
-			connexionService.getConnexionDAO().addObserverCount(
-					observerCountProgress);
-			connexionService.getConnexionDAO().addObserverCountErrors(
-					new ObserverCountInt() {
+			connexionService.getConnexionDAOs().get(0)
+					.addObserverCount(observerCountProgress);
+			connexionService.getConnexionDAOs().get(0)
+					.addObserverCountErrors(new ObserverCountInt() {
 						@Override
 						public void update(int value) {
 							executeCountErrors(value);
@@ -76,9 +74,7 @@ public class RepositoryCheckProcessor {
 			List<Exception> errors = new ArrayList<Exception>();
 			errors.add(e);
 			observerError.error(errors);
-		} finally {
-			repositoryService.setChecking(repositoryName, false);
-		}
+		} 
 	}
 
 	private void executeCountErrors(int value) {

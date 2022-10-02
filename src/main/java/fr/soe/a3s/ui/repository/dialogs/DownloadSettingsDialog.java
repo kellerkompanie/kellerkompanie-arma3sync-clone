@@ -71,12 +71,12 @@ public class DownloadSettingsDialog extends AbstractDialog {
 				{
 					labelConnectionTimeout = new JLabel();
 					labelConnectionTimeout
-							.setText("Connection timeout (seconds):");
+							.setText("Connection timeout (s):");
 					textFieldConnectionTimeout = new JTextField();
 				}
 				{
 					labelReadTimeout = new JLabel();
-					labelReadTimeout.setText("Read timeout (seconds):");
+					labelReadTimeout.setText("Read timeout (s):");
 					textFieldReadTimeout = new JTextField();
 				}
 				{
@@ -219,7 +219,7 @@ public class DownloadSettingsDialog extends AbstractDialog {
 			/* Set Connection and Read timeout */
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
-			ProtocolDTO protocolDTO = repositoryDTO.getProtocolDTO();
+			ProtocolDTO protocolDTO = repositoryDTO.getProtocoleDTO();
 			int connectionTimeout = Integer.parseInt(protocolDTO
 					.getConnectionTimeOut());// ms
 			textFieldConnectionTimeout.setText(Integer
@@ -265,7 +265,7 @@ public class DownloadSettingsDialog extends AbstractDialog {
 					maximumClientDownloadSpeed);
 		} catch (NumberFormatException e) {
 			JOptionPane.showMessageDialog(this,
-					"Download speed must be a positive value.", "Warning",
+					"Download speed must be a positive value.", repositoryName,
 					JOptionPane.WARNING_MESSAGE);
 			return;
 		}
@@ -284,7 +284,7 @@ public class DownloadSettingsDialog extends AbstractDialog {
 		} catch (NumberFormatException e) {
 			JOptionPane.showMessageDialog(this,
 					"Connection timeout must be a positive integer value.",
-					"Warning", JOptionPane.WARNING_MESSAGE);
+					repositoryName, JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 
@@ -301,7 +301,7 @@ public class DownloadSettingsDialog extends AbstractDialog {
 		} catch (NumberFormatException e) {
 			JOptionPane.showMessageDialog(this,
 					"Read timeout must be a positive integer value.",
-					"Warning", JOptionPane.WARNING_MESSAGE);
+					repositoryName, JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 
@@ -310,7 +310,7 @@ public class DownloadSettingsDialog extends AbstractDialog {
 			repositoryService.write(repositoryName);
 		} catch (WritingException e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
+			JOptionPane.showMessageDialog(this, e.getMessage(), repositoryName,
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}

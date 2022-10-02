@@ -5,12 +5,11 @@ import java.util.List;
 import fr.soe.a3s.controller.ObserverConnectionLost;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
-import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.controller.ObserverStart;
 import fr.soe.a3s.ui.repository.DownloadPanel;
 
 public class AddonsAutoUpdater extends Thread {
 
-	private Facade facade;
 	private final String repositoryName;
 	private DownloadPanel downloadPanel;
 	/* Workers */
@@ -19,16 +18,16 @@ public class AddonsAutoUpdater extends Thread {
 	/* Tests */
 	private boolean check1IsDone, check2IsDone;
 	/* observers */
-	private ObserverEnd observerEnd;
-	private ObserverError observerError;
+	private ObserverStart observerCheckStart,observerDownloadStart;
+	private ObserverEnd observerCheckEnd,observerDownloadEnd;
+	private ObserverError observerDownloadError;
 	private ObserverConnectionLost observerConnectionLost;
 
 	public AddonsAutoUpdater(String repositoryName) {
 		this.repositoryName = repositoryName;
 	}
 
-	public AddonsAutoUpdater(String repositoryName,
-			AddonsChecker addonsChecker, AddonsDownloader addonsDownloader,
+	public AddonsAutoUpdater(String repositoryName, AddonsChecker addonsChecker, AddonsDownloader addonsDownloader,
 			DownloadPanel downloadPanel) {
 		this.repositoryName = repositoryName;
 		this.addonsChecker = addonsChecker;
@@ -59,13 +58,13 @@ public class AddonsAutoUpdater extends Thread {
 		addonsChecker.addObserverError(new ObserverError() {
 			@Override
 			public void error(List<Exception> errors) {
-				observerError.error(errors);
+				observerDownloadError.error(errors);
 			}
 		});
 		addonsDownloader.addObserverError(new ObserverError() {
 			@Override
 			public void error(List<Exception> errors) {
-				observerError.error(errors);
+				observerDownloadError.error(errors);
 			}
 		});
 		addonsDownloader.addObserverConnectionLost(new ObserverConnectionLost() {
@@ -75,11 +74,13 @@ public class AddonsAutoUpdater extends Thread {
 			}
 		});
 
+		observerCheckStart.start();
 		addonsChecker.run();
 	}
 
 	private void addonsCheckerEnd() {
 
+		observerCheckEnd.end();
 		if (!check1IsDone) {
 			check1IsDone = true;
 		} else if (!check2IsDone) {
@@ -87,30 +88,43 @@ public class AddonsAutoUpdater extends Thread {
 		}
 
 		if (check1IsDone && check2IsDone) {
-			System.out.println("Synchronization with repository: "
-					+ repositoryName + " finished.");
-			observerEnd.end();
+			System.out.println("Synchronization with repository: " + repositoryName + " finished.");
+			observerDownloadEnd.end();
 		} else if (check1IsDone && !check2IsDone) {
 			downloadPanel.updateArbre(addonsChecker.getParent());
 			downloadPanel.getCheckBoxSelectAll().setSelected(true);
 			downloadPanel.checkBoxSelectAllPerformed();
+			observerDownloadStart.start();
 			addonsDownloader.run();
 		}
 	}
 
 	private void addonsDownloaderEnd() {
+		observerCheckStart.start();
 		addonsChecker.run();
 	}
-
-	public void addObserverEnd(ObserverEnd obs) {
-		this.observerEnd = obs;
-	}
-
-	public void addObserverError(ObserverError obs) {
-		this.observerError = obs;
+	
+	public void addObserverCheckStart(ObserverStart obs) {
+		this.observerCheckStart = obs;
 	}
 	
-	public void addObserverConnectionLost(ObserverConnectionLost obs){
+	public void addObserverCheckEnd(ObserverEnd obs) {
+		this.observerCheckEnd = obs;
+	}
+
+	public void addObserverDownloadStart(ObserverStart obs) {
+		this.observerDownloadStart = obs;
+	}
+
+	public void addObserverDownloadEnd(ObserverEnd obs) {
+		this.observerDownloadEnd = obs;
+	}
+
+	public void addObserverDownloadError(ObserverError obs) {
+		this.observerDownloadError = obs;
+	}
+
+	public void addObserverConnectionLost(ObserverConnectionLost obs) {
 		this.observerConnectionLost = obs;
 	}
 }

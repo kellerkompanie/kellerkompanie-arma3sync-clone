@@ -20,7 +20,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.table.AbstractTableModel;
@@ -57,8 +56,8 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		this.add(vertBox1);
 
 		JPanel containerPanel = new JPanel();
-		containerPanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "External Applications"));
+		containerPanel.setBorder(
+				BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), "External Applications"));
 		vertBox1.add(containerPanel);
 		containerPanel.setLayout(new BorderLayout());
 
@@ -71,8 +70,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		tableApplications.getTableHeader().setReorderingAllowed(false);
 		tableApplications.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jScrollPane1 = new JScrollPane(tableApplications);
-		jScrollPane1.setBorder(BorderFactory
-				.createEtchedBorder(BevelBorder.LOWERED));
+		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 		containerPanel.add(jScrollPane1, BorderLayout.CENTER);
 
 		TableColumn col0 = tableApplications.getColumnModel().getColumn(0);
@@ -81,8 +79,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		// Adapt cells Height to font height
 		Font fontTable = UIManager.getFont("Table.font");
 		FontMetrics metrics = tableApplications.getFontMetrics(fontTable);
-		int fontHeight = metrics.getAscent() + metrics.getDescent()
-				+ metrics.getLeading();
+		int fontHeight = metrics.getAscent() + metrics.getDescent() + metrics.getLeading();
 		tableApplications.setRowHeight(fontHeight);
 
 		MyTableCellRenderer renderer = new MyTableCellRenderer();
@@ -93,7 +90,6 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		 * http://bugs.java.com/view_bug.do?bug_id=6429812
 		 */
 		String osName = System.getProperty("os.name");
-		boolean changeFont = true;
 		if (!osName.toLowerCase().contains("windows server")) {
 			JTableHeader header = tableApplications.getTableHeader();
 			if (header != null) {
@@ -104,23 +100,19 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		Box vertBox2 = Box.createVerticalBox();
 		vertBox2.add(Box.createVerticalStrut(25));
 		buttonAdd = new JButton();
-		ImageIcon addIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(ADD));
+		ImageIcon addIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(ADD));
 		buttonAdd.setIcon(addIcon);
 		vertBox2.add(buttonAdd);
 		buttonEdit = new JButton();
-		ImageIcon editIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(EDIT));
+		ImageIcon editIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(EDIT));
 		buttonEdit.setIcon(editIcon);
 		vertBox2.add(buttonEdit);
 		buttonDelete = new JButton();
-		ImageIcon deleteIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(DELETE));
+		ImageIcon deleteIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(DELETE));
 		buttonDelete.setIcon(deleteIcon);
 		vertBox2.add(buttonDelete);
 		buttonEnable = new JButton();
-		ImageIcon enableIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(ONOFF));
+		ImageIcon enableIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(ONOFF));
 		buttonEnable.setIcon(enableIcon);
 		vertBox2.add(buttonEnable);
 		this.add(vertBox2, BorderLayout.EAST);
@@ -157,8 +149,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		buttonAdd.setToolTipText("Add a new application");
 		buttonEdit.setToolTipText("Edit");
 		buttonDelete.setToolTipText("Delete");
-		buttonEnable
-				.setToolTipText("Set the selected application to run at game launch");
+		buttonEnable.setToolTipText("Set the selected application to run at game launch");
 	}
 
 	public void update(int flag) {
@@ -172,11 +163,9 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 
 		tableApplications.setEnabled(false);
 
-		List<ExternalApplicationDTO> externalApplicationDTOs = configurationService
-				.getExternalApplications();
+		List<ExternalApplicationDTO> externalApplicationDTOs = configurationService.getExternalApplications();
 		model.setDataSize(externalApplicationDTOs.size());
-		Iterator<ExternalApplicationDTO> iter = externalApplicationDTOs
-				.iterator();
+		Iterator<ExternalApplicationDTO> iter = externalApplicationDTOs.iterator();
 		int i = 0;
 		while (iter.hasNext()) {
 			ExternalApplicationDTO externalApplicationDTO = iter.next();
@@ -193,15 +182,14 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		}
 
 		model.fireTableDataChanged();
-		jScrollPane1.updateUI();
+		jScrollPane1.repaint();
 
 		tableApplications.setEnabled(true);
 	}
 
 	private void buttonAddPerformed() {
 
-		List<ExternalApplicationDTO> list = configurationService
-				.getExternalApplications();
+		List<ExternalApplicationDTO> list = configurationService.getExternalApplications();
 		ExternalApplicationDTO externalApplicationDTO = new ExternalApplicationDTO();
 		externalApplicationDTO.setEnable(true);
 		externalApplicationDTO.setName("New Application");
@@ -220,8 +208,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 			return;
 		}
 
-		List<ExternalApplicationDTO> list = configurationService
-				.getExternalApplications();
+		List<ExternalApplicationDTO> list = configurationService.getExternalApplications();
 		list.remove(index);
 		configurationService.saveExternalApps(list);
 		updateTableApplications();
@@ -259,8 +246,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		externalApplicationsEditionPanel.setVisible(true);
 
 		// After UI has closed
-		List<ExternalApplicationDTO> list = configurationService
-				.getExternalApplications();
+		List<ExternalApplicationDTO> list = configurationService.getExternalApplications();
 		list.set(index, externalApplicationDTO);
 		configurationService.saveExternalApps(list);
 		updateTableApplications();
@@ -274,8 +260,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 			return;
 		}
 
-		List<ExternalApplicationDTO> list = configurationService
-				.getExternalApplications();
+		List<ExternalApplicationDTO> list = configurationService.getExternalApplications();
 		ExternalApplicationDTO externalApplicationDTO = list.get(index);
 		boolean active = externalApplicationDTO.isEnable();
 		externalApplicationDTO.setEnable(!active);
@@ -285,8 +270,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 	}
 
 	class MyTableModel extends AbstractTableModel {
-		private final String[] columnNames = { "Active", "Description",
-				".exe/.bat/.sh Path", "Parameters" };
+		private final String[] columnNames = { "Active", "Description", ".exe/.bat/.sh Path", "Parameters" };
 		private Object[][] data = {};
 
 		@Override
@@ -310,9 +294,9 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		}
 
 		/*
-		 * JTable uses this method to determine the default renderer/ editor for
-		 * each cell. If we didn't implement this method, then the last column
-		 * would contain text ("true"/"false"), rather than a check box.
+		 * JTable uses this method to determine the default renderer/ editor for each
+		 * cell. If we didn't implement this method, then the last column would contain
+		 * text ("true"/"false"), rather than a check box.
 		 */
 		@Override
 		public Class getColumnClass(int c) {
@@ -330,8 +314,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		}
 
 		/*
-		 * Don't need to implement this method unless your table's data can
-		 * change.
+		 * Don't need to implement this method unless your table's data can change.
 		 */
 		@Override
 		public void setValueAt(Object value, int row, int col) {
@@ -366,12 +349,10 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 	class MyTableCellRenderer extends DefaultTableCellRenderer {
 
 		@Override
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int col) {
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+				int row, int col) {
 
-			Component c = super.getTableCellRendererComponent(table, value,
-					isSelected, hasFocus, row, col);
+			Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 			if (value.toString().equals(ENABLE_TEXT)) {
 				c.setFont(c.getFont().deriveFont(Font.BOLD));
 				c.setForeground(new Color(0, 128, 0));
@@ -388,22 +369,19 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		DefaultTableCellRenderer renderer;
 
 		public HeaderRenderer(JTable table) {
-			renderer = (DefaultTableCellRenderer) table.getTableHeader()
-					.getDefaultRenderer();
+			renderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
 		}
 
 		@Override
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int col) {
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+				int row, int col) {
 
 			if (col == 0) {
 				renderer.setHorizontalAlignment(JLabel.CENTER);
 			} else {
 				renderer.setHorizontalAlignment(JLabel.LEFT);
 			}
-			return renderer.getTableCellRendererComponent(table, value,
-					isSelected, hasFocus, row, col);
+			return renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 		}
 	}
 }

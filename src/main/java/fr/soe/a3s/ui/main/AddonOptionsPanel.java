@@ -18,7 +18,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
 
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ProfileService;
@@ -41,8 +41,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 	private final Facade facade;
 	private JScrollPane scrollPane1, scrollPane2;
 	private JList directoryList1, directoryList2;
-	private JButton add, delete, downAddonPriority, upAddonPriority,
-			resetAddonPriority, topAddonPriority;
+	private JButton add, delete, downAddonPriority, upAddonPriority, resetAddonPriority, topAddonPriority;
 	private JButton upDirectoryPriority;
 	private JButton downDirectoryPriority;
 	/* Services */
@@ -68,13 +67,11 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		{
 			JPanel list1Panel = new JPanel();
 			list1Panel.setLayout(new BorderLayout());
-			list1Panel.setBorder(BorderFactory.createTitledBorder(
-					BorderFactory.createEtchedBorder(),
-					"Addon Search Directories"));
+			list1Panel.setBorder(
+					BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), "Addon Search Directories"));
 			directoryList1 = new JList();
 			scrollPane1 = new JScrollPane(directoryList1);
-			scrollPane1.setBorder(BorderFactory
-					.createBevelBorder(BevelBorder.LOWERED));
+			scrollPane1.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 			list1Panel.add(scrollPane1, BorderLayout.CENTER);
 			addonSearchDirectoriesPanel.add(list1Panel, BorderLayout.CENTER);
 		}
@@ -82,23 +79,19 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 			Box vertBox2 = Box.createVerticalBox();
 			vertBox2.add(Box.createVerticalStrut(15));
 			add = new JButton();
-			ImageIcon addIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(ADD));
+			ImageIcon addIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(ADD));
 			add.setIcon(addIcon);
 			vertBox2.add(add);
 			delete = new JButton();
-			ImageIcon deleteIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DELETE));
+			ImageIcon deleteIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(DELETE));
 			delete.setIcon(deleteIcon);
 			vertBox2.add(delete);
 			upDirectoryPriority = new JButton();
-			ImageIcon upIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(UP));
+			ImageIcon upIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(UP));
 			upDirectoryPriority.setIcon(upIcon);
 			vertBox2.add(upDirectoryPriority);
 			downDirectoryPriority = new JButton();
-			ImageIcon downIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DOWN));
+			ImageIcon downIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(DOWN));
 			downDirectoryPriority.setIcon(downIcon);
 			vertBox2.add(downDirectoryPriority);
 			addonSearchDirectoriesPanel.add(vertBox2, BorderLayout.EAST);
@@ -110,38 +103,33 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		{
 			JPanel list2Panel = new JPanel();
 			list2Panel.setLayout(new BorderLayout());
-			list2Panel.setBorder(BorderFactory.createTitledBorder(
-					BorderFactory.createEtchedBorder(), "Addon Priorities"));
+			list2Panel.setBorder(
+					BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), "Addon Priorities"));
 			directoryList2 = new JList();
-			directoryList2
-					.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			directoryList2.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			scrollPane2 = new JScrollPane(directoryList2);
-			scrollPane2.setBorder(BorderFactory
-					.createBevelBorder(BevelBorder.LOWERED));
+			scrollPane2.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 			list2Panel.add(scrollPane2);
+
 			addonPrioritiesPanel.add(list2Panel, BorderLayout.CENTER);
 		}
 		{
 			Box vertBox2 = Box.createVerticalBox();
 			vertBox2.add(Box.createVerticalStrut(15));
 			resetAddonPriority = new JButton();
-			ImageIcon resetIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DELETE));
+			ImageIcon resetIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(DELETE));
 			resetAddonPriority.setIcon(resetIcon);
 			vertBox2.add(resetAddonPriority);
 			topAddonPriority = new JButton();
-			ImageIcon topIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(TOP));
+			ImageIcon topIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(TOP));
 			topAddonPriority.setIcon(topIcon);
 			vertBox2.add(topAddonPriority);
 			upAddonPriority = new JButton();
-			ImageIcon upIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(UP));
+			ImageIcon upIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(UP));
 			upAddonPriority.setIcon(upIcon);
 			vertBox2.add(upAddonPriority);
 			downAddonPriority = new JButton();
-			ImageIcon downIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DOWN));
+			ImageIcon downIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(DOWN));
 			downAddonPriority.setIcon(downIcon);
 			vertBox2.add(downAddonPriority);
 			addonPrioritiesPanel.add(vertBox2, BorderLayout.EAST);
@@ -248,9 +236,8 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		directoryList1.setListData(tab);
 		int numberLigneShown = paths.size();
 		directoryList1.setVisibleRowCount(numberLigneShown);
-		directoryList1.setPreferredSize(directoryList1
-				.getPreferredScrollableViewportSize());
-		scrollPane1.updateUI();
+		directoryList1.setPreferredSize(directoryList1.getPreferredScrollableViewportSize());
+		scrollPane1.repaint();
 		directoryList1.setEnabled(true);
 	}
 
@@ -268,25 +255,30 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 			directoryList2.setListData(addonNames);
 			int numberLigneShown = list.size();
 			directoryList2.setVisibleRowCount(numberLigneShown);
-			directoryList2.setPreferredSize(directoryList2
-					.getPreferredScrollableViewportSize());
-			scrollPane2.updateUI();
+			directoryList2.setPreferredSize(directoryList2.getPreferredScrollableViewportSize());
+			scrollPane2.repaint();
 		}
 		directoryList2.setEnabled(true);
 	}
 
 	private void buttonAddPerformed() {
 
-		String lastPath = profileService.getLastAddedAddonSearchDirecotry();
+		String lastPath = profileService.getLastAddedAddonSearchDirectory();
 		JFileChooser fc = null;
 		if (lastPath == null) {
-			fc = new JFileChooser();
-		} else {
+			String arma3ExePath = profileService.getArma3ExePath();
+			if (arma3ExePath != null) {
+				lastPath = arma3ExePath;
+			}
+		}
+		if (lastPath != null) {
 			if ((new File(lastPath)).exists()) {
 				fc = new JFileChooser(lastPath);
 			} else {
 				fc = new JFileChooser();
 			}
+		} else {
+			fc = new JFileChooser();
 		}
 
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -317,8 +309,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 				if (!contains) {
 					profileService.addAddonSearchDirectoryPath(path);
 					profileService.setLastAddedAddonSearchDirectory(path);
-					this.facade.getMainPanel().updateTabs(
-							OP_ADDON_FILES_CHANGED);
+					this.facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 				}
 			}
 		}
@@ -345,8 +336,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 				directoryList1.setSelectedIndex(index);
 			} else {
 				directoryList1.setSelectedIndex(index - 1);
-				int currentValue = scrollPane1.getVerticalScrollBar()
-						.getValue();
+				int currentValue = scrollPane1.getVerticalScrollBar().getValue();
 				int max = scrollPane1.getVerticalScrollBar().getMaximum();
 				int nbIndex = directoryList1.getModel().getSize();
 				int increment = max / nbIndex;
@@ -367,8 +357,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 				directoryList1.setSelectedIndex(index);
 			} else {
 				directoryList1.setSelectedIndex(index + 1);
-				int currentValue = scrollPane1.getVerticalScrollBar()
-						.getValue();
+				int currentValue = scrollPane1.getVerticalScrollBar().getValue();
 				int max = scrollPane1.getVerticalScrollBar().getMaximum();
 				int nbIndex = directoryList1.getModel().getSize();
 				int increment = max / nbIndex;
@@ -407,8 +396,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 				directoryList2.setSelectedIndex(index);
 			} else {
 				directoryList2.setSelectedIndex(index - 1);
-				int currentValue = scrollPane2.getVerticalScrollBar()
-						.getValue();
+				int currentValue = scrollPane2.getVerticalScrollBar().getValue();
 				int max = scrollPane2.getVerticalScrollBar().getMaximum();
 				int nbIndex = directoryList2.getModel().getSize();
 				int increment = max / nbIndex;
@@ -429,8 +417,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 				directoryList2.setSelectedIndex(index);
 			} else {
 				directoryList2.setSelectedIndex(index + 1);
-				int currentValue = scrollPane2.getVerticalScrollBar()
-						.getValue();
+				int currentValue = scrollPane2.getVerticalScrollBar().getValue();
 				int max = scrollPane2.getVerticalScrollBar().getMaximum();
 				int nbIndex = directoryList2.getModel().getSize();
 				int increment = max / nbIndex;

@@ -6,7 +6,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import fr.soe.a3s.constant.GameDLCs;
 import fr.soe.a3s.constant.GameSystemFolders;
 import fr.soe.a3s.constant.ModsetType;
 import fr.soe.a3s.dao.AddonDAO;
@@ -24,21 +26,53 @@ import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 
-public class AddonService extends ObjectDTOtransformer implements
-		DataAccessConstants {
+public class AddonService extends ObjectDTOtransformer implements DataAccessConstants {
 
-	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
-	private static final ProfileDAO profileDAO = new ProfileDAO();
-	private static final AddonDAO addonDAO = new AddonDAO();
-	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
+	private final ConfigurationDAO configurationDAO = new ConfigurationDAO();
+	private final ProfileDAO profileDAO = new ProfileDAO();
+	private final AddonDAO addonDAO = new AddonDAO();
+	private final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private final List<String> excludedFilePathList = new ArrayList<String>();
+	private TreeDirectory availabeAddonsTreeInstance;
+
+	public void init() {
+
+		addonDAO.getMap().clear();
+		excludedFilePathList.clear();
+
+		File arma3Directory = null;
+		String profileName = configurationDAO.getConfiguration().getProfileName();
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			String arma3ExePath = profile.getLauncherOptions().getArma3ExePath();
+			if (arma3ExePath != null) {
+				if (!arma3ExePath.isEmpty()) {
+					arma3Directory = new File(arma3ExePath).getParentFile();
+				}
+			}
+		}
+
+		if (arma3Directory != null) {
+			GameSystemFolders[] tab = GameSystemFolders.values();
+			for (int i = 0; i < tab.length; i++) {
+				File excludedFile = new File(arma3Directory + "/" + tab[i].toString());
+				String osName = System.getProperty("os.name");
+				if (osName.contains("Windows")) {
+					this.excludedFilePathList.add(excludedFile.getAbsolutePath().toLowerCase());
+				} else {
+					this.excludedFilePathList.add(excludedFile.getAbsolutePath());
+				}
+			}
+		}
+
+		availabeAddonsTreeInstance = getAvailableAddonsTreeInstance();
+	}
 
 	private TreeDirectory getAvailableAddonsTreeInstance() {
 
 		List<String> list = new ArrayList<String>();
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			Iterator iter = profile.getAddonSearchDirectories().iterator();
@@ -91,10 +125,8 @@ public class AddonService extends ObjectDTOtransformer implements
 					continue;
 				}
 
-				if (!iparentFile.getAbsolutePath().equals(
-						jparentFile.getAbsolutePath())) {
-					if (ipathForCompare.contains(jpathForCompare)
-							|| jpathForCompare.contains(ipathForCompare)) {
+				if (!iparentFile.getAbsolutePath().equals(jparentFile.getAbsolutePath())) {
+					if (ipathForCompare.contains(jpathForCompare) || jpathForCompare.contains(ipathForCompare)) {
 						if (jpath.length() < pathToKeep.length()) {
 							pathToKeep = jpath;
 						}
@@ -107,47 +139,13 @@ public class AddonService extends ObjectDTOtransformer implements
 			}
 		}
 
-		File arma3Directory = null;
-		String arma3ExePath = profile.getLauncherOptions().getArma3ExePath();
-		if (arma3ExePath != null) {
-			if (!arma3ExePath.isEmpty()) {
-				arma3Directory = new File(arma3ExePath).getParentFile();
-			}
-		}
-
-		this.excludedFilePathList.clear();
-		if (arma3Directory != null) {
-			GameSystemFolders[] tab = GameSystemFolders.values();
-			for (int i = 0; i < tab.length; i++) {
-				File excludedFile = new File(arma3Directory + "/"
-						+ tab[i].toString());
-				this.excludedFilePathList.add(excludedFile.getAbsolutePath());
-			}
-		}
-
-		addonDAO.getMap().clear();
 		TreeDirectory racine = new TreeDirectory("racine1", null);
 
 		for (String path : newList) {
 			File file = new File(path);
 			if (file.exists()) {
-				TreeDirectory treeDirectory = new TreeDirectory(file.getName(),
-						racine);
+				TreeDirectory treeDirectory = new TreeDirectory(file.getName(), racine);
 				racine.addTreeNode(treeDirectory);
-
-				for (Iterator<String> iter = repositoryDAO.getMap().keySet()
-						.iterator(); iter.hasNext();) {
-					Repository repository = repositoryDAO.getMap().get(
-							iter.next());
-					if (file.getAbsolutePath().equals(
-							repository.getDefaultDownloadLocation())) {
-						treeDirectory.setModsetRepositoryName(repository
-								.getName());
-						treeDirectory.setModsetType(ModsetType.REPOSITORY);
-						break;
-					}
-				}
-
 				File[] subfiles = file.listFiles();
 				if (subfiles != null) {
 					for (File f : subfiles) {
@@ -182,31 +180,66 @@ public class AddonService extends ObjectDTOtransformer implements
 
 	public TreeDirectoryDTO getAvailableAddonsTree() {
 
-		TreeDirectory treeDirectory = getAvailableAddonsTreeInstance();
 		TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
 		treeDirectoryDTO.setName("racine1");
 		treeDirectoryDTO.setParent(null);
-		transformTreeDirectory2DTO(treeDirectory, treeDirectoryDTO);
+		if (availabeAddonsTreeInstance != null) {
+			transformTreeDirectory2DTO(availabeAddonsTreeInstance, treeDirectoryDTO);
+		}
 		return treeDirectoryDTO;
 	}
 
 	public TreeDirectoryDTO getAvailableAddonsList() {
 
-		TreeDirectory treeDirectory = getAvailableAddonsTreeInstance();
-		TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
-		treeDirectoryDTO.setName("racine1");
-		treeDirectoryDTO.setParent(null);
-		transformTreeDirectory2DTO(treeDirectory, treeDirectoryDTO);
-
 		TreeDirectoryDTO newTreeDirectoryDTO = new TreeDirectoryDTO();
 		newTreeDirectoryDTO.setName("racine1");
 		newTreeDirectoryDTO.setParent(null);
-		generateTreeList(treeDirectoryDTO, newTreeDirectoryDTO);
+		generateTreeList(getAvailableAddonsTree(), newTreeDirectoryDTO);
 		return newTreeDirectoryDTO;
 	}
 
-	private void generateTreeList(TreeDirectoryDTO treeDirectoryDTO,
-			TreeDirectoryDTO newTreeDirectoryDTO) {
+	public TreeDirectoryDTO getAvailableDLCList() {
+
+		TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
+		treeDirectoryDTO.setName("racineDLC");
+		treeDirectoryDTO.setParent(null);
+
+		String profileName = configurationDAO.getConfiguration().getProfileName();
+		Profile profile = profileDAO.getMap().get(profileName);
+
+		File arma3Directory = null;
+		if (profile != null) {
+			String arma3ExePath = profile.getLauncherOptions().getArma3ExePath();
+			if (arma3ExePath != null) {
+				if (!arma3ExePath.isEmpty()) {
+					arma3Directory = new File(arma3ExePath).getParentFile();
+				}
+			}
+		}
+
+		if (arma3Directory != null) {
+			GameDLCs[] dlc = GameDLCs.values();
+			for (int i = 0; i < dlc.length; i++) {
+				String name = dlc[i].toString();
+				String description = dlc[i].GetDescription();
+				File dlcFolder = new File(arma3Directory + "/" + name);
+				if (dlcFolder.exists()) {
+					TreeLeafDTO leafDTO = new TreeLeafDTO();
+					leafDTO.setName(name);
+					leafDTO.setDescription(description);
+					leafDTO.setParent(treeDirectoryDTO);
+					treeDirectoryDTO.addTreeNode(leafDTO);
+					String key = addonDAO.determineNewAddonKey(name);
+					Addon addon = new Addon(key, name, arma3Directory.getAbsolutePath());
+					addonDAO.getMap().put(key.toLowerCase(), addon);
+				}
+			}
+		}
+
+		return treeDirectoryDTO;
+	}
+
+	private void generateTreeList(TreeDirectoryDTO treeDirectoryDTO, TreeDirectoryDTO newTreeDirectoryDTO) {
 
 		for (TreeNodeDTO treeNodeDTO : treeDirectoryDTO.getList()) {
 			if (treeNodeDTO.isLeaf()) {
@@ -222,68 +255,64 @@ public class AddonService extends ObjectDTOtransformer implements
 					}
 				}
 			} else {
-				generateTreeList((TreeDirectoryDTO) treeNodeDTO,
-						newTreeDirectoryDTO);
+				generateTreeList((TreeDirectoryDTO) treeNodeDTO, newTreeDirectoryDTO);
 			}
 		}
 	}
 
 	private void generateTree(File file, TreeDirectory node) {
 
-		if (file.isDirectory()
-				&& (!excludedFilePathList.contains(file.getAbsolutePath()))) {
-
-			TreeDirectory treeDirectory = new TreeDirectory(file.getName(),
-					node);
-			node.addTreeNode(treeDirectory);
-
-			for (Iterator<String> iter = repositoryDAO.getMap().keySet()
-					.iterator(); iter.hasNext();) {
-				Repository repository = repositoryDAO.getMap().get(iter.next());
-				if (file.getAbsolutePath().equals(
-						repository.getDefaultDownloadLocation())) {
-					treeDirectory.setModsetRepositoryName(repository.getName());
-					treeDirectory.setModsetType(ModsetType.REPOSITORY);
-					break;
-				}
+		if (file.isDirectory()) {
+			String osName = System.getProperty("os.name");
+			String path = null;
+			if (osName.contains("Windows")) {
+				path = file.getAbsolutePath().toLowerCase();
+			} else {
+				path = file.getAbsolutePath();
 			}
+			if (!excludedFilePathList.contains(path)) {
 
-			boolean contains = false;
-			File[] subfiles = file.listFiles();
-			if (subfiles != null) {
-				for (File f : subfiles) {
-					if (f.getName().toLowerCase().equals("addons")) {
-						File[] subfiles2 = f.listFiles();
-						if (subfiles2 != null) {
-							for (File f2 : subfiles2) {
-								if (f2.getName().contains(PBO_EXTENSION)) {
-									contains = true;
-									break;
+				TreeDirectory treeDirectory = new TreeDirectory(file.getName(), node);
+				node.addTreeNode(treeDirectory);
+
+				boolean contains = false;
+				File[] subfiles = file.listFiles();
+				if (subfiles != null) {
+					for (File f : subfiles) {
+						if (f.getName().toLowerCase().equals("addons")) {
+							File[] subfiles2 = f.listFiles();
+							if (subfiles2 != null) {
+								for (File f2 : subfiles2) {
+									if (f2.getName().contains(PBO_EXTENSION) || f2.getName().contains(EBO_EXTENSION)) {
+										contains = true;
+										break;
+									}
 								}
 							}
 						}
 					}
 				}
-			}
 
-			if (contains) {// it is an addon
-				String name = treeDirectory.getName();
-				Addon addon = new Addon(name, file.getParentFile()
-						.getAbsolutePath());
+				if (contains) {// it is an addon
+					String name = treeDirectory.getName();
 
-				// Determine the symbolic key
-				String key = addonDAO.determineNewAddonKey(name);
-				addonDAO.getMap().put(key.toLowerCase(), addon);
+					// Determine the symbolic key
+					String key = addonDAO.determineNewAddonKey(name);
 
-				// Set directory name with addon key
-				treeDirectory.setName(key);
+					Addon addon = new Addon(key, name, file.getParentFile().getAbsolutePath());
 
-				// Mark up every directories to true
-				markRecursively(treeDirectory);
+					addonDAO.getMap().put(key.toLowerCase(), addon);
 
-			} else if (!contains && subfiles.length != 0) {
-				for (File f : subfiles) {
-					generateTree(f, treeDirectory);
+					// Set directory name with addon key
+					treeDirectory.setName(key);
+
+					// Mark up every directories to true
+					markRecursively(treeDirectory);
+
+				} else if (!contains && subfiles != null) {
+					for (File f : subfiles) {
+						generateTree(f, treeDirectory);
+					}
 				}
 			}
 		}
@@ -298,42 +327,34 @@ public class AddonService extends ObjectDTOtransformer implements
 		}
 	}
 
-	private void cleanTree(TreeDirectory directory,
-			TreeDirectory directoryCleaned) {
+	private void cleanTree(TreeDirectory directory, TreeDirectory directoryCleaned) {
 
 		if (directory.isMarked() && directory.getList().size() != 0) {
-			TreeDirectory newDirectory = new TreeDirectory(directory.getName(),
-					directoryCleaned);
+			TreeDirectory newDirectory = new TreeDirectory(directory.getName(), directoryCleaned);
 			directoryCleaned.addTreeNode(newDirectory);
-			newDirectory.setModsetRepositoryName(directory
-					.getModsetRepositoryName());
-			newDirectory.setModsetType(directory.getModsetType());
 			for (TreeNode n : directory.getList()) {
 				TreeDirectory d = (TreeDirectory) n;
 				cleanTree(d, newDirectory);
 			}
 		} else if (directory.isMarked() && directory.getList().size() == 0) {
-			TreeLeaf newTreelLeaf = new TreeLeaf(directory.getName(),
-					directoryCleaned);
+			TreeLeaf newTreelLeaf = new TreeLeaf(directory.getName(), directoryCleaned);
 			directoryCleaned.addTreeNode(newTreelLeaf);
 		}
 	}
 
 	public List<String> getAddonsByPriorityList() {
 
-		TreeDirectoryDTO availableAddonsList = getAvailableAddonsList();
 		List<String> availableAddonsByName = new ArrayList<String>();
-		for (TreeNodeDTO node : availableAddonsList.getList()) {
-			availableAddonsByName.add(node.getName());
+		for (Iterator<String> iter = addonDAO.getMap().keySet().iterator(); iter.hasNext();) {
+			availableAddonsByName.add(iter.next());
 		}
+
 		Collections.sort(availableAddonsByName, new SortIgnoreCase());
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
-			List<String> addonNamesByPriority = profile
-					.getAddonNamesByPriority();
+			List<String> addonNamesByPriority = profile.getAddonNamesByPriority();
 			if (availableAddonsByName.isEmpty()) {
 				addonNamesByPriority.clear();
 			} else {
@@ -366,88 +387,271 @@ public class AddonService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void resolveDuplicates(TreeDirectoryDTO racine) {
+	public void resolveAddonGroups(TreeDirectoryDTO racine) {
 
 		for (TreeNodeDTO node : racine.getList()) {
-			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-			if (directory.getModsetType() != null) {
-				if (directory.getModsetType().equals(ModsetType.REPOSITORY)
-						| directory.getModsetType().equals(ModsetType.EVENT)) {
-					String repositoryName = directory.getModsetRepositoryName();
-					if (repositoryDAO.getMap().containsKey(repositoryName)) {
-						Repository repository = repositoryDAO.getMap().get(
-								repositoryName);
-						String defaultDownloadLocation = repository
-								.getDefaultDownloadLocation();
-						resolveDuplicates(directory, defaultDownloadLocation);
+			if (node instanceof TreeDirectoryDTO) {// Fix unexpected class cast exception TreeLeafDTO
+				TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+				if (directory.getModsetType() != null) {
+					if (directory.getModsetType().equals(ModsetType.REPOSITORY)) {
+						String repositoryName = directory.getModsetRepositoryName();
+						if (repositoryDAO.getMap().containsKey(repositoryName)) {
+							Repository repository = repositoryDAO.getMap().get(repositoryName);
+							String defaultDownloadLocation = repository.getDefaultDownloadLocation();
+							if (defaultDownloadLocation != null) {
+								resolveAddonGroup(directory, defaultDownloadLocation);
+							}
+						}
+					} else if (directory.getModsetType().equals(ModsetType.EVENT)) {
+						String repositoryName = directory.getModsetRepositoryName();
+						if (repositoryDAO.getMap().containsKey(repositoryName)) {
+							Repository repository = repositoryDAO.getMap().get(repositoryName);
+							String eventName = directory.getName();
+							Map<String, String> map = repository.getMapEventsDownloadLocation();
+							if (map.containsKey(eventName)) {
+								String defaultDownloadLocation = map.get(eventName);
+								if (defaultDownloadLocation != null) {
+									resolveAddonGroup(directory, defaultDownloadLocation);
+								}
+							} else {
+								String defaultDownloadLocation = repository.getDefaultDownloadLocation();
+								if (defaultDownloadLocation != null) {
+									resolveAddonGroup(directory, defaultDownloadLocation);
+								}
+							}
+						}
 					}
 				}
 			}
 		}
 	}
 
-	private void resolveDuplicates(TreeDirectoryDTO directory,
-			String repositoryPath) {
+	/**
+	 * Resolve addon within location on disk
+	 * @param directory not null
+	 * @param location not null
+	 */
+	private void resolveAddonGroup(TreeDirectoryDTO directory, String location) {
 
 		List<TreeNodeDTO> list = directory.getList();
 
 		for (TreeNodeDTO node : list) {
 			if (node.isLeaf()) {
 				TreeLeafDTO leaf = (TreeLeafDTO) node;
+				boolean found = false;
 				boolean duplicated = addonDAO.hasDuplicate(leaf.getName());
 				if (duplicated) {
-					List<String> duplicateKeys = addonDAO.getDuplicates(leaf
-							.getName());
+					List<String> duplicateKeys = addonDAO.getDuplicates(leaf.getName());
 					for (String key : duplicateKeys) {
 						Addon addon = addonDAO.getMap().get(key);
-						if (addon.getPath().equals(repositoryPath)) {
-							leaf.setName(key);
-						} else if (addon.getPath().contains(repositoryPath)) {
+						if (addon.getPath().equals(location)) {
+							leaf.setName(addon.getKey());
+							found = true;
+							break;
+						} else if (addon.getPath().contains(location)) {
 							File file = new File(addon.getPath());
 							File parent = file.getParentFile();
-							boolean found = false;
 							while (parent != null) {
-								if (parent.getAbsolutePath().equals(
-										repositoryPath)) {
+								if (parent.getAbsolutePath().equals(location)) {
 									found = true;
 									break;
-								} else if (parent.getAbsolutePath().contains(
-										repositoryPath)) {
-									parent = file.getParentFile();
+								} else if (parent.getAbsolutePath().contains(location)) {
+									parent = parent.getParentFile();
 								} else {
 									break;
 								}
 							}
 							if (found) {
-								leaf.setName(key);
+								leaf.setName(addon.getKey());
+								break;
+							}
+						}
+					}
+				} else {
+					Addon addon = addonDAO.getMap().get(leaf.getName().toLowerCase());
+					if (addon != null) {
+						if (addon.getPath().equals(location)) {
+							found = true;
+						} else if (addon.getPath().contains(location)) {
+							File file = new File(addon.getPath());
+							File parent = file.getParentFile();
+							while (parent != null) {
+								if (parent.getAbsolutePath().equals(location)) {
+									found = true;
+									break;
+								} else if (parent.getAbsolutePath().contains(location)) {
+									parent = parent.getParentFile();
+								} else {
+									break;
+								}
 							}
 						}
 					}
 				}
+
+				if (found) {
+					leaf.setMissing(false);
+					leaf.setSourceFilePath(null);
+				} else {
+					Addon addon = addonDAO.getMap().get(leaf.getName().toLowerCase());
+					if (addon != null) {
+						leaf.setMissing(false);
+						leaf.setSourceFilePath(null);
+					} else {
+						leaf.setMissing(true);
+						leaf.setSourceFilePath(location);
+					}
+				}
 			} else {
 				TreeDirectoryDTO d = (TreeDirectoryDTO) node;
-				resolveDuplicates(d, repositoryPath);
+				resolveAddonGroup(d, location);
 			}
 		}
 	}
 
-	public String getACRE2installationFolder() {
+	public void checkMissingAddons(TreeNodeDTO node, List<String> addonNames) {
 
-		Addon addon = addonDAO.getMap().get("@acre2");
-		if (addon == null) {
-			return null;
+		if (node.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) node;
+			if (!leaf.isMissing()) {
+				Addon addon = addonDAO.getMap().get(leaf.getName().toLowerCase());
+				if (addon == null) {
+					leaf.setMissing(true);
+					addonNames.add(leaf.getName());
+				}
+			}
 		} else {
-			return addon.getPath();
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				checkMissingAddons(n, addonNames);
+			}
 		}
 	}
 
-	public String getTFARinstallationFolder() {
+	public void checkMissingSelectedAddons(TreeNodeDTO node, List<String> addonNames) {
 
-		Addon addon = addonDAO.getMap().get("@task_force_radio");
-		if (addon == null) {
-			return null;
+		if (node.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) node;
+			if (!leaf.isMissing()) {
+				Addon addon = addonDAO.getMap().get(leaf.getName().toLowerCase());
+				if (addon == null) {
+					leaf.setMissing(true);
+				}
+			}
+			if (leaf.isMissing() && leaf.isSelected()) {
+				addonNames.add(leaf.getName());
+			}
 		} else {
-			return addon.getPath();
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				checkMissingSelectedAddons(n, addonNames);
+			}
+		}
+	}
+
+	public void checkDuplicateAddons(TreeNodeDTO node, TreeDirectoryDTO racine1) {
+
+		if (node.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) node;
+			boolean duplicated = addonDAO.hasDuplicate(leaf.getName());
+			leaf.setDuplicate(duplicated);
+			if (duplicated) {
+				findSourceRelativePath(leaf, racine1);
+			} else {
+				leaf.setSourceRelativePath(null);
+			}
+		} else {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				checkDuplicateAddons(n, racine1);
+			}
+		}
+	}
+
+	private void findSourceRelativePath(TreeLeafDTO leafDTO, TreeNodeDTO treeNodeDTO) {
+
+		if (treeNodeDTO.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
+			if (leaf.getName().equalsIgnoreCase(leafDTO.getName())) {
+				TreeNodeDTO parent = leaf.getParent();
+				String path = null;
+				while (parent != null) {
+					if (!parent.getName().contains("racine")) {
+						if (path == null) {
+							path = parent.getName();
+						} else {
+							path = parent.getName() + "/" + path;
+						}
+					}
+					parent = parent.getParent();
+				}
+				leafDTO.setSourceRelativePath(path);
+			}
+		} else {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) treeNodeDTO;
+			for (TreeNodeDTO n : directory.getList()) {
+				findSourceRelativePath(leafDTO, n);
+			}
+		}
+	}
+
+	public void checkDuplicateAddonsSelection(TreeDirectoryDTO racine, List<String> addonNames) {
+
+		getDuplicateAddonsSelection(racine, addonNames);
+
+		for (TreeNodeDTO n : racine.getList()) {
+			checkDuplicateAddonsSelection(n, addonNames);
+		}
+	}
+
+	private void checkDuplicateAddonsSelection(TreeNodeDTO node, List<String> addonNames) {
+
+		if (node.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) node;
+			if (addonNames.contains(leaf.getName())) {
+				leaf.setDuplicatedSelection(true);
+			} else {
+				leaf.setDuplicatedSelection(false);
+			}
+		} else {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				checkDuplicateAddonsSelection(n, addonNames);
+			}
+		}
+	}
+
+	private void getDuplicateAddonsSelection(TreeNodeDTO node, List<String> addonNames) {
+
+		List<String> selectedAddonNames = new ArrayList<String>();
+		getSelectedAddonNames(node, selectedAddonNames);
+
+		for (int i = 0; i < selectedAddonNames.size(); i++) {
+			int count = 0;
+			String name = selectedAddonNames.get(i);
+			for (int j = 0; j < selectedAddonNames.size(); j++) {
+				if (name.equals(selectedAddonNames.get(j))) {
+					count++;
+				}
+			}
+			if (count > 1) {
+				addonNames.add(name);
+			}
+		}
+	}
+
+	private void getSelectedAddonNames(TreeNodeDTO node, List<String> addonNames) {
+
+		if (node.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) node;
+			if (leaf.isSelected()) {
+				addonNames.add(leaf.getName());
+			}
+		} else {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				getSelectedAddonNames(n, addonNames);
+			}
 		}
 	}
 }

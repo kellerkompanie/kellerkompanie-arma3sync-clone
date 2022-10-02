@@ -24,6 +24,7 @@ public class InfoUpdatedRepositoryDialog extends AbstractDialog {
 
 	public InfoUpdatedRepositoryDialog(Facade facade) {
 		super(facade, "Repository", true);
+		facade.setInfoUpdatedRepositoryPanel(this);
 		this.setResizable(true);
 
 		{
@@ -34,15 +35,13 @@ public class InfoUpdatedRepositoryDialog extends AbstractDialog {
 		{
 			JPanel centerPanel = new JPanel();
 			centerPanel.setLayout(new BorderLayout());
-			centerPanel.setBorder(BorderFactory.createTitledBorder(
-					BorderFactory.createEmptyBorder(),
+			centerPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(),
 					"The following repositories have been updated:"));
 			this.add(centerPanel, BorderLayout.CENTER);
 			{
 				list = new JList();
 				scrollPane = new JScrollPane(list);
-				scrollPane.setBorder(BorderFactory
-						.createEtchedBorder(BevelBorder.LOWERED));
+				scrollPane.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 				centerPanel.add(scrollPane, BorderLayout.CENTER);
 			}
 		}
@@ -82,8 +81,8 @@ public class InfoUpdatedRepositoryDialog extends AbstractDialog {
 			this.dispose();
 			RepositoryDTO repositoryDTO = repositoryDTOs.get(index);
 			if (repositoryDTO != null) {
-				RepositoryPanel repositoryPanel = facade.getMainPanel()
-						.openRepository(repositoryDTO.getName(), true);
+				RepositoryPanel repositoryPanel = facade.getMainPanel().openRepository(repositoryDTO.getName(), null,
+						true, false);
 				if (repositoryPanel != null) {
 					repositoryPanel.synchronize(repositoryDTO.getName(), null);
 				}
@@ -93,11 +92,13 @@ public class InfoUpdatedRepositoryDialog extends AbstractDialog {
 
 	@Override
 	protected void buttonCancelPerformed() {
+		facade.setInfoUpdatedRepositoryPanel(null);
 		this.dispose();
 	}
 
 	@Override
 	protected void menuExitPerformed() {
+		facade.setInfoUpdatedRepositoryPanel(null);
 		this.dispose();
 	}
 }

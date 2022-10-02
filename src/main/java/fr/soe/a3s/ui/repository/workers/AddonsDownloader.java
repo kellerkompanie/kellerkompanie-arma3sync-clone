@@ -24,6 +24,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private final DownloadPanel downloadPanel;
 	/* Data */
 	private final String repositoryName;
+	private final String eventName;
 	private boolean saveStateCheckBoxExactMath, saveStateCheckBoxAutoDiscover;
 	/* Tests */
 	private boolean canceled;
@@ -35,12 +36,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private ObserverError observerError;
 	private ObserverConnectionLost observerConnectionLost;
 
-	public AddonsDownloader(Facade facade, String repositoryName,
-			FilesSynchronizationManager filesManager,
-			DownloadPanel downloadPanel) {
+	public AddonsDownloader(Facade facade, String repositoryName, String eventName,
+			FilesSynchronizationManager filesManager, DownloadPanel downloadPanel) {
 		this.facade = facade;
 		this.filesManager = filesManager;
 		this.repositoryName = repositoryName;
+		this.eventName = eventName;
 		this.downloadPanel = downloadPanel;
 	}
 
@@ -53,56 +54,49 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		initDownloadPanelForStartDownload();
 		canceled = false;
 
-		filesSynchronizationProcessor = new FilesSynchronizationProcessor(
-				repositoryName, filesManager);
-		filesSynchronizationProcessor
-				.addObserverCountSingleProgress(new ObserverCountInt() {
-					@Override
-					public void update(int value) {
-						executeUpdateSingleProgress(value);
-					}
-				});
-		filesSynchronizationProcessor
-				.addObserverCountTotalProgress(new ObserverCountInt() {
-					@Override
-					public void update(int value) {
-						executeUpdateTotalProgress(value);
-					}
-				});
-		filesSynchronizationProcessor
-				.addObserverTotalSize(new ObserverCountLong() {
-					@Override
-					public void update(long value) {
-						executeUpdateTotalSize(value);
-					}
-				});
-		filesSynchronizationProcessor
-				.addObserverDownloadedSize(new ObserverCountLong() {
-					@Override
-					public void update(long value) {
-						executeUpdateDownloadedSize(value);
-					}
-				});
+		filesSynchronizationProcessor = new FilesSynchronizationProcessor(repositoryName,eventName, filesManager);
+		filesSynchronizationProcessor.addObserverCountSingleProgress(new ObserverCountInt() {
+			@Override
+			public void update(int value) {
+				executeUpdateSingleProgress(value);
+			}
+		});
+		filesSynchronizationProcessor.addObserverCountTotalProgress(new ObserverCountInt() {
+			@Override
+			public void update(int value) {
+				executeUpdateTotalProgress(value);
+			}
+		});
+		filesSynchronizationProcessor.addObserverTotalSize(new ObserverCountLong() {
+			@Override
+			public void update(long value) {
+				executeUpdateTotalSize(value);
+			}
+		});
+		filesSynchronizationProcessor.addObserverDownloadedSize(new ObserverCountLong() {
+			@Override
+			public void update(long value) {
+				executeUpdateDownloadedSize(value);
+			}
+		});
 		filesSynchronizationProcessor.addObserverSpeed(new ObserverCountLong() {
 			@Override
 			public void update(long value) {
 				executeUpdateSpeed(value);
 			}
 		});
-		filesSynchronizationProcessor
-				.addObserverActiveConnections(new ObserverCountInt() {
-					@Override
-					public void update(int value) {
-						executeUpdateActiveConnections(value);
-					}
-				});
-		filesSynchronizationProcessor
-				.addObserverRemainingTime(new ObserverCountLong() {
-					@Override
-					public void update(long value) {
-						executeUpdateRemainingTime(value);
-					}
-				});
+		filesSynchronizationProcessor.addObserverActiveConnections(new ObserverCountInt() {
+			@Override
+			public void update(int value) {
+				executeUpdateActiveConnections(value);
+			}
+		});
+		filesSynchronizationProcessor.addObserverRemainingTime(new ObserverCountLong() {
+			@Override
+			public void update(long value) {
+				executeUpdateRemainingTime(value);
+			}
+		});
 		filesSynchronizationProcessor.addObserverEnd(new ObserverEnd() {
 			@Override
 			public void end() {
@@ -115,27 +109,32 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				executeError(errors);
 			}
 		});
-		filesSynchronizationProcessor
-				.addObserverConnectionLost(new ObserverConnectionLost() {
-					@Override
-					public void lost() {
-						executeConnectionLost();
-					}
-				});
-		filesSynchronizationProcessor
-				.addObserverProceedUncompress(new ObserverProceed() {
-					@Override
-					public void proceed() {
-						executeProceedUncompress();
-					}
-				});
-		filesSynchronizationProcessor
-				.addObserverProceedDelete(new ObserverProceed() {
-					@Override
-					public void proceed() {
-						executeProceedDelete();
-					}
-				});
+		filesSynchronizationProcessor.addObserverConnectionLost(new ObserverConnectionLost() {
+			@Override
+			public void lost() {
+				executeConnectionLost();
+			}
+		});
+		filesSynchronizationProcessor.addObserverProceedUncompress(new ObserverProceed() {
+			@Override
+			public void proceed() {
+				executeProceedUncompress();
+			}
+		});
+		filesSynchronizationProcessor.addObserverDiskUsage(new ObserverCountLong() {
+
+			@Override
+			public void update(long value) {
+				executeDiskUsage(value);
+			}
+		});
+		filesSynchronizationProcessor.addObserverConnectionWaiting(new ObserverCountInt() {
+
+			@Override
+			public void update(int value) {
+				executeConnectionWaiting(value);
+			}
+		});
 
 		filesSynchronizationProcessor.run();
 	}
@@ -144,20 +143,21 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		downloadPanel.getArbre().setEnabled(false);
 		downloadPanel.getLabelDownloadStatus().setText("Downloading...");
-		downloadPanel.getLabelDownloadStatus().setForeground(
-				DownloadPanel.GREEN);
+		downloadPanel.getLabelDownloadStatus().setForeground(DownloadPanel.GREEN);
 		downloadPanel.getCheckBoxSelectAll().setEnabled(false);
 		downloadPanel.getCheckBoxExpandAll().setEnabled(false);
-		saveStateCheckBoxExactMath = downloadPanel.getCheckBoxExactMatch()
-				.isEnabled();
-		saveStateCheckBoxAutoDiscover = downloadPanel.getCheckBoxAutoDiscover()
-				.isEnabled();
+		saveStateCheckBoxExactMath = downloadPanel.getCheckBoxExactMatch().isEnabled();
+		saveStateCheckBoxAutoDiscover = downloadPanel.getCheckBoxAutoDiscover().isEnabled();
 		downloadPanel.getCheckBoxExactMatch().setEnabled(false);
 		downloadPanel.getCheckBoxAutoDiscover().setEnabled(false);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
 		downloadPanel.getButtonSettings().setEnabled(false);
 		downloadPanel.getLabelTotalFilesSizeValue().setText("");
 		downloadPanel.getLabelDownloadedValue().setText("");
+		downloadPanel.getLabelSpeedValue().setText("");
+		downloadPanel.getLabelDiskUsageValue().setText("");
+		downloadPanel.getLabelRemainingTimeValue().setText("");
+		downloadPanel.getLabelActiveConnectionsValue().setText("");
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
 		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(false);
 		downloadPanel.getButtonDownloadStart().setEnabled(false);
@@ -168,49 +168,29 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		downloadPanel.getProgressBarDownloadAddons().setMaximum(100);
 		downloadPanel.getProgressBarDownloadSingleAddon().setMinimum(0);
 		downloadPanel.getProgressBarDownloadSingleAddon().setMaximum(100);
-		downloadPanel.getProgressBarDownloadSingleAddon()
-				.setIndeterminate(true);
+		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(true);
 	}
 
 	private void initDownloadPanelForStartUncompressing() {
 
 		downloadPanel.getLabelDownloadStatus().setText("Uncompressing...");
-		downloadPanel.getLabelDownloadStatus().setForeground(
-				DownloadPanel.GREEN);
+		downloadPanel.getLabelDownloadStatus().setForeground(DownloadPanel.GREEN);
 		downloadPanel.getLabelSpeedValue().setText("");
 		downloadPanel.getLabelRemainingTimeValue().setText("");
 		downloadPanel.getLabelActiveConnectionsValue().setText("");
 		downloadPanel.getProgressBarDownloadAddons().setMinimum(0);
 		downloadPanel.getProgressBarDownloadAddons().setMaximum(100);
-		downloadPanel.getProgressBarDownloadSingleAddon()
-				.setIndeterminate(true);
-	}
-
-	private void initDownloadPanelForStartDeleting() {
-
-		downloadPanel.getLabelDownloadStatus().setText("Deleting...");
-		downloadPanel.getLabelDownloadStatus().setForeground(
-				DownloadPanel.GREEN);
-		downloadPanel.getLabelSpeedValue().setText("");
-		downloadPanel.getLabelRemainingTimeValue().setText("");
-		downloadPanel.getLabelActiveConnectionsValue().setText("");
-		downloadPanel.getProgressBarDownloadAddons().setMinimum(0);
-		downloadPanel.getProgressBarDownloadAddons().setMaximum(100);
-		downloadPanel.getProgressBarDownloadSingleAddon()
-				.setIndeterminate(true);
+		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(true);
 	}
 
 	private void initDownloadPanelForEndDownload() {
 
-		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
-				false);
+		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(false);
 		downloadPanel.getArbre().setEnabled(true);
 		downloadPanel.getCheckBoxSelectAll().setEnabled(true);
 		downloadPanel.getCheckBoxExpandAll().setEnabled(true);
-		downloadPanel.getCheckBoxExactMatch().setEnabled(
-				saveStateCheckBoxExactMath);
-		downloadPanel.getCheckBoxAutoDiscover().setEnabled(
-				saveStateCheckBoxAutoDiscover);
+		downloadPanel.getCheckBoxExactMatch().setEnabled(saveStateCheckBoxExactMath);
+		downloadPanel.getCheckBoxAutoDiscover().setEnabled(saveStateCheckBoxAutoDiscover);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(true);
 		downloadPanel.getButtonSettings().setEnabled(true);
 		downloadPanel.getLabelTotalFilesSizeValue().setText("");
@@ -225,6 +205,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		downloadPanel.getProgressBarDownloadAddons().setMaximum(0);
 		downloadPanel.getProgressBarDownloadSingleAddon().setMaximum(0);
 		downloadPanel.getLabelSpeedValue().setText("");
+		downloadPanel.getLabelDiskUsageValue().setText("");
 		downloadPanel.getLabelRemainingTimeValue().setText("");
 		downloadPanel.getLabelActiveConnectionsValue().setText("");
 	}
@@ -234,10 +215,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				downloadPanel.getProgressBarDownloadSingleAddon()
-						.setIndeterminate(false);
-				downloadPanel.getProgressBarDownloadSingleAddon().setValue(
-						value);
+				downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(false);
+				downloadPanel.getProgressBarDownloadSingleAddon().setValue(value);
 			}
 		});
 	}
@@ -247,8 +226,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				downloadPanel.getProgressBarDownloadAddons().setIndeterminate(
-						false);
+				downloadPanel.getProgressBarDownloadAddons().setIndeterminate(false);
 				downloadPanel.getProgressBarDownloadAddons().setValue(value);
 			}
 		});
@@ -256,15 +234,13 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 	private void executeUpdateTotalSize(long value) {
 		if (!canceled) {
-			downloadPanel.getLabelTotalFilesSizeValue().setText(
-					UnitConverter.convertSize(value));
+			downloadPanel.getLabelTotalFilesSizeValue().setText(UnitConverter.convertSize(value));
 		}
 	}
 
 	private void executeUpdateDownloadedSize(final long value) {
 		if (!canceled) {
-			downloadPanel.getLabelDownloadedValue().setText(
-					UnitConverter.convertSize(value));
+			downloadPanel.getLabelDownloadedValue().setText(UnitConverter.convertSize(value));
 		}
 	}
 
@@ -273,40 +249,21 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			if (value == 0) {
 				downloadPanel.getLabelSpeedValue().setText("-");
 			} else {
-				downloadPanel.getLabelSpeedValue().setText(
-						UnitConverter.convertSpeed(value));
-			}
-		}
-	}
-
-	private void executeUpdateWaitingForServer(final boolean waiting) {
-		if (!canceled) {
-			if (waiting) {
-				downloadPanel.getLabelDownloadStatus().setText(
-						"Waiting for server...");
-				downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
-			} else {
-				downloadPanel.getLabelDownloadStatus()
-						.setText("Downloading...");
-				downloadPanel.getLabelDownloadStatus().setForeground(
-						DownloadPanel.GREEN);
+				downloadPanel.getLabelSpeedValue().setText(UnitConverter.convertSpeed(value));
 			}
 		}
 	}
 
 	private void executeUpdateActiveConnections(int value) {
 		if (!canceled) {
-			downloadPanel.getLabelActiveConnectionsValue().setText(
-					Integer.toString(value));
+			downloadPanel.getLabelActiveConnectionsValue().setText(Integer.toString(value));
 		}
 	}
 
 	private void executeUpdateRemainingTime(long value) {
 		if (!canceled) {
 			downloadPanel.getLabelRemainingTimeValue()
-					.setText(
-							UnitConverter.convertTime((long) (value * Math.pow(
-									10, -9))));
+					.setText(UnitConverter.convertTime((long) (value * Math.pow(10, -9))));
 		}
 	}
 
@@ -314,26 +271,19 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		initDownloadPanelForStartUncompressing();
 	}
 
-	private void executeProceedDelete() {
-		initDownloadPanelForStartDeleting();
-	}
-
 	private void executeEnd() {
 
-		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
-				false);
+		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(false);
 
 		if (!canceled) {
 
 			canceled = true;
 
-			System.out.println("Synchronization with repository: "
-					+ repositoryName + " - finished.");
+			System.out.println("Synchronization with repository: " + repositoryName + " - finished.");
 
 			// Set notification
 			downloadPanel.getLabelDownloadStatus().setText("Finished!");
-			downloadPanel.getLabelDownloadStatus().setForeground(
-					DownloadPanel.GREEN);
+			downloadPanel.getLabelDownloadStatus().setForeground(DownloadPanel.GREEN);
 
 			initDownloadPanelForEndDownload();
 			terminate();
@@ -345,15 +295,13 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 	private void executeError(List<Exception> errors) {
 
-		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
-				false);
+		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(false);
 
 		if (!canceled) {
 
 			canceled = true;
 
-			System.out.println("Synchronization with repository: "
-					+ repositoryName + " - finished with errors.");
+			System.out.println("Synchronization with repository: " + repositoryName + " - finished with errors.");
 
 			// Set notification
 			downloadPanel.getLabelDownloadStatus().setText("Error!");
@@ -369,15 +317,13 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 	private void executeConnectionLost() {
 
-		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
-				false);
+		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(false);
 
 		if (!canceled) {
 
 			canceled = true;
 
-			System.out.println("Synchronization with repository: "
-					+ repositoryName + " - connection lost.");
+			System.out.println("Synchronization with repository: " + repositoryName + " - connection lost.");
 
 			// Set notification
 			downloadPanel.getLabelDownloadStatus().setText("Error!");
@@ -391,13 +337,38 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		}
 	}
 
+	private void executeDiskUsage(long value) {
+
+		if (!canceled) {
+			if (value == 0) {
+				downloadPanel.getLabelDiskUsageValue().setText("-");
+			} else {
+				downloadPanel.getLabelDiskUsageValue().setText(UnitConverter.convertSpeed(value));
+			}
+		}
+	}
+
+	private void executeConnectionWaiting(int value) {
+
+		if (!canceled) {
+			if (value < 15) {
+				downloadPanel.getLabelDownloadStatus().setText("Downloading...");
+				downloadPanel.getLabelDownloadStatus().setForeground(DownloadPanel.GREEN);
+			} else {
+				downloadPanel.getLabelDownloadStatus().setText("Waiting for server...");
+				downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
+				downloadPanel.getLabelSpeedValue().setText("-");
+				downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(true);
+			}
+		}
+	}
+
 	public void pause() {
 
 		this.canceled = true;
 
 		downloadPanel.getLabelDownloadStatus().setText("Paused...");
-		downloadPanel.getLabelDownloadStatus().setForeground(
-				DownloadPanel.GREEN);
+		downloadPanel.getLabelDownloadStatus().setForeground(DownloadPanel.GREEN);
 		downloadPanel.getLabelSpeedValue().setText("");
 		downloadPanel.getLabelRemainingTimeValue().setText("");
 		downloadPanel.getLabelActiveConnectionsValue().setText("");
@@ -411,14 +382,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		this.canceled = true;
 
 		downloadPanel.getLabelDownloadStatus().setText("Canceled!");
-		downloadPanel.getLabelDownloadStatus().setForeground(
-				DownloadPanel.GREEN);
+		downloadPanel.getLabelDownloadStatus().setForeground(DownloadPanel.GREEN);
 		initDownloadPanelForEndDownload();
 		terminate();
 	}
 
 	private void terminate() {
-
 		filesSynchronizationProcessor.cancel();
 	}
 

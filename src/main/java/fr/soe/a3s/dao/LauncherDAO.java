@@ -15,8 +15,7 @@ import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.domain.configration.LauncherOptions;
 
-public class LauncherDAO implements DataAccessConstants, ObservableError,
-		ObservableEnd {
+public class LauncherDAO implements DataAccessConstants, ObservableError, ObservableEnd {
 
 	private ObserverEnd observerEnd;
 
@@ -31,14 +30,11 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 			Process p = null;
 
 			if (osName.contains("Windows")) {
-				p = Runtime.getRuntime().exec(
-						System.getenv("windir") + "\\system32\\"
-								+ "tasklist.exe");
+				p = Runtime.getRuntime().exec(System.getenv("windir") + "\\system32\\" + "tasklist.exe");
 			} else {
 				return false;
 			}
-			BufferedReader input = new BufferedReader(new InputStreamReader(
-					p.getInputStream()));
+			BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = input.readLine()) != null && !response) {
 				if (line.toLowerCase().contains(executableName.toLowerCase())) {
 					response = true;
@@ -87,8 +83,7 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 			@Override
 			public void run() {
 				try {
-					StringTokenizer stk = new StringTokenizer(
-							runParameters.trim(), "-");
+					StringTokenizer stk = new StringTokenizer(runParameters.trim(), "-");
 					int nbParameters = stk.countTokens();
 					String[] cmd = new String[1 + nbParameters];
 					cmd[0] = exePath;
@@ -97,10 +92,8 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 					}
 
 					Process p = Runtime.getRuntime().exec(cmd);
-					AfficheurFlux fluxSortie = new AfficheurFlux(
-							p.getInputStream());
-					AfficheurFlux fluxErreur = new AfficheurFlux(
-							p.getErrorStream());
+					AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+					AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
 
 					new Thread(fluxSortie).start();
 					new Thread(fluxErreur).start();
@@ -116,8 +109,7 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 		t.start();
 	}
 
-	public Callable<Integer> call(final String executableName,
-			final String exePath, final List<String> params) {
+	public Callable<Integer> call(final String executableName, final String exePath, final List<String> params) {
 
 		Callable<Integer> c = new Callable<Integer>() {
 			@Override
@@ -135,10 +127,8 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 								cmd[1 + i] = params.get(i).trim();
 							}
 							Process p = Runtime.getRuntime().exec(cmd);
-							AfficheurFlux fluxSortie = new AfficheurFlux(
-									p.getInputStream());
-							AfficheurFlux fluxErreur = new AfficheurFlux(
-									p.getErrorStream());
+							AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
 							new Thread(fluxSortie).start();
 							new Thread(fluxErreur).start();
 							p.waitFor();
@@ -156,10 +146,8 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 								cmd[4 + i] = params.get(i).trim();
 							}
 							Process p = Runtime.getRuntime().exec(cmd);
-							AfficheurFlux fluxSortie = new AfficheurFlux(
-									p.getInputStream());
-							AfficheurFlux fluxErreur = new AfficheurFlux(
-									p.getErrorStream());
+							AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
 							new Thread(fluxSortie).start();
 							new Thread(fluxErreur).start();
 							p.waitFor();
@@ -176,18 +164,15 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 								cmd[3 + i] = params.get(i).trim();
 							}
 							Process p = Runtime.getRuntime().exec(cmd);
-							AfficheurFlux fluxSortie = new AfficheurFlux(
-									p.getInputStream());
-							AfficheurFlux fluxErreur = new AfficheurFlux(
-									p.getErrorStream());
+							AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
 							new Thread(fluxSortie).start();
 							new Thread(fluxErreur).start();
 							p.waitFor();
 							response = p.exitValue();
 						}
 					} else {
-						throw new Exception(executableName
-								+ " - invalid executable file.");
+						throw new Exception(executableName + " - invalid executable file.");
 					}
 				} catch (Exception e) {
 					List<Exception> errors = new ArrayList<Exception>();
@@ -200,8 +185,7 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 		return c;
 	}
 
-	public Callable<Integer> call2(final String executableName,
-			final String exePath, final List<String> params,
+	public Callable<Integer> call2(final String executableName, final String exePath, final List<String> params,
 			final LauncherOptions launcherOptions) {
 
 		Callable<Integer> c = new Callable<Integer>() {
@@ -210,14 +194,13 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 
 				String osName = System.getProperty("os.name");
 				int response = 0;
+
 				try {
-					if (executableName.contains(".exe")) {
-						if (osName.contains("Windows")) {
+					if (osName.toLowerCase().contains("windows")) {
+						if (executableName.contains(".exe")) {
 							int nbParameters = params.size();
 							String[] cmd = null;
-							if (executableName
-									.equalsIgnoreCase(GameExecutables.BATTLEYE
-											.getDescription())) {
+							if (executableName.equalsIgnoreCase(GameExecutables.BATTLEYE.getDescription())) {
 								cmd = new String[3 + nbParameters];
 								cmd[0] = exePath;
 								cmd[1] = "2";
@@ -233,11 +216,16 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 								}
 							}
 
+							String commandLine = "";
+							for (int i = 0; i < cmd.length; i++) {
+								commandLine += cmd[i] + " ";
+							}
+
+							System.out.println("Starting ArmA 3 with command line: " + commandLine);
+
 							Process p = Runtime.getRuntime().exec(cmd);
-							AfficheurFlux fluxSortie = new AfficheurFlux(
-									p.getInputStream());
-							AfficheurFlux fluxErreur = new AfficheurFlux(
-									p.getErrorStream());
+							AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
 							new Thread(fluxSortie).start();
 							new Thread(fluxErreur).start();
 							updateObserverEnd();
@@ -246,10 +234,7 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 								call();
 							}
 							response = p.exitValue();
-						}
-
-					} else if (executableName.contains(".bat")) {
-						if (osName.contains("Windows")) {
+						} else if (executableName.contains(".bat")) {
 							int nbParameters = params.size();
 							String[] cmd = new String[4 + nbParameters];
 							cmd[0] = "cmd.exe";
@@ -259,11 +244,17 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 							for (int i = 0; i < nbParameters; i++) {
 								cmd[4 + i] = params.get(i).trim();
 							}
+
+							String commandLine = "";
+							for (int i = 0; i < cmd.length; i++) {
+								commandLine += cmd[i] + " ";
+							}
+
+							System.out.println("Starting ArmA 3 with command line: " + commandLine);
+
 							Process p = Runtime.getRuntime().exec(cmd);
-							AfficheurFlux fluxSortie = new AfficheurFlux(
-									p.getInputStream());
-							AfficheurFlux fluxErreur = new AfficheurFlux(
-									p.getErrorStream());
+							AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
 							new Thread(fluxSortie).start();
 							new Thread(fluxErreur).start();
 							updateObserverEnd();
@@ -272,9 +263,11 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 								call();
 							}
 							response = p.exitValue();
+						} else {
+							throw new Exception(executableName + " - invalid executable file.");
 						}
-					} else if (executableName.contains(".sh")) {
-						if (osName.contains("Linux")) {
+					} else if (osName.toLowerCase().contains("linux")) {
+						if (executableName.contains(".sh")) {
 							int nbParameters = params.size();
 							String[] cmd = new String[3 + nbParameters];
 							cmd[0] = "/bin/bash";
@@ -283,11 +276,43 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 							for (int i = 0; i < nbParameters; i++) {
 								cmd[3 + i] = params.get(i).trim();
 							}
+
+							String commandLine = "";
+							for (int i = 0; i < cmd.length; i++) {
+								commandLine += cmd[i] + " ";
+							}
+
+							System.out.println("Starting ArmA 3 with command line: " + commandLine);
+
 							Process p = Runtime.getRuntime().exec(cmd);
-							AfficheurFlux fluxSortie = new AfficheurFlux(
-									p.getInputStream());
-							AfficheurFlux fluxErreur = new AfficheurFlux(
-									p.getErrorStream());
+							AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
+							new Thread(fluxSortie).start();
+							new Thread(fluxErreur).start();
+							updateObserverEnd();
+							p.waitFor();
+							if (launcherOptions.isAutoRestart()) {
+								call();
+							}
+							response = p.exitValue();
+						} else {
+							int nbParameters = params.size();
+							String[] cmd = new String[1 + nbParameters];
+							cmd[0] = exePath;
+							for (int i = 0; i < nbParameters; i++) {
+								cmd[1 + i] = params.get(i).trim();
+							}
+
+							String commandLine = "";
+							for (int i = 0; i < cmd.length; i++) {
+								commandLine += cmd[i] + " ";
+							}
+
+							System.out.println("Starting ArmA 3 with command line: " + commandLine);
+
+							Process p = Runtime.getRuntime().exec(cmd);
+							AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
 							new Thread(fluxSortie).start();
 							new Thread(fluxErreur).start();
 							updateObserverEnd();
@@ -298,8 +323,7 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 							response = p.exitValue();
 						}
 					} else {
-						throw new Exception(executableName
-								+ " - invalid executable file.");
+						throw new Exception(executableName + " - invalid executable file.");
 					}
 				} catch (Exception e) {
 					List<Exception> errors = new ArrayList<Exception>();
@@ -316,8 +340,7 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 	public void killSteam(String executableName) {
 
 		try {
-			Process proc = Runtime.getRuntime().exec(
-					"taskkill /IM" + executableName);
+			Process proc = Runtime.getRuntime().exec("taskkill /IM" + executableName);
 			proc.waitFor();
 			System.out.println(executableName + "killed");
 		} catch (Exception e) {

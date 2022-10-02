@@ -2,7 +2,6 @@ package fr.soe.a3s.domain.repository;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Event implements Serializable {

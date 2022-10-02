@@ -11,7 +11,9 @@ import fr.soe.a3s.service.RepositoryService;
 
 public class RepositoryBuildProcessor {
 
+	/* Data */
 	private final String repositoryName;
+	private String path;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	/* observers */
@@ -19,7 +21,6 @@ public class RepositoryBuildProcessor {
 	private ObserverText observerText;// not null
 	private ObserverEnd observerEnd;// not null
 	private ObserverError observerError;// not null
-	private String path;
 
 	public RepositoryBuildProcessor(String repositoryName, String path) {
 		this.repositoryName = repositoryName;
@@ -37,12 +38,9 @@ public class RepositoryBuildProcessor {
 				repositoryService.setRepositoryPath(repositoryName, path);
 			}
 
-			repositoryService.getRepositoryBuilderDAO().addObserverText(
-					observerText);
-			repositoryService.getRepositoryBuilderDAO().addObserverCount(
-					observerCountProgress);
+			repositoryService.getRepositoryBuilderDAO().addObserverText(observerText);
+			repositoryService.getRepositoryBuilderDAO().addObserverCount(observerCountProgress);
 
-			repositoryService.setBuilding(repositoryName, true);
 			repositoryService.buildRepository(repositoryName);
 			repositoryService.write(repositoryName);
 			observerEnd.end();
@@ -50,8 +48,6 @@ public class RepositoryBuildProcessor {
 			List<Exception> errors = new ArrayList<Exception>();
 			errors.add(e);
 			observerError.error(errors);
-		} finally {
-			repositoryService.setBuilding(repositoryName, false);
 		}
 	}
 
