@@ -29,7 +29,7 @@ package fr.soe.a3s.jazsync;
 
 /**
  * Implementation of rolling checksum for zsync purposes
- * @author Tomáš Hlavni�ka
+ * @author Tomas Hlavnika
  */
 public class Rsum implements RollingChecksum, Cloneable, java.io.Serializable {
     private short a;
