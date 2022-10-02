@@ -2,6 +2,11 @@ group 'com.kellerkompanie'
 version '1.0'
 
 apply plugin: 'java'
+apply plugin: 'application'
+
+application {
+    mainClass = 'fr.soe.a3s.main.ArmA3Sync'
+}
 
 sourceCompatibility = 1.8
 
