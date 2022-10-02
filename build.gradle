@@ -6,19 +6,21 @@ apply plugin: 'java'
 sourceCompatibility = 1.8
 
 repositories {
-    mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 dependencies {
-    compile 'org.apache.httpcomponents:httpclient:4.5.13'
-    compile group: 'com.github.lookfirst', name: 'sardine', version: '5.9'
-    compile 'de.huxhorn.lilith:de.huxhorn.lilith.3rdparty.junique:1.0.4'
-    compile group: 'com.jtattoo', name: 'JTattoo', version: '1.6.10'
-    compile group: 'jaxen', name: 'jaxen', version: '1.1'
-    compile group: 'dom4j', name: 'dom4j', version: '1.6.1'
-    compile group: 'commons-io', name: 'commons-io', version: '2.0.1'
-    compile group: 'commons-net', name: 'commons-net', version: '3.4'
-    compile files('libs/jshortcut-0.4-oberzalek.jar')
-    compile files('libs/org-netbeans-swing-outline-RELEASE73.jar')
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation name: 'commons-codec-1.13'
+    implementation name: 'commons-io-2.0.1'
+    implementation name: 'commons-logging-1.2'
+    implementation name: 'commons-net-3.4'
+    implementation name: 'httpclient-4.5.3'
+    implementation name: 'httpcore-4.4.6'
+    implementation name: 'jaxb-api-2.3.0'
+    implementation name: 'jshortcut-0.4-oberzalek'
+    implementation name: 'JTattoo-1.6.10'
+    implementation name: 'junique-1.0.4'
+    implementation name: 'sardine-5.8'
 }
