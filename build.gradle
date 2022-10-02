@@ -8,6 +8,17 @@ application {
     mainClass = 'fr.soe.a3s.main.ArmA3Sync'
 }
 
+// https://www.baeldung.com/gradle-fat-jar
+task customFatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'fr.soe.a3s.main.ArmA3Sync'
+    }
+    baseName = 'ArmA3Sync-keko'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
 sourceCompatibility = 1.8
 
 repositories {
