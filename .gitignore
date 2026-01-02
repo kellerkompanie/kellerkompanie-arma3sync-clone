@@ -79,6 +79,7 @@ a3s.xml
 
 .gradle
 /build/
+ArmA3Sync-keko.jar
 
 # Ignore Gradle GUI config
 gradle-app.setting
