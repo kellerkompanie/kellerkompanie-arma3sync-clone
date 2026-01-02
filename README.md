@@ -1,22 +1,35 @@
-# kellerkompanie-arma3sync-clone
+# keko-arma3sync
 
-Basically a clone of arma3sync including a command line option for building all repositories at once. I do not own the
-code, it is taken from http://www.sonsofexiled.fr/wiki/index.php/ArmA3Sync_Wiki_English
+A fork of ArmA3Sync including a command line option for building all repositories at once.
+
+Original source (offline): http://www.sonsofexiled.fr/wiki/index.php/ArmA3Sync_Wiki_English
 
 ## Build
 
+Build an all-in-one executable JAR:
+
+```shell
+# Linux/macOS
+./scripts/build-jar.sh
+
+# Windows
+scripts\build-jar.bat
 ```
+
+The JAR is output to `keko-arma3sync.jar` in the project root.
+
+## Run
+
+```shell
+java -jar keko-arma3sync.jar
+```
+
+## Development
+
+```shell
+# Build only
 ./gradlew build
-```
 
-## Execute
-
-```
+# Run from source
 ./gradlew run
-```
-
-## Package
-
-```
-./gradlew customFatJar
 ```
