@@ -73,7 +73,7 @@ fabric.properties
 
 profiles/
 
-resources/
+/resources/
 
 a3s.xml
 
