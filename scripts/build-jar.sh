@@ -9,8 +9,8 @@ cd "$PROJECT_DIR"
 echo "Building fat JAR..."
 ./gradlew customFatJar
 
-BUILD_JAR="$PROJECT_DIR/build/libs/ArmA3Sync-keko-1.0.jar"
-OUTPUT_JAR="$PROJECT_DIR/ArmA3Sync-keko.jar"
+BUILD_JAR="$PROJECT_DIR/build/libs/keko-arma3sync-1.0.jar"
+OUTPUT_JAR="$PROJECT_DIR/keko-arma3sync.jar"
 
 if [ -f "$BUILD_JAR" ]; then
     cp "$BUILD_JAR" "$OUTPUT_JAR"

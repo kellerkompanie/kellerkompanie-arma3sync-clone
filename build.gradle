@@ -9,11 +9,11 @@ application {
 }
 
 // https://www.baeldung.com/gradle-fat-jar
-task customFatJar(type: Jar) {
+tasks.register('customFatJar', Jar) {
     manifest {
         attributes 'Main-Class': 'fr.soe.a3s.main.ArmA3Sync'
     }
-    baseName = 'ArmA3Sync-keko'
+    archiveBaseName = 'keko-arma3sync'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
@@ -21,22 +21,6 @@ task customFatJar(type: Jar) {
 
 sourceCompatibility = 1.8
 
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
-
 dependencies {
-    implementation name: 'commons-codec-1.13'
-    implementation name: 'commons-io-2.0.1'
-    implementation name: 'commons-logging-1.2'
-    implementation name: 'commons-net-3.4'
-    implementation name: 'httpclient-4.5.3'
-    implementation name: 'httpcore-4.4.6'
-    implementation name: 'jaxb-api-2.3.0'
-    implementation name: 'jshortcut-0.4-oberzalek'
-    implementation name: 'JTattoo-1.6.10'
-    implementation name: 'junique-1.0.4'
-    implementation name: 'sardine-5.8'
+    implementation fileTree(dir: 'libs', include: '*.jar')
 }

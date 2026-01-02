@@ -9,8 +9,8 @@ cd /d "%PROJECT_DIR%"
 echo Building fat JAR...
 call gradlew.bat customFatJar
 
-set BUILD_JAR=%PROJECT_DIR%\build\libs\ArmA3Sync-keko-1.0.jar
-set OUTPUT_JAR=%PROJECT_DIR%\ArmA3Sync-keko.jar
+set BUILD_JAR=%PROJECT_DIR%\build\libs\keko-arma3sync-1.0.jar
+set OUTPUT_JAR=%PROJECT_DIR%\keko-arma3sync.jar
 
 if exist "%BUILD_JAR%" (
     copy "%BUILD_JAR%" "%OUTPUT_JAR%" >nul
