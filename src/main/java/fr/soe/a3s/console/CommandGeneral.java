@@ -13,6 +13,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.dto.EventDTO;
+import fr.soe.a3s.dto.TreeDirectoryDTO;
+import fr.soe.a3s.dto.TreeNodeDTO;
+import fr.soe.a3s.exception.LoadingException;
+import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
+import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.controller.ObserverConnectionLost;
 import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverEnd;
@@ -616,6 +622,302 @@ public class CommandGeneral {
 			}
 		} else {
 			System.out.println("No new update available.");
+		}
+	}
+
+	/* Modset Operations */
+
+	protected void modsetList(String repositoryName) {
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+			repositoryService.readAll();
+			repositoryService.getRepository(repositoryName);
+		} catch (LoadingException | RepositoryException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
+		if (events.isEmpty()) {
+			System.out.println("No modsets found in repository \"" + repositoryName + "\".");
+		} else {
+			System.out.println("Modsets in repository \"" + repositoryName + "\":");
+			int index = 1;
+			for (EventDTO event : events) {
+				System.out.println("  " + index + ". " + event.getName());
+				index++;
+			}
+		}
+	}
+
+	protected void modsetShow(String repositoryName, String modsetName) {
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+			repositoryService.readAll();
+			repositoryService.getRepository(repositoryName);
+		} catch (LoadingException | RepositoryException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
+		EventDTO foundEvent = null;
+		for (EventDTO event : events) {
+			if (event.getName().equals(modsetName)) {
+				foundEvent = event;
+				break;
+			}
+		}
+
+		if (foundEvent == null) {
+			System.out.println("Modset \"" + modsetName + "\" not found in repository \"" + repositoryName + "\".");
+		} else {
+			System.out.println("Modset: " + foundEvent.getName());
+			String description = foundEvent.getDescription();
+			System.out.println("Description: " + (description != null && !description.isEmpty() ? description : "(none)"));
+			System.out.println("Repository: " + repositoryName);
+			java.util.Map<String, Boolean> addons = foundEvent.getAddonNames();
+			if (addons.isEmpty()) {
+				System.out.println("Addons: (none)");
+			} else {
+				System.out.println("Addons (" + addons.size() + "):");
+				for (java.util.Map.Entry<String, Boolean> entry : addons.entrySet()) {
+					String optionalStr = entry.getValue() ? "(optional)" : "(required)";
+					System.out.println("  - " + entry.getKey() + " " + optionalStr);
+				}
+			}
+		}
+	}
+
+	protected void modsetCreate(String repositoryName, String modsetName) {
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+			repositoryService.readAll();
+			repositoryService.getRepository(repositoryName);
+		} catch (LoadingException | RepositoryException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		// Check if modset already exists
+		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
+		for (EventDTO event : events) {
+			if (event.getName().equals(modsetName)) {
+				System.out.println("Modset \"" + modsetName + "\" already exists in repository \"" + repositoryName + "\".");
+				return;
+			}
+		}
+
+		EventDTO newEvent = new EventDTO();
+		newEvent.setName(modsetName);
+		newEvent.setRepositoryName(repositoryName);
+		repositoryService.addEvent(repositoryName, newEvent);
+
+		try {
+			repositoryService.writeEvents(repositoryName);
+			System.out.println("Modset \"" + modsetName + "\" created in repository \"" + repositoryName + "\".");
+		} catch (WritingException e) {
+			System.out.println("Failed to save modset: " + e.getMessage());
+		}
+	}
+
+	protected void modsetDelete(String repositoryName, String modsetName) {
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+			repositoryService.readAll();
+			repositoryService.getRepository(repositoryName);
+		} catch (LoadingException | RepositoryException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		try {
+			repositoryService.removeEvent(repositoryName, modsetName);
+			repositoryService.writeEvents(repositoryName);
+			System.out.println("Modset \"" + modsetName + "\" deleted from repository \"" + repositoryName + "\".");
+		} catch (RepositoryException e) {
+			System.out.println("Failed to delete modset: " + e.getMessage());
+		} catch (WritingException e) {
+			System.out.println("Failed to save changes: " + e.getMessage());
+		}
+	}
+
+	protected void modsetRename(String repositoryName, String oldName, String newName) {
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+			repositoryService.readAll();
+			repositoryService.getRepository(repositoryName);
+		} catch (LoadingException | RepositoryException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		try {
+			repositoryService.renameEvent(repositoryName, oldName, newName, null);
+			repositoryService.writeEvents(repositoryName);
+			System.out.println("Modset \"" + oldName + "\" renamed to \"" + newName + "\".");
+		} catch (RepositoryException e) {
+			System.out.println("Failed to rename modset: " + e.getMessage());
+		} catch (WritingException e) {
+			System.out.println("Failed to save changes: " + e.getMessage());
+		}
+	}
+
+	protected void modsetSetDescription(String repositoryName, String modsetName, String description) {
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+			repositoryService.readAll();
+			repositoryService.getRepository(repositoryName);
+		} catch (LoadingException | RepositoryException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		// Find the existing event to preserve its name
+		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
+		boolean found = false;
+		for (EventDTO event : events) {
+			if (event.getName().equals(modsetName)) {
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			System.out.println("Modset \"" + modsetName + "\" not found in repository \"" + repositoryName + "\".");
+			return;
+		}
+
+		try {
+			repositoryService.renameEvent(repositoryName, modsetName, modsetName, description);
+			repositoryService.writeEvents(repositoryName);
+			System.out.println("Description updated for modset \"" + modsetName + "\".");
+		} catch (RepositoryException e) {
+			System.out.println("Failed to update description: " + e.getMessage());
+		} catch (WritingException e) {
+			System.out.println("Failed to save changes: " + e.getMessage());
+		}
+	}
+
+	protected void modsetAddAddon(String repositoryName, String modsetName, String addonName, boolean optional) {
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+			repositoryService.readAll();
+			repositoryService.getRepository(repositoryName);
+		} catch (LoadingException | RepositoryException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
+		EventDTO foundEvent = null;
+		for (EventDTO event : events) {
+			if (event.getName().equals(modsetName)) {
+				foundEvent = event;
+				break;
+			}
+		}
+
+		if (foundEvent == null) {
+			System.out.println("Modset \"" + modsetName + "\" not found in repository \"" + repositoryName + "\".");
+			return;
+		}
+
+		foundEvent.getAddonNames().put(addonName, optional);
+		repositoryService.saveEvent(repositoryName, foundEvent);
+
+		try {
+			repositoryService.writeEvents(repositoryName);
+			String optionalStr = optional ? "optional" : "required";
+			System.out.println("Addon \"" + addonName + "\" added to modset \"" + modsetName + "\" as " + optionalStr + ".");
+		} catch (WritingException e) {
+			System.out.println("Failed to save changes: " + e.getMessage());
+		}
+	}
+
+	protected void modsetRemoveAddon(String repositoryName, String modsetName, String addonName) {
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+			repositoryService.readAll();
+			repositoryService.getRepository(repositoryName);
+		} catch (LoadingException | RepositoryException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
+		EventDTO foundEvent = null;
+		for (EventDTO event : events) {
+			if (event.getName().equals(modsetName)) {
+				foundEvent = event;
+				break;
+			}
+		}
+
+		if (foundEvent == null) {
+			System.out.println("Modset \"" + modsetName + "\" not found in repository \"" + repositoryName + "\".");
+			return;
+		}
+
+		if (!foundEvent.getAddonNames().containsKey(addonName)) {
+			System.out.println("Addon \"" + addonName + "\" not found in modset \"" + modsetName + "\".");
+			return;
+		}
+
+		foundEvent.getAddonNames().remove(addonName);
+		repositoryService.saveEvent(repositoryName, foundEvent);
+
+		try {
+			repositoryService.writeEvents(repositoryName);
+			System.out.println("Addon \"" + addonName + "\" removed from modset \"" + modsetName + "\".");
+		} catch (WritingException e) {
+			System.out.println("Failed to save changes: " + e.getMessage());
+		}
+	}
+
+	protected void modsetListAddons(String repositoryName) {
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+			repositoryService.readAll();
+			repositoryService.getRepository(repositoryName);
+		} catch (LoadingException | RepositoryException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		TreeDirectoryDTO tree = repositoryService.getGroupFromRepository(repositoryName, false);
+		if (tree == null) {
+			System.out.println("No addons found in repository \"" + repositoryName + "\". Repository may not be synchronized.");
+			return;
+		}
+
+		java.util.List<String> addonNames = new java.util.ArrayList<>();
+		collectAddonNames(tree, addonNames);
+
+		if (addonNames.isEmpty()) {
+			System.out.println("No addons found in repository \"" + repositoryName + "\".");
+		} else {
+			java.util.Collections.sort(addonNames, String.CASE_INSENSITIVE_ORDER);
+			System.out.println("Available addons in repository \"" + repositoryName + "\" (" + addonNames.size() + "):");
+			for (String name : addonNames) {
+				System.out.println("  " + name);
+			}
+		}
+	}
+
+	private void collectAddonNames(TreeDirectoryDTO directory, java.util.List<String> addonNames) {
+		if (directory == null || directory.getList() == null) {
+			return;
+		}
+		for (TreeNodeDTO node : directory.getList()) {
+			String name = node.getName();
+			// Addon folders typically start with @
+			if (name != null && name.startsWith("@")) {
+				addonNames.add(name);
+			}
+			if (node instanceof TreeDirectoryDTO) {
+				collectAddonNames((TreeDirectoryDTO) node, addonNames);
+			}
 		}
 	}
 }

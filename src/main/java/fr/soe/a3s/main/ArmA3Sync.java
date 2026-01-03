@@ -135,6 +135,38 @@ public class ArmA3Sync implements DataAccessConstants {
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("-update")) {
 			CommandLine commandLine = new CommandLine();
 			commandLine.checkForUpdates();
+		} else if (args.length >= 2 && args[0].equalsIgnoreCase("-modset")) {
+			String subCommand = args[1].toLowerCase();
+
+			if (subCommand.equals("help")) {
+				printModsetHelp();
+				System.exit(0);
+			}
+
+			CommandLine commandLine = new CommandLine();
+			if (subCommand.equals("list") && args.length == 3) {
+				commandLine.modsetList(args[2].trim());
+			} else if (subCommand.equals("show") && args.length == 4) {
+				commandLine.modsetShow(args[2].trim(), args[3].trim());
+			} else if (subCommand.equals("create") && args.length == 4) {
+				commandLine.modsetCreate(args[2].trim(), args[3].trim());
+			} else if (subCommand.equals("delete") && args.length == 4) {
+				commandLine.modsetDelete(args[2].trim(), args[3].trim());
+			} else if (subCommand.equals("rename") && args.length == 5) {
+				commandLine.modsetRename(args[2].trim(), args[3].trim(), args[4].trim());
+			} else if (subCommand.equals("set-description") && args.length == 5) {
+				commandLine.modsetSetDescription(args[2].trim(), args[3].trim(), args[4].trim());
+			} else if (subCommand.equals("add-addon") && (args.length == 5 || args.length == 6)) {
+				boolean optional = args.length == 6 && args[5].trim().equalsIgnoreCase("optional");
+				commandLine.modsetAddAddon(args[2].trim(), args[3].trim(), args[4].trim(), optional);
+			} else if (subCommand.equals("remove-addon") && args.length == 5) {
+				commandLine.modsetRemoveAddon(args[2].trim(), args[3].trim(), args[4].trim());
+			} else if (subCommand.equals("list-addons") && args.length == 3) {
+				commandLine.modsetListAddons(args[2].trim());
+			} else {
+				printModsetHelp();
+				System.exit(0);
+			}
 		} else {
 			System.out.println("ArmA3Sync - bad command.");
 			System.out.println("-BUILD " + "\"" + "Name of the Repository" + "\"" + " : build repository.");
@@ -147,7 +179,22 @@ public class ArmA3Sync implements DataAccessConstants {
 					+ "Destination folder path" + "\"" + " " + "true/false (with/without exact content matching)"
 					+ " : synchronize with repository.");
 			System.out.println("-UPDATE : check for ArmA3Sync updates.");
+			System.out.println("-MODSET <subcommand> : manage modsets (use -modset help for details).");
 		}
+	}
+
+	private static void printModsetHelp() {
+		System.out.println("ArmA3Sync - Modset Management Commands:");
+		System.out.println("");
+		System.out.println("-MODSET list \"Repository\" : list all modsets in repository.");
+		System.out.println("-MODSET show \"Repository\" \"Modset\" : show modset details.");
+		System.out.println("-MODSET create \"Repository\" \"Modset\" : create a new modset.");
+		System.out.println("-MODSET delete \"Repository\" \"Modset\" : delete a modset.");
+		System.out.println("-MODSET rename \"Repository\" \"OldName\" \"NewName\" : rename a modset.");
+		System.out.println("-MODSET set-description \"Repository\" \"Modset\" \"Description\" : set modset description.");
+		System.out.println("-MODSET add-addon \"Repository\" \"Modset\" \"@addon\" [optional] : add addon to modset.");
+		System.out.println("-MODSET remove-addon \"Repository\" \"Modset\" \"@addon\" : remove addon from modset.");
+		System.out.println("-MODSET list-addons \"Repository\" : list available addons in repository.");
 	}
 
 	private static void start(final boolean devMode, final boolean runMode, final boolean singleInstanceMode) {

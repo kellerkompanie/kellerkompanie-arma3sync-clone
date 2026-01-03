@@ -41,6 +41,7 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println(ConsoleCommands.EXTRACT.toString()
 				+ ": extract *.bikey files from source directory to target directory");
 		System.out.println(ConsoleCommands.UPDATE.toString() + ": check for updates");
+		System.out.println(ConsoleCommands.MODSET.toString() + ": manage modsets");
 		System.out.println(ConsoleCommands.COMMANDS.toString() + ": display commands");
 		System.out.println(ConsoleCommands.VERSION.toString() + ": display version");
 		System.out.println(ConsoleCommands.QUIT.toString() + ": quit");
@@ -71,6 +72,8 @@ public class CommandConsole extends CommandGeneral {
 			sync();
 		} else if (command.equalsIgnoreCase(ConsoleCommands.EXTRACT.toString())) {
 			extractBikeys();
+		} else if (command.equalsIgnoreCase(ConsoleCommands.MODSET.toString())) {
+			modset();
 		} else if (command.equalsIgnoreCase(ConsoleCommands.COMMANDS.toString())) {
 			displayCommands();
 			execute();
@@ -745,5 +748,148 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println("");
 		System.out.println("ArmA3Sync exited.");
 		System.exit(0);
+	}
+
+	private void modset() {
+
+		System.out.println("");
+		System.out.println("Modset Management");
+		System.out.println("");
+		System.out.println("Available operations:");
+		System.out.println("  1. LIST - list modsets in a repository");
+		System.out.println("  2. SHOW - show modset details");
+		System.out.println("  3. CREATE - create a new modset");
+		System.out.println("  4. DELETE - delete a modset");
+		System.out.println("  5. RENAME - rename a modset");
+		System.out.println("  6. SET-DESCRIPTION - set modset description");
+		System.out.println("  7. ADD-ADDON - add addon to modset");
+		System.out.println("  8. REMOVE-ADDON - remove addon from modset");
+		System.out.println("  9. LIST-ADDONS - list available addons in repository");
+		System.out.println("  0. BACK - return to main menu");
+		System.out.println("");
+
+		Scanner c = new Scanner(System.in);
+		System.out.print("Enter operation: ");
+		String operation = c.nextLine().trim().toUpperCase();
+
+		if (operation.equals("0") || operation.equals("BACK")) {
+			execute();
+			return;
+		}
+
+		// For all operations except BACK, we need a repository name
+		System.out.print("Enter repository name: ");
+		String repositoryName = c.nextLine().trim();
+		if (repositoryName.isEmpty()) {
+			System.out.println("Repository name cannot be empty.");
+			modset();
+			return;
+		}
+
+		switch (operation) {
+			case "1":
+			case "LIST":
+				super.modsetList(repositoryName);
+				break;
+
+			case "2":
+			case "SHOW":
+				System.out.print("Enter modset name: ");
+				String showModsetName = c.nextLine().trim();
+				if (!showModsetName.isEmpty()) {
+					super.modsetShow(repositoryName, showModsetName);
+				} else {
+					System.out.println("Modset name cannot be empty.");
+				}
+				break;
+
+			case "3":
+			case "CREATE":
+				System.out.print("Enter new modset name: ");
+				String createModsetName = c.nextLine().trim();
+				if (!createModsetName.isEmpty()) {
+					super.modsetCreate(repositoryName, createModsetName);
+				} else {
+					System.out.println("Modset name cannot be empty.");
+				}
+				break;
+
+			case "4":
+			case "DELETE":
+				System.out.print("Enter modset name to delete: ");
+				String deleteModsetName = c.nextLine().trim();
+				if (!deleteModsetName.isEmpty()) {
+					super.modsetDelete(repositoryName, deleteModsetName);
+				} else {
+					System.out.println("Modset name cannot be empty.");
+				}
+				break;
+
+			case "5":
+			case "RENAME":
+				System.out.print("Enter current modset name: ");
+				String oldName = c.nextLine().trim();
+				System.out.print("Enter new modset name: ");
+				String newName = c.nextLine().trim();
+				if (!oldName.isEmpty() && !newName.isEmpty()) {
+					super.modsetRename(repositoryName, oldName, newName);
+				} else {
+					System.out.println("Modset names cannot be empty.");
+				}
+				break;
+
+			case "6":
+			case "SET-DESCRIPTION":
+				System.out.print("Enter modset name: ");
+				String descModsetName = c.nextLine().trim();
+				System.out.print("Enter description: ");
+				String description = c.nextLine().trim();
+				if (!descModsetName.isEmpty()) {
+					super.modsetSetDescription(repositoryName, descModsetName, description);
+				} else {
+					System.out.println("Modset name cannot be empty.");
+				}
+				break;
+
+			case "7":
+			case "ADD-ADDON":
+				System.out.print("Enter modset name: ");
+				String addAddonModsetName = c.nextLine().trim();
+				System.out.print("Enter addon name (e.g., @ace): ");
+				String addonToAdd = c.nextLine().trim();
+				System.out.print("Is this addon optional? (yes/no): ");
+				String optionalStr = c.nextLine().trim();
+				boolean optional = optionalStr.equalsIgnoreCase("yes");
+				if (!addAddonModsetName.isEmpty() && !addonToAdd.isEmpty()) {
+					super.modsetAddAddon(repositoryName, addAddonModsetName, addonToAdd, optional);
+				} else {
+					System.out.println("Modset name and addon name cannot be empty.");
+				}
+				break;
+
+			case "8":
+			case "REMOVE-ADDON":
+				System.out.print("Enter modset name: ");
+				String removeAddonModsetName = c.nextLine().trim();
+				System.out.print("Enter addon name to remove: ");
+				String addonToRemove = c.nextLine().trim();
+				if (!removeAddonModsetName.isEmpty() && !addonToRemove.isEmpty()) {
+					super.modsetRemoveAddon(repositoryName, removeAddonModsetName, addonToRemove);
+				} else {
+					System.out.println("Modset name and addon name cannot be empty.");
+				}
+				break;
+
+			case "9":
+			case "LIST-ADDONS":
+				super.modsetListAddons(repositoryName);
+				break;
+
+			default:
+				System.out.println("Unknown operation: " + operation);
+				break;
+		}
+
+		modset();
 	}
 }

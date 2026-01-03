@@ -159,4 +159,51 @@ public class CommandLine extends CommandGeneral {
 
         System.exit(0);
     }
+
+    /* Modset Commands */
+
+    public void modsetList(String repositoryName) {
+        super.modsetList(repositoryName);
+        System.exit(0);
+    }
+
+    public void modsetShow(String repositoryName, String modsetName) {
+        super.modsetShow(repositoryName, modsetName);
+        System.exit(0);
+    }
+
+    public void modsetCreate(String repositoryName, String modsetName) {
+        super.modsetCreate(repositoryName, modsetName);
+        System.exit(0);
+    }
+
+    public void modsetDelete(String repositoryName, String modsetName) {
+        super.modsetDelete(repositoryName, modsetName);
+        System.exit(0);
+    }
+
+    public void modsetRename(String repositoryName, String oldName, String newName) {
+        super.modsetRename(repositoryName, oldName, newName);
+        System.exit(0);
+    }
+
+    public void modsetSetDescription(String repositoryName, String modsetName, String description) {
+        super.modsetSetDescription(repositoryName, modsetName, description);
+        System.exit(0);
+    }
+
+    public void modsetAddAddon(String repositoryName, String modsetName, String addonName, boolean optional) {
+        super.modsetAddAddon(repositoryName, modsetName, addonName, optional);
+        System.exit(0);
+    }
+
+    public void modsetRemoveAddon(String repositoryName, String modsetName, String addonName) {
+        super.modsetRemoveAddon(repositoryName, modsetName, addonName);
+        System.exit(0);
+    }
+
+    public void modsetListAddons(String repositoryName) {
+        super.modsetListAddons(repositoryName);
+        System.exit(0);
+    }
 }
