@@ -146,3 +146,25 @@ Available addons in repository "RepositoryName" (5):
 # Run from source
 ./gradlew run
 ```
+
+## Testing
+
+Run unit tests:
+
+```shell
+./gradlew test
+```
+
+View test report in browser:
+
+```shell
+open build/reports/tests/test/index.html   # macOS
+xdg-open build/reports/tests/test/index.html  # Linux
+start build/reports/tests/test/index.html  # Windows
+```
+
+Run tests with verbose output:
+
+```shell
+./gradlew test --info
+```

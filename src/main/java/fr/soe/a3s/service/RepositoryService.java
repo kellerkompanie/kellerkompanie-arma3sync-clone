@@ -969,6 +969,21 @@ public class RepositoryService extends ObjectDTOtransformer implements DataAcces
 		}
 	}
 
+	public void loadEventsFromRepositoryPath(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null && repository.getPath() != null) {
+			try {
+				Events events = repositoryDAO.readEvents(repository);
+				if (events != null) {
+					repository.setEvents(events);
+				}
+			} catch (IOException e) {
+				// Events file doesn't exist yet, ignore
+			}
+		}
+	}
+
 	public TreeDirectoryDTO getGroupFromRepository(String repositoryName, boolean withUserconfig) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);

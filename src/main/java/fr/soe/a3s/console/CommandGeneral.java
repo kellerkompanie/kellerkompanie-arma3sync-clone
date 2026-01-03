@@ -14,6 +14,7 @@ import org.xml.sax.SAXException;
 
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dto.EventDTO;
+import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.exception.LoadingException;
@@ -631,12 +632,17 @@ public class CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.readAll();
-			repositoryService.getRepository(repositoryName);
+			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
+			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
+				System.out.println("Repository \"" + repositoryName + "\" has no local path configured. Set the repository path first.");
+				return;
+			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
 		}
 
+		repositoryService.loadEventsFromRepositoryPath(repositoryName);
 		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
 		if (events.isEmpty()) {
 			System.out.println("No modsets found in repository \"" + repositoryName + "\".");
@@ -654,12 +660,17 @@ public class CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.readAll();
-			repositoryService.getRepository(repositoryName);
+			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
+			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
+				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				return;
+			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
 		}
 
+		repositoryService.loadEventsFromRepositoryPath(repositoryName);
 		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
 		EventDTO foundEvent = null;
 		for (EventDTO event : events) {
@@ -693,13 +704,18 @@ public class CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.readAll();
-			repositoryService.getRepository(repositoryName);
+			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
+			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
+				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				return;
+			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
 		}
 
-		// Check if modset already exists
+		// Load existing events and check if modset already exists
+		repositoryService.loadEventsFromRepositoryPath(repositoryName);
 		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
 		for (EventDTO event : events) {
 			if (event.getName().equals(modsetName)) {
@@ -725,12 +741,17 @@ public class CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.readAll();
-			repositoryService.getRepository(repositoryName);
+			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
+			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
+				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				return;
+			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
 		}
 
+		repositoryService.loadEventsFromRepositoryPath(repositoryName);
 		try {
 			repositoryService.removeEvent(repositoryName, modsetName);
 			repositoryService.writeEvents(repositoryName);
@@ -746,12 +767,17 @@ public class CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.readAll();
-			repositoryService.getRepository(repositoryName);
+			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
+			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
+				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				return;
+			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
 		}
 
+		repositoryService.loadEventsFromRepositoryPath(repositoryName);
 		try {
 			repositoryService.renameEvent(repositoryName, oldName, newName, null);
 			repositoryService.writeEvents(repositoryName);
@@ -767,12 +793,17 @@ public class CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.readAll();
-			repositoryService.getRepository(repositoryName);
+			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
+			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
+				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				return;
+			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
 		}
 
+		repositoryService.loadEventsFromRepositoryPath(repositoryName);
 		// Find the existing event to preserve its name
 		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
 		boolean found = false;
@@ -803,12 +834,17 @@ public class CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.readAll();
-			repositoryService.getRepository(repositoryName);
+			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
+			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
+				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				return;
+			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
 		}
 
+		repositoryService.loadEventsFromRepositoryPath(repositoryName);
 		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
 		EventDTO foundEvent = null;
 		for (EventDTO event : events) {
@@ -839,12 +875,17 @@ public class CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.readAll();
-			repositoryService.getRepository(repositoryName);
+			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
+			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
+				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				return;
+			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
 		}
 
+		repositoryService.loadEventsFromRepositoryPath(repositoryName);
 		java.util.List<EventDTO> events = repositoryService.getEvents(repositoryName);
 		EventDTO foundEvent = null;
 		for (EventDTO event : events) {
@@ -879,7 +920,11 @@ public class CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.readAll();
-			repositoryService.getRepository(repositoryName);
+			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
+			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
+				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				return;
+			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
