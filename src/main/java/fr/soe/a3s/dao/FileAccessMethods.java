@@ -109,7 +109,9 @@ public class FileAccessMethods implements DataAccessConstants {
 				for (int i = 0; i < files.length; i++) {
 					File f = files[i];
 					if (f.isDirectory()) {
-						boolean succeed = f.setWritable(true, false);
+						// Use true for ownerOnly to avoid making directories world-writable
+						// (which would break SSH keys on Unix systems)
+						boolean succeed = f.setWritable(true, true);
 						setWritePermissions(f);
 					}
 				}

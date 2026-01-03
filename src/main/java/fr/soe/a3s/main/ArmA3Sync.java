@@ -83,8 +83,13 @@ public class ArmA3Sync implements DataAccessConstants {
 		File tempFolder = new File(TEMP_FOLDER_PATH);
 		tempFolder.mkdirs();
 
-		File folder = new File(INSTALLATION_PATH);
-		FileAccessMethods.setWritePermissions(folder);
+		// DISABLED: setWritePermissions was recursively modifying directory permissions
+		// based on INSTALLATION_PATH (current working directory). On Unix systems this
+		// caused severe security issues - if run from /root or /home/user, it would make
+		// .ssh and other critical directories world-writable (mode 722), breaking SSH
+		// authentication. The original intent was to fix Windows read-only installations,
+		// but on modern systems this is unnecessary and dangerous.
+		// FileAccessMethods.setWritePermissions(folder);
 	}
 
 	private static void runArmA3Sync(String[] args) {
