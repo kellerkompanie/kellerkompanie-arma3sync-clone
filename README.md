@@ -51,6 +51,39 @@ Modsets (also called "Events" internally) are named collections of addons that c
 keko-arma3sync -modset help
 ```
 
+#### Data Storage
+
+When running `keko-arma3sync` from a directory (e.g., `/var/lib/keko-a3mm/arma3sync`), data is stored in two locations:
+
+**Repository configuration** is stored relative to the current working directory:
+```
+./resources/ftp/<RepoName>.a3s.repository
+```
+
+**Modsets/Events** are stored inside the repository's configured path:
+```
+<repository.path>/.a3s/events
+```
+
+Example structure when running from `/var/lib/keko-a3mm/arma3sync` with repository path `/var/www/arma3/mods`:
+
+```
+/var/lib/keko-a3mm/arma3sync/          # Working directory
+└── resources/
+    └── ftp/
+        └── myrepo.a3s.repository      # Repository config (encrypted)
+
+/var/www/arma3/mods/                   # Repository path (where mods are hosted)
+├── @ace/
+├── @cba_a3/
+└── .a3s/
+    ├── sync                           # File tree with checksums
+    ├── serverinfo                     # Server metadata
+    └── events                         # Modset definitions
+```
+
+**Note:** Modset commands require the repository to have a local path configured. If you see the error "Repository has no local path configured", you need to set the repository's main folder path first (via the GUI or `-console` mode).
+
 #### List modsets
 
 ```shell
