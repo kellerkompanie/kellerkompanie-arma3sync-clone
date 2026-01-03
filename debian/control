@@ -1,0 +1,14 @@
+Source: keko-arma3sync
+Section: games
+Priority: optional
+Maintainer: Schwaggot <schwaggot@kellerkompanie.com>
+Build-Depends: debhelper-compat (= 13), default-jdk
+Standards-Version: 4.6.2
+
+Package: keko-arma3sync
+Architecture: all
+Depends: default-jre-headless | openjdk-17-jre-headless, ${misc:Depends}
+Description: ArmA3Sync fork with CLI repository management
+ A fork of ArmA3Sync with command line support for building
+ and managing ArmA 3 mod repositories. Supports headless
+ operation for server-side repository building and synchronization.

@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf .gradle build
+
+override_dh_auto_build:
+	rm -rf .gradle build
+	gradle customFatJar --no-daemon
+
+override_dh_auto_install:
+	install -D -m 644 build/libs/keko-arma3sync-1.0.jar \
+		debian/keko-arma3sync/usr/share/keko-arma3sync/keko-arma3sync.jar
+	install -D -m 755 debian/keko-arma3sync.sh \
+		debian/keko-arma3sync/usr/bin/keko-arma3sync
+
+override_dh_auto_test:
+	# Skip tests
