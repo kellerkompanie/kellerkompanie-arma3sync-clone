@@ -1,3 +1,8 @@
+keko-arma3sync (1.0.1-1) trixie; urgency=medium
+  * CLI now exits non-zero on load/write failures instead of masking as success
+  * A3SFilesAccessor prints stack traces for IOExceptions
+ -- Schwaggot <schwaggot@kellerkompanie.com>  Sat, 11 Apr 2026 00:06:00 +0200
+
 keko-arma3sync (1.0.0-1) trixie; urgency=medium
   * Initial release.
  -- Schwaggot <schwaggot@kellerkompanie.com>  Wed, 08 Apr 2026 22:54:12 +0200
