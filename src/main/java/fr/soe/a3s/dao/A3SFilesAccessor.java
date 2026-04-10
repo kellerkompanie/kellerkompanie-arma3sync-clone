@@ -30,7 +30,12 @@ public class A3SFilesAccessor implements DataAccessConstants {
 			fRo = new ObjectInputStream(new GZIPInputStream(new FileInputStream(file)));
 			object = fRo.readObject();
 		} catch (IOException e) {
-			String message = "Failed to read file: " + file.getName() + "\n" + e.getMessage();
+			// Always print the stack trace — IOException's getMessage() is null
+			// for several common subclasses (OptionalDataException, EOFException),
+			// which previously made deserialization failures undebuggable from logs.
+			e.printStackTrace();
+			String message = "Failed to read file: " + file.getName() + "\n"
+					+ e.getClass().getName() + ": " + e.getMessage();
 			if (e instanceof ZipException || e instanceof EOFException) {
 				message = message + "\n" + FILE_CORRUPTED;
 			}
@@ -57,7 +62,12 @@ public class A3SFilesAccessor implements DataAccessConstants {
 			SealedObject sealedObject = (SealedObject) fRo.readObject();
 			object = sealedObject.getObject(cipher);
 		} catch (IOException e) {
-			String message = "Failed to read file: " + file.getName() + "\n" + e.getMessage();
+			// Always print the stack trace — IOException's getMessage() is null
+			// for several common subclasses (OptionalDataException, EOFException),
+			// which previously made deserialization failures undebuggable from logs.
+			e.printStackTrace();
+			String message = "Failed to read file: " + file.getName() + "\n"
+					+ e.getClass().getName() + ": " + e.getMessage();
 			if (e instanceof ZipException || e instanceof EOFException) {
 				message = message + "\n" + FILE_CORRUPTED;
 			}

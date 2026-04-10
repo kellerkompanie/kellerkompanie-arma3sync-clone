@@ -48,6 +48,23 @@ import fr.soe.a3s.utils.UnitConverter;
 
 public class CommandGeneral {
 
+	/**
+	 * Set by any sub-command that hits a LoadingException, WritingException or
+	 * RepositoryException. CommandLine consults this after calling super.modset*
+	 * so the CLI can exit non-zero. Defaults to false; reset is the caller's
+	 * responsibility (each CommandLine invocation is a fresh JVM, so a single
+	 * field is sufficient).
+	 */
+	private boolean operationFailed = false;
+
+	public boolean hasOperationFailed() {
+		return operationFailed;
+	}
+
+	protected void markOperationFailed() {
+		operationFailed = true;
+	}
+
 	/* Build */
 
 	protected void build(String repositoryName, ObserverEnd observerEndBuild) {
@@ -635,10 +652,12 @@ public class CommandGeneral {
 			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
 			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
 				System.out.println("Repository \"" + repositoryName + "\" has no local path configured. Set the repository path first.");
+				markOperationFailed();
 				return;
 			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
+			markOperationFailed();
 			return;
 		}
 
@@ -663,10 +682,12 @@ public class CommandGeneral {
 			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
 			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
 				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				markOperationFailed();
 				return;
 			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
+			markOperationFailed();
 			return;
 		}
 
@@ -707,10 +728,12 @@ public class CommandGeneral {
 			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
 			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
 				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				markOperationFailed();
 				return;
 			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
+			markOperationFailed();
 			return;
 		}
 
@@ -720,6 +743,7 @@ public class CommandGeneral {
 		for (EventDTO event : events) {
 			if (event.getName().equals(modsetName)) {
 				System.out.println("Modset \"" + modsetName + "\" already exists in repository \"" + repositoryName + "\".");
+				markOperationFailed();
 				return;
 			}
 		}
@@ -734,6 +758,7 @@ public class CommandGeneral {
 			System.out.println("Modset \"" + modsetName + "\" created in repository \"" + repositoryName + "\".");
 		} catch (WritingException e) {
 			System.out.println("Failed to save modset: " + e.getMessage());
+			markOperationFailed();
 		}
 	}
 
@@ -744,10 +769,12 @@ public class CommandGeneral {
 			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
 			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
 				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				markOperationFailed();
 				return;
 			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
+			markOperationFailed();
 			return;
 		}
 
@@ -758,8 +785,10 @@ public class CommandGeneral {
 			System.out.println("Modset \"" + modsetName + "\" deleted from repository \"" + repositoryName + "\".");
 		} catch (RepositoryException e) {
 			System.out.println("Failed to delete modset: " + e.getMessage());
+			markOperationFailed();
 		} catch (WritingException e) {
 			System.out.println("Failed to save changes: " + e.getMessage());
+			markOperationFailed();
 		}
 	}
 
@@ -770,10 +799,12 @@ public class CommandGeneral {
 			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
 			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
 				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				markOperationFailed();
 				return;
 			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
+			markOperationFailed();
 			return;
 		}
 
@@ -784,8 +815,10 @@ public class CommandGeneral {
 			System.out.println("Modset \"" + oldName + "\" renamed to \"" + newName + "\".");
 		} catch (RepositoryException e) {
 			System.out.println("Failed to rename modset: " + e.getMessage());
+			markOperationFailed();
 		} catch (WritingException e) {
 			System.out.println("Failed to save changes: " + e.getMessage());
+			markOperationFailed();
 		}
 	}
 
@@ -796,10 +829,12 @@ public class CommandGeneral {
 			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
 			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
 				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				markOperationFailed();
 				return;
 			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
+			markOperationFailed();
 			return;
 		}
 
@@ -816,6 +851,7 @@ public class CommandGeneral {
 
 		if (!found) {
 			System.out.println("Modset \"" + modsetName + "\" not found in repository \"" + repositoryName + "\".");
+			markOperationFailed();
 			return;
 		}
 
@@ -825,8 +861,10 @@ public class CommandGeneral {
 			System.out.println("Description updated for modset \"" + modsetName + "\".");
 		} catch (RepositoryException e) {
 			System.out.println("Failed to update description: " + e.getMessage());
+			markOperationFailed();
 		} catch (WritingException e) {
 			System.out.println("Failed to save changes: " + e.getMessage());
+			markOperationFailed();
 		}
 	}
 
@@ -837,10 +875,12 @@ public class CommandGeneral {
 			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
 			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
 				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				markOperationFailed();
 				return;
 			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
+			markOperationFailed();
 			return;
 		}
 
@@ -856,6 +896,7 @@ public class CommandGeneral {
 
 		if (foundEvent == null) {
 			System.out.println("Modset \"" + modsetName + "\" not found in repository \"" + repositoryName + "\".");
+			markOperationFailed();
 			return;
 		}
 
@@ -868,6 +909,7 @@ public class CommandGeneral {
 			System.out.println("Addon \"" + addonName + "\" added to modset \"" + modsetName + "\" as " + optionalStr + ".");
 		} catch (WritingException e) {
 			System.out.println("Failed to save changes: " + e.getMessage());
+			markOperationFailed();
 		}
 	}
 
@@ -878,10 +920,12 @@ public class CommandGeneral {
 			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
 			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
 				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				markOperationFailed();
 				return;
 			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
+			markOperationFailed();
 			return;
 		}
 
@@ -897,11 +941,13 @@ public class CommandGeneral {
 
 		if (foundEvent == null) {
 			System.out.println("Modset \"" + modsetName + "\" not found in repository \"" + repositoryName + "\".");
+			markOperationFailed();
 			return;
 		}
 
 		if (!foundEvent.getAddonNames().containsKey(addonName)) {
 			System.out.println("Addon \"" + addonName + "\" not found in modset \"" + modsetName + "\".");
+			markOperationFailed();
 			return;
 		}
 
@@ -913,6 +959,7 @@ public class CommandGeneral {
 			System.out.println("Addon \"" + addonName + "\" removed from modset \"" + modsetName + "\".");
 		} catch (WritingException e) {
 			System.out.println("Failed to save changes: " + e.getMessage());
+			markOperationFailed();
 		}
 	}
 
@@ -923,16 +970,19 @@ public class CommandGeneral {
 			RepositoryDTO repoDTO = repositoryService.getRepository(repositoryName);
 			if (repoDTO.getPath() == null || repoDTO.getPath().isEmpty()) {
 				System.out.println("Repository \"" + repositoryName + "\" has no local path configured.");
+				markOperationFailed();
 				return;
 			}
 		} catch (LoadingException | RepositoryException e) {
 			System.out.println(e.getMessage());
+			markOperationFailed();
 			return;
 		}
 
 		TreeDirectoryDTO tree = repositoryService.getGroupFromRepository(repositoryName, false);
 		if (tree == null) {
 			System.out.println("No addons found in repository \"" + repositoryName + "\". Repository may not be synchronized.");
+			markOperationFailed();
 			return;
 		}
 

@@ -25,7 +25,7 @@ public class CommandLine extends CommandGeneral {
             repositoryService.getRepository(repositoryName);
         } catch (LoadingException | RepositoryException e) {
             System.out.println(e.getMessage());
-            System.exit(0);
+            System.exit(1);
         }
 
         /* Proceed with command */
@@ -50,7 +50,7 @@ public class CommandLine extends CommandGeneral {
             repositoryService.readAll();
         } catch (LoadingException e) {
             System.out.println(e.getMessage());
-            System.exit(0);
+            System.exit(1);
         }
 
         /* Proceed with command */
@@ -77,7 +77,7 @@ public class CommandLine extends CommandGeneral {
             repositoryService.getRepository(repositoryName);
         } catch (LoadingException | RepositoryException e) {
             System.out.println(e.getMessage());
-            System.exit(0);
+            System.exit(1);
         }
 
         /* Proceed with command */
@@ -107,7 +107,7 @@ public class CommandLine extends CommandGeneral {
             repositoryService.getRepository(repositoryName);
         } catch (LoadingException | RepositoryException e) {
             System.out.println(e.getMessage());
-            System.exit(0);
+            System.exit(1);
         }
 
         // Set parameters
@@ -162,48 +162,52 @@ public class CommandLine extends CommandGeneral {
 
     /* Modset Commands */
 
+    private void exitWithStatus() {
+        System.exit(hasOperationFailed() ? 1 : 0);
+    }
+
     public void modsetList(String repositoryName) {
         super.modsetList(repositoryName);
-        System.exit(0);
+        exitWithStatus();
     }
 
     public void modsetShow(String repositoryName, String modsetName) {
         super.modsetShow(repositoryName, modsetName);
-        System.exit(0);
+        exitWithStatus();
     }
 
     public void modsetCreate(String repositoryName, String modsetName) {
         super.modsetCreate(repositoryName, modsetName);
-        System.exit(0);
+        exitWithStatus();
     }
 
     public void modsetDelete(String repositoryName, String modsetName) {
         super.modsetDelete(repositoryName, modsetName);
-        System.exit(0);
+        exitWithStatus();
     }
 
     public void modsetRename(String repositoryName, String oldName, String newName) {
         super.modsetRename(repositoryName, oldName, newName);
-        System.exit(0);
+        exitWithStatus();
     }
 
     public void modsetSetDescription(String repositoryName, String modsetName, String description) {
         super.modsetSetDescription(repositoryName, modsetName, description);
-        System.exit(0);
+        exitWithStatus();
     }
 
     public void modsetAddAddon(String repositoryName, String modsetName, String addonName, boolean optional) {
         super.modsetAddAddon(repositoryName, modsetName, addonName, optional);
-        System.exit(0);
+        exitWithStatus();
     }
 
     public void modsetRemoveAddon(String repositoryName, String modsetName, String addonName) {
         super.modsetRemoveAddon(repositoryName, modsetName, addonName);
-        System.exit(0);
+        exitWithStatus();
     }
 
     public void modsetListAddons(String repositoryName) {
         super.modsetListAddons(repositoryName);
-        System.exit(0);
+        exitWithStatus();
     }
 }
