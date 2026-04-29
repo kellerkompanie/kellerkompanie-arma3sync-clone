@@ -50,6 +50,25 @@ public class HttpDAO extends AbstractConnexionDAO {
 	private URLConnection urlConnection;
 	private DataRange dataRange;
 
+	static URL buildUrl(ProtocolType protocolType, String hostname, int port, String relativePath)
+			throws URISyntaxException, MalformedURLException {
+		final String scheme;
+		if (protocolType.equals(ProtocolType.HTTPS)) {
+			scheme = "https";
+		} else if (protocolType.equals(ProtocolType.HTTP)) {
+			scheme = "http";
+		} else {
+			throw new IllegalArgumentException("Unknown protocol: " + protocolType);
+		}
+		// Use URI.toASCIIString() so non-ASCII path characters are UTF-8
+		// percent-encoded. URI.toString() / URL(scheme, host, port, file) leave
+		// non-ASCII characters as literal chars, which HttpURLConnection then
+		// emits using the platform default charset (Cp1252 on Windows JVMs),
+		// causing 404s on UTF-8 servers.
+		URI uri = new URI(scheme, null, hostname, port, relativePath, null, null);
+		return new URL(uri.toASCIIString());
+	}
+
 	public void connect(AbstractProtocole protocol, RemoteFile remoteFile, long startOffset, long endOffset)
 			throws IOException {
 
@@ -72,18 +91,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		try {
 			// Set url
 			// http://stackoverflow.com/questions/724043/http-url-address-encoding -in-java
-			URL url = null;
-			if (protocol.getProtocolType().equals(ProtocolType.HTTPS)) {
-				URI uri = new URI("https", hostname, relativeUrl, null);
-				String file = uri.toURL().getFile();
-				url = new URL("https", hostname, Integer.parseInt(port), file);
-			} else if (protocol.getProtocolType().equals(ProtocolType.HTTP)) {
-				URI uri = new URI("http", hostname, relativeUrl, null);
-				String file = uri.toURL().getFile();
-				url = new URL("http", hostname, Integer.parseInt(port), file);
-			} else {
-				throw new RuntimeException("Unknown protocol!");
-			}
+			URL url = buildUrl(protocol.getProtocolType(), hostname, Integer.parseInt(port), relativeUrl);
 
 			// SSL certificate validation disabled
 			if (protocol.getProtocolType().equals(ProtocolType.HTTPS) && !doValidateSSLCertificate) {
